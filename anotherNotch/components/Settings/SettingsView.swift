@@ -30,6 +30,12 @@ private struct SettingsWindowBackground: ViewModifier {
     }
 }
 
+private extension View {
+    func readableSettingsPicker() -> some View {
+        tint(.primary)
+    }
+}
+
 private enum SettingsPage: String, CaseIterable, Identifiable {
     case general = "General"
     case appearance = "Appearance"
@@ -295,6 +301,7 @@ struct GeneralSettings: View {
                         Text(screen.name).tag(screen.uuid as String?)
                     }
                 }
+                .readableSettingsPicker()
                 .onChange(of: NSScreen.screens) {
                     screens = NSScreen.screens.compactMap { screen in
                         guard let uuid = screen.displayUUID else { return nil }
@@ -328,6 +335,7 @@ struct GeneralSettings: View {
                     Text("Custom height")
                         .tag(WindowHeightMode.custom)
                 }
+                .readableSettingsPicker()
                 .onChange(of: notchHeightMode) {
                     switch notchHeightMode {
                     case .matchRealNotchSize:
@@ -357,6 +365,7 @@ struct GeneralSettings: View {
                     Text("Custom height")
                         .tag(WindowHeightMode.custom)
                 }
+                .readableSettingsPicker()
                 .onChange(of: nonNotchHeightMode) {
                     switch nonNotchHeightMode {
                     case .matchMenuBar:
@@ -513,6 +522,7 @@ struct BluetoothDeviceNotifications: View {
                         Text(rows.rawValue).tag(rows)
                     }
                 }
+                .readableSettingsPicker()
                 Defaults.Toggle(key: .showBluetoothDeviceName) {
                     Text("Show device name")
                 }
@@ -655,6 +665,7 @@ struct HUD: View {
                         Text(opt.rawValue).tag(opt)
                     }
                 }
+                .readableSettingsPicker()
                 
                 Picker("Progress bar style", selection: $enableGradient) {
                     Text("Hierarchical")
@@ -662,6 +673,7 @@ struct HUD: View {
                     Text("Gradient")
                         .tag(true)
                 }
+                .readableSettingsPicker()
                 Defaults.Toggle(key: .systemEventIndicatorShadow) {
                     Text("Enable glowing effect")
                 }
@@ -695,6 +707,7 @@ struct HUD: View {
                         Text(rows.rawValue).tag(rows)
                     }
                 }
+                .readableSettingsPicker()
 
                 Defaults.Toggle(key: .showClosedNotchHUDPercentage) {
                     Text("Show percentage")
@@ -767,6 +780,7 @@ struct Media: View {
                         Text(controller.rawValue).tag(controller)
                     }
                 }
+                .readableSettingsPicker()
                 .onChange(of: mediaController) { _, _ in
                     NotificationCenter.default.post(
                         name: Notification.Name.mediaControllerChanged,
@@ -808,6 +822,7 @@ struct Media: View {
                         Text(style.rawValue).tag(style)
                     }
                 }
+                .readableSettingsPicker()
                 Stepper(value: $sneakPeekDuration, in: 0.5...10, step: 0.5) {
                     HStack {
                         Text("Sneak Peek Duration")
@@ -839,6 +854,7 @@ struct Media: View {
                         HideNotchOption.nowPlayingOnly)
                     Text("Never hide").tag(HideNotchOption.never)
                 }
+                .readableSettingsPicker()
             } header: {
                 Text("Media playback live activity")
             }
@@ -1158,6 +1174,7 @@ struct Shelf: View {
                     }
                 }
                 .pickerStyle(.menu)
+                .readableSettingsPicker()
                 
                 if let selectedProvider = selectedProvider {
                     HStack {
@@ -1415,6 +1432,7 @@ struct Appearance: View {
                         Text(option.rawValue)
                     }
                 }
+                .readableSettingsPicker()
             } header: {
                 Text("Media")
             }
@@ -1439,6 +1457,7 @@ struct Appearance: View {
                                     .tag(visualizer)
                             }
                         }
+                        .readableSettingsPicker()
                     } else {
                         HStack {
                             Text("Selected animation")
@@ -1612,6 +1631,7 @@ struct Appearance: View {
                     Text("Square")
                         .tag(MirrorShapeEnum.rectangle)
                 }
+                .readableSettingsPicker()
                 Defaults.Toggle(key: .showNotHumanFace) {
                     Text("Show cool face animation while inactive")
                 }
