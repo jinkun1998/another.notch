@@ -59,20 +59,6 @@ enum SneakPeekStyle: String, CaseIterable, Identifiable, Defaults.Serializable {
     var id: String { self.rawValue }
 }
 
-enum ClosedHUDRows: String, CaseIterable, Identifiable, Defaults.Serializable {
-    case one = "1 Row"
-    case two = "2 Rows"
-
-    var id: String { rawValue }
-}
-
-enum BluetoothDeviceIndicatorRows: String, CaseIterable, Identifiable, Defaults.Serializable {
-    case one = "1 Row"
-    case two = "2 Rows"
-
-    var id: String { rawValue }
-}
-
 // Action to perform when Option (⌥) is held while pressing media keys
 enum OptionKeyAction: String, CaseIterable, Identifiable, Defaults.Serializable {
     case openSettings = "Open System Settings"
@@ -161,9 +147,6 @@ extension Defaults.Keys {
     static let showBatteryIndicator = Key<Bool>("showBatteryIndicator", default: false)
     static let showBatteryPercentage = Key<Bool>("showBatteryPercentage", default: true)
     static let showPowerStatusIcons = Key<Bool>("showPowerStatusIcons", default: true)
-    static let showBluetoothDeviceConnectionIndicator = Key<Bool>("showBluetoothDeviceConnectionIndicator", default: true)
-    static let bluetoothDeviceIndicatorRows = Key<BluetoothDeviceIndicatorRows>("bluetoothDeviceIndicatorRows", default: .one)
-    static let showBluetoothDeviceName = Key<Bool>("showBluetoothDeviceName", default: true)
     
     // MARK: Downloads
     static let enableDownloadListener = Key<Bool>("enableDownloadListener", default: true)
@@ -172,8 +155,8 @@ extension Defaults.Keys {
     static let selectedDownloadIconStyle = Key<DownloadIconStyle>("selectedDownloadIconStyle", default: DownloadIconStyle.onlyAppIcon)
     
     // MARK: HUD
-    static let hudReplacement = Key<Bool>("hudReplacement", default: false)
-    static let closedHUDRows = Key<ClosedHUDRows>("closedHUDRows", default: .one)
+    static let hudReplacement = Key<Bool>("hudReplacement", default: true)
+    static let inlineHUD = Key<Bool>("inlineHUD", default: false)
     static let enableGradient = Key<Bool>("enableGradient", default: false)
     static let systemEventIndicatorShadow = Key<Bool>("systemEventIndicatorShadow", default: false)
     static let systemEventIndicatorUseAccent = Key<Bool>("systemEventIndicatorUseAccent", default: false)

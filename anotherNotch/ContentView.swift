@@ -147,68 +147,32 @@ struct ContentView: View {
         }
     }
 
-    private var showsClosedSystemHUD: Bool {
-        coordinator.sneakPeek.show
-            && coordinator.sneakPeek.type != .music
-            && coordinator.sneakPeek.type != .battery
-            && vm.notchState == .closed
-    }
-
-    private var closedNotchContentSize: CGSize {
-        let baseSize = CGSize(width: vm.closedNotchSize.width, height: vm.effectiveClosedNotchHeight)
-        guard baseSize.height > 0 else { return baseSize }
+    private var computedClosedNotchWidth: CGFloat {
+        var width: CGFloat = vm.closedNotchSize.width
 
         if coordinator.expandingView.type == .battery && coordinator.expandingView.show
             && vm.notchState == .closed && Defaults[.showPowerStatusNotifications]
         {
-            return .init(width: max(baseSize.width + 120, 320), height: baseSize.height)
-        }
-
-        if coordinator.expandingView.type == .bluetoothDevice && coordinator.expandingView.show
-            && vm.notchState == .closed
-        {
-            if Defaults[.bluetoothDeviceIndicatorRows] == .two {
-                return .init(
-                    width: max(baseSize.width + 90, 250),
-                    height: Defaults[.showBluetoothDeviceName] ? baseSize.height + 22 : baseSize.height
-                )
+            width = max(width + 120, 320)
+        } else if coordinator.sneakPeek.show && (coordinator.sneakPeek.type != .music) && (coordinator.sneakPeek.type != .battery) && vm.notchState == .closed {
+            if Defaults[.inlineHUD] {
+                width = vm.closedNotchSize.width + 200
             } else {
-                return .init(
-                    width: baseSize.width + (Defaults[.showBluetoothDeviceName] ? 210 : 90),
-                    height: baseSize.height
-                )
-            }
-        }
-
-        if showsClosedSystemHUD {
-            if Defaults[.closedHUDRows] == .two {
-                return .init(width: max(baseSize.width + 120, 280), height: max(baseSize.height, 58))
-            } else {
-                let wingWidth = max(0, baseSize.height - 12) * 1.5
-                return .init(
-                    width: baseSize.width + (2 * wingWidth + 28),
-                    height: baseSize.height
-                )
+                width = max(width + 60, 240)
             }
         } else if (!coordinator.expandingView.show || coordinator.expandingView.type == .music)
             && vm.notchState == .closed && (musicManager.isPlaying || !musicManager.isPlayerIdle)
             && coordinator.musicLiveActivityEnabled && !vm.hideOnClosed
         {
-            return .init(
-                width: baseSize.width + (2 * max(0, baseSize.height - 12) + 22),
-                height: baseSize.height
-            )
+            width += (2 * max(0, vm.effectiveClosedNotchHeight - 12) + 20)
         } else if !coordinator.expandingView.show && vm.notchState == .closed
             && (!musicManager.isPlaying && musicManager.isPlayerIdle) && Defaults[.showNotHumanFace]
             && !vm.hideOnClosed
         {
-            return .init(
-                width: baseSize.width + (2 * max(0, baseSize.height - 12) + 20),
-                height: baseSize.height
-            )
+            width += (2 * max(0, vm.effectiveClosedNotchHeight - 12) + 20)
         }
 
-        return baseSize
+        return width
     }
 
     var body: some View {
@@ -229,8 +193,8 @@ struct ContentView: View {
                     )
                     .padding([.horizontal, .bottom], 12 * shellExpansion)
                     .frame(
-                        width: vm.notchState == .open ? vm.notchSize.width : closedNotchContentSize.width,
-                        height: vm.notchState == .open ? vm.notchSize.height : closedNotchContentSize.height,
+                        width: vm.notchState == .open ? vm.notchSize.width : computedClosedNotchWidth,
+                        height: vm.notchState == .open ? vm.notchSize.height : vm.effectiveClosedNotchHeight,
                         alignment: .top
                     )
                     .background {
@@ -249,7 +213,7 @@ struct ContentView: View {
                         return view
                             .animation(vm.notchState == .open ? openAnimation : closeAnimation, value: vm.notchState)
                             .animation(vm.notchState == .open ? openAnimation : closeAnimation, value: vm.notchSize)
-                            .animation(.smooth(duration: 0.28), value: closedNotchContentSize)
+                            .animation(.smooth(duration: 0.28), value: computedClosedNotchWidth)
                             .animation(interactionAnimation, value: gestureProgress)
                     }
                     .contentShape(Rectangle())
@@ -272,27 +236,17 @@ struct ContentView: View {
                             }
                     }
                     .onReceive(NotificationCenter.default.publisher(for: .sharingDidFinish)) { _ in
-                        if vm.notchState == .open && !isHovering && !vm.isBatteryPopoverActive && !volumeManager.isOutputDevicePickerPresented {
+                        if vm.notchState == .open && !isHovering && !vm.isBatteryPopoverActive {
                             hoverTask?.cancel()
                             hoverTask = Task {
                                 try? await Task.sleep(for: .milliseconds(100))
                                 guard !Task.isCancelled else { return }
                                 await MainActor.run {
-                                    if self.vm.notchState == .open && !self.isHovering && !self.vm.isBatteryPopoverActive && !self.volumeManager.isOutputDevicePickerPresented && !SharingStateManager.shared.preventNotchClose {
+                                    if self.vm.notchState == .open && !self.isHovering && !self.vm.isBatteryPopoverActive && !SharingStateManager.shared.preventNotchClose {
                                         self.vm.close()
                                     }
                                 }
                             }
-                        }
-                    }
-                    .onReceive(NSWorkspace.shared.notificationCenter.publisher(for: NSWorkspace.didActivateApplicationNotification)) { _ in
-                        if vm.notchState == .open && !SharingStateManager.shared.preventNotchClose {
-                            vm.close()
-                        }
-                    }
-                    .onReceive(NotificationCenter.default.publisher(for: NSApplication.didResignActiveNotification)) { _ in
-                        if vm.notchState == .open && !SharingStateManager.shared.preventNotchClose {
-                            vm.close()
                         }
                     }
                     .onChange(of: vm.notchState) { _, newState in
@@ -342,7 +296,7 @@ struct ContentView: View {
                 if vm.chinHeight > 0 {
                     Rectangle()
                         .fill(Color.black.opacity(0.01))
-                        .frame(width: closedNotchContentSize.width, height: vm.chinHeight)
+                        .frame(width: computedClosedNotchWidth, height: vm.chinHeight)
                 }
             }
         }
@@ -473,35 +427,9 @@ struct ContentView: View {
                             .frame(width: 76, alignment: .trailing)
                         }
                         .frame(height: vm.effectiveClosedNotchHeight, alignment: .center)
-                    } else if coordinator.expandingView.type == .bluetoothDevice && coordinator.expandingView.show
-                        && vm.notchState == .closed
-                    {
-                        BluetoothConnectionIndicator(
-                            device: coordinator.expandingView,
-                            physicalNotchWidth: max(0, vm.closedNotchSize.width - cornerRadiusInsets.closed.top),
-                            topRowHeight: vm.effectiveClosedNotchHeight,
-                            rowCount: Defaults[.bluetoothDeviceIndicatorRows],
-                            showsDeviceName: Defaults[.showBluetoothDeviceName]
-                        )
-                        .frame(height: closedNotchContentSize.height, alignment: .center)
-                      } else if showsClosedSystemHUD {
-                          SystemEventIndicatorModifier(
-                              eventType: $coordinator.sneakPeek.type,
-                              value: $coordinator.sneakPeek.value,
-                              icon: $coordinator.sneakPeek.icon,
-                              sendEventBack: { newVal in
-                                  switch coordinator.sneakPeek.type {
-                                  case .volume:
-                                      VolumeManager.shared.setAbsolute(Float32(newVal))
-                                  case .brightness:
-                                      BrightnessManager.shared.setAbsolute(value: Float32(newVal))
-                                  default:
-                                      break
-                                  }
-                              }
-                          )
-                          .frame(height: closedNotchContentSize.height, alignment: .center)
-                          .transition(.opacity)
+                      } else if coordinator.sneakPeek.show && Defaults[.inlineHUD] && (coordinator.sneakPeek.type != .music) && (coordinator.sneakPeek.type != .battery) && vm.notchState == .closed {
+                          InlineHUD(type: $coordinator.sneakPeek.type, value: $coordinator.sneakPeek.value, icon: $coordinator.sneakPeek.icon, hoverAnimation: $isHovering, gestureProgress: $gestureProgress)
+                              .transition(.opacity)
                       } else if (!coordinator.expandingView.show || coordinator.expandingView.type == .music) && vm.notchState == .closed && (musicManager.isPlaying || !musicManager.isPlayerIdle) && coordinator.musicLiveActivityEnabled && !vm.hideOnClosed {
                           MusicLiveActivity()
                               .frame(alignment: .center)
@@ -512,8 +440,28 @@ struct ContentView: View {
                     }
 
                       if !isClosingShell && coordinator.sneakPeek.show {
+                          if (coordinator.sneakPeek.type != .music) && (coordinator.sneakPeek.type != .battery) && !Defaults[.inlineHUD] && vm.notchState == .closed {
+                              SystemEventIndicatorModifier(
+                                  eventType: $coordinator.sneakPeek.type,
+                                  value: $coordinator.sneakPeek.value,
+                                  icon: $coordinator.sneakPeek.icon,
+                                  sendEventBack: { newVal in
+                                      switch coordinator.sneakPeek.type {
+                                      case .volume:
+                                          VolumeManager.shared.setAbsolute(Float32(newVal))
+                                      case .brightness:
+                                          BrightnessManager.shared.setAbsolute(value: Float32(newVal))
+                                      default:
+                                          break
+                                      }
+                                  }
+                              )
+                              .padding(.bottom, 10)
+                              .padding(.leading, 4)
+                              .padding(.trailing, 8)
+                          }
                           // Old sneak peek music
-                          if coordinator.sneakPeek.type == .music {
+                          else if coordinator.sneakPeek.type == .music {
                               if vm.notchState == .closed && !vm.hideOnClosed && Defaults[.sneakPeekStyles] == .standard {
                                   HStack(alignment: .center) {
                                       Image(systemName: "music.note")
@@ -528,7 +476,7 @@ struct ContentView: View {
                       }
                   }
               }
-              .conditionalModifier(!isClosingShell && coordinator.sneakPeek.show && coordinator.sneakPeek.type == .music && vm.notchState == .closed && !vm.hideOnClosed && Defaults[.sneakPeekStyles] == .standard) { view in
+              .conditionalModifier(!isClosingShell && ((coordinator.sneakPeek.show && (coordinator.sneakPeek.type == .music) && vm.notchState == .closed && !vm.hideOnClosed && Defaults[.sneakPeekStyles] == .standard) || (coordinator.sneakPeek.show && (coordinator.sneakPeek.type != .music) && (vm.notchState == .closed)))) { view in
                   view
                       .fixedSize()
               }
@@ -632,7 +580,7 @@ struct ContentView: View {
                             .animation(albumArtTransition, value: vm.notchState)
                     }
                     .zIndex(3)
-                    .padding(.leading, 10)
+                    .padding(.leading, 6)
             }
 
             Rectangle()
@@ -710,7 +658,7 @@ struct ContentView: View {
                 height: compactMediaSize,
                 alignment: .center
             )
-            .padding(.trailing, 10)
+            .padding(.trailing, 6)
         }
         .frame(
             height: vm.effectiveClosedNotchHeight,
@@ -795,7 +743,7 @@ struct ContentView: View {
                         self.isHovering = false
                     }
                     
-                    if self.vm.notchState == .open && !self.vm.isBatteryPopoverActive && !self.volumeManager.isOutputDevicePickerPresented && !SharingStateManager.shared.preventNotchClose {
+                    if self.vm.notchState == .open && !self.vm.isBatteryPopoverActive && !SharingStateManager.shared.preventNotchClose {
                         self.vm.close()
                     }
                 }
@@ -853,112 +801,6 @@ struct ContentView: View {
             if Defaults[.enableHaptics] {
                 haptics.toggle()
             }
-        }
-    }
-}
-
-private struct BluetoothConnectionIndicator: View {
-    let device: ExpandedItem
-    let physicalNotchWidth: CGFloat
-    let topRowHeight: CGFloat
-    let rowCount: BluetoothDeviceIndicatorRows
-    let showsDeviceName: Bool
-
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var isIconTilted = false
-
-    private var hasBattery: Bool {
-        (0...1).contains(device.value)
-    }
-
-    var body: some View {
-        Group {
-            if rowCount == .two {
-                VStack(spacing: 0) {
-                    indicatorRow(showsDeviceName: false)
-                        .frame(height: topRowHeight)
-                    if showsDeviceName {
-                        HStack(spacing: 0) {
-                            Color.clear.frame(maxWidth: .infinity)
-                            Text(device.subtitle)
-                                .font(.system(size: 10, weight: .medium))
-                                .foregroundStyle(.secondary)
-                                .lineLimit(1)
-                                .truncationMode(.tail)
-                                .frame(width: physicalNotchWidth)
-                            Color.clear.frame(maxWidth: .infinity)
-                        }
-                        .frame(height: 22)
-                    }
-                }
-            } else {
-                indicatorRow(showsDeviceName: showsDeviceName)
-            }
-        }
-        .onAppear {
-            guard !reduceMotion else { return }
-            withAnimation(.easeInOut(duration: 0.16)) {
-                isIconTilted = true
-            }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.32) {
-                withAnimation(.easeInOut(duration: 0.16)) {
-                    isIconTilted = false
-                }
-            }
-        }
-    }
-
-    private var icon: some View {
-        Image(systemName: device.icon)
-            .font(.system(size: 14, weight: .semibold))
-            .foregroundStyle(.white)
-            .rotationEffect(.degrees(isIconTilted ? 9 : 0))
-    }
-
-    private func indicatorRow(showsDeviceName: Bool) -> some View {
-        HStack(spacing: 0) {
-            HStack(spacing: 6) {
-                icon
-                if showsDeviceName {
-                    Text(device.subtitle)
-                        .font(.system(size: 11, weight: .medium))
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
-                        .truncationMode(.tail)
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.leading, 12)
-
-            Rectangle()
-                .fill(.black)
-                .frame(width: physicalNotchWidth)
-
-            batteryStatus
-                .frame(maxWidth: .infinity, alignment: .trailing)
-                .padding(.trailing, 12)
-        }
-    }
-
-    @ViewBuilder
-    private var batteryStatus: some View {
-        if hasBattery {
-            ZStack {
-                Circle()
-                    .stroke(.white.opacity(0.2), lineWidth: 2)
-                Circle()
-                    .trim(from: 0, to: device.value)
-                    .stroke(.green, style: StrokeStyle(lineWidth: 2, lineCap: .round))
-                    .rotationEffect(.degrees(-90))
-                Text("\(Int(device.value * 100))%")
-                    .font(.system(size: 10, weight: .semibold))
-                    .monospacedDigit()
-            }
-            .frame(width: 24, height: 24)
-        } else {
-            Image(systemName: "checkmark")
-                .font(.system(size: 14, weight: .bold))
-                .foregroundStyle(.green)
         }
     }
 }
