@@ -126,7 +126,6 @@ class AnotherNotchViewCoordinator: ObservableObject {
         }
         
         selectedScreenUUID = preferredScreenUUID ?? NSScreen.main?.displayUUID ?? ""
-        // Observe changes to accessibility authorization and react accordingly
         accessibilityObserver = NotificationCenter.default.addObserver(
             forName: Notification.Name.accessibilityAuthorizationChanged,
             object: nil,
@@ -138,14 +137,11 @@ class AnotherNotchViewCoordinator: ObservableObject {
                     await MediaKeyInterceptor.shared.start(promptIfNeeded: false)
                 } else {
                     MediaKeyInterceptor.shared.stop()
-                    if Defaults[.hudReplacement] {
-                        Defaults[.hudReplacement] = false
-                    }
                 }
             }
         }
+        XPCHelperClient.shared.startMonitoringAccessibilityAuthorization()
 
-        // Observe changes to hudReplacement
         hudReplacementCancellable = Defaults.publisher(.hudReplacement)
             .sink { [weak self] change in
                 Task { @MainActor in
@@ -162,7 +158,7 @@ class AnotherNotchViewCoordinator: ObservableObject {
                             if granted {
                                 await MediaKeyInterceptor.shared.start()
                             } else {
-                                Defaults[.hudReplacement] = false
+                                MediaKeyInterceptor.shared.stop()
                             }
                         }
                     } else {
@@ -177,7 +173,7 @@ class AnotherNotchViewCoordinator: ObservableObject {
             if Defaults[.hudReplacement] {
                 let authorized = await XPCHelperClient.shared.isAccessibilityAuthorized()
                 if !authorized {
-                    Defaults[.hudReplacement] = false
+                    MediaKeyInterceptor.shared.stop()
                 } else {
                     await MediaKeyInterceptor.shared.start(promptIfNeeded: false)
                 }
