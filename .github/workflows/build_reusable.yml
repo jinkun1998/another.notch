@@ -19,6 +19,10 @@ on:
         required: false
         type: string
         default: "Apple Development"
+      persist_version_changes:
+        required: false
+        type: boolean
+        default: true
     secrets:
       BUILD_CERTIFICATE_BASE64:
         required: true
@@ -92,6 +96,7 @@ jobs:
           sed -i '' "s/CURRENT_PROJECT_VERSION = [^;]*/CURRENT_PROJECT_VERSION = ${BUILD_NUMBER}/g" "$PBXPROJ"
 
       - name: Commit version changes
+        if: ${{ inputs.persist_version_changes }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
