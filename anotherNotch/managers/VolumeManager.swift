@@ -56,9 +56,6 @@ final class VolumeManager: NSObject, ObservableObject {
     @Published private(set) var rawVolume: Float = 0
     @Published private(set) var isMuted: Bool = false
     @Published private(set) var lastChangeAt: Date = .distantPast
-    @Published private(set) var activeOutputDevice: OutputDevice?
-    @Published private(set) var availableOutputDevices: [OutputDevice] = []
-    @Published private(set) var isOutputDevicePickerPresented = false
     private var knownBluetoothDeviceIDs: Set<AudioObjectID> = []
     private var isFirstDeviceDiscovery: Bool = true
 
@@ -81,10 +78,6 @@ final class VolumeManager: NSObject, ObservableObject {
     }
 
     var shouldShowOverlay: Bool { Date().timeIntervalSince(lastChangeAt) < visibleDuration }
-    var activeOutputDeviceID: AudioObjectID { activeOutputDevice?.id ?? kAudioObjectUnknown }
-    var activeOutputDeviceName: String { activeOutputDevice?.name ?? "Output" }
-    var activeOutputDeviceTransportType: UInt32 { activeOutputDevice?.transportType ?? 0 }
-    var activeOutputDeviceIcon: String { activeOutputDevice?.icon ?? "speaker.wave.2" }
 
     // MARK: - Public Control API
     @MainActor func increase(stepDivisor: Float = 1.0) {
@@ -125,33 +118,6 @@ final class VolumeManager: NSObject, ObservableObject {
     }
     
     func refresh() { fetchCurrentVolume() }
-
-    @MainActor func setOutputDevicePickerPresented(_ isPresented: Bool) {
-        isOutputDevicePickerPresented = isPresented
-    }
-
-    @MainActor func selectOutputDevice(_ device: OutputDevice) {
-        guard availableOutputDevices.contains(device) else { return }
-
-        var deviceID = device.id
-        var address = AudioObjectPropertyAddress(
-            mSelector: kAudioHardwarePropertyDefaultOutputDevice,
-            mScope: kAudioObjectPropertyScopeGlobal,
-            mElement: kAudioObjectPropertyElementMain
-        )
-        guard AudioObjectSetPropertyData(
-            AudioObjectID(kAudioObjectSystemObject),
-            &address,
-            0,
-            nil,
-            UInt32(MemoryLayout<AudioObjectID>.size),
-            &deviceID
-        ) == noErr else { return }
-
-        refreshOutputDevices()
-        setupAudioListener()
-        fetchCurrentVolume()
-    }
 
     func adjustRelative(delta: Float32) {
         if isMutedInternal() { toggleMuteInternal() }
@@ -203,7 +169,6 @@ final class VolumeManager: NSObject, ObservableObject {
 
     func refreshOutputDevices() {
         let devices = outputDevices()
-        let activeDeviceID = systemOutputDeviceID()
         let previousKnown = knownBluetoothDeviceIDs
         var currentKnown: Set<AudioObjectID> = []
         var newlyConnected: OutputDevice?
@@ -220,8 +185,6 @@ final class VolumeManager: NSObject, ObservableObject {
         isFirstDeviceDiscovery = false
 
         DispatchQueue.main.async {
-            self.availableOutputDevices = devices
-            self.activeOutputDevice = devices.first { $0.id == activeDeviceID }
             if let device = newlyConnected, Defaults[.showBluetoothDeviceConnectionIndicator] {
                 AnotherNotchViewCoordinator.shared.toggleExpandingView(
                     status: true,
