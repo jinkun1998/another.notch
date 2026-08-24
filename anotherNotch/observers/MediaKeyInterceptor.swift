@@ -101,6 +101,10 @@ final class MediaKeyInterceptor {
     // MARK: - Event Handling
     
     private func handleEvent(_ cgEvent: CGEvent) -> Unmanaged<CGEvent>? {
+        guard Defaults[.hudReplacement] else {
+            return Unmanaged.passRetained(cgEvent)
+        }
+
         // Ensure the CGEvent has a valid type before converting to NSEvent
         guard cgEvent.type != .null else {
             return Unmanaged.passRetained(cgEvent)
