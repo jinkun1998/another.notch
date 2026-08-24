@@ -7,7 +7,6 @@
 
 import SwiftUI
 import AVFoundation
-import Defaults
 
 enum OnboardingStep {
     case welcome
@@ -60,9 +59,7 @@ struct OnboardingView: View {
                     privacyNote: "Used solely for hardware key HUD indicators. No keystrokes or private data are recorded.",
                     onAllow: {
                         Task {
-                            if await requestAccessibilityPermission() {
-                                Defaults[.hudReplacement] = true
-                            }
+                            await requestAccessibilityPermission()
                             withAnimation(.easeInOut(duration: 0.6)) {
                                 step = .cameraPermission
                             }
@@ -130,13 +127,13 @@ struct OnboardingView: View {
                             Task {
                                 await requestRemindersPermission()
                                 withAnimation(.easeInOut(duration: 0.6)) {
-                                    step = .musicPermission
+                                    step = .accessibilityPermission
                                 }
                             }
                         },
                         onSkip: {
                             withAnimation(.easeInOut(duration: 0.6)) {
-                                step = .musicPermission
+                                step = .accessibilityPermission
                             }
                         }
                     )
@@ -174,7 +171,7 @@ struct OnboardingView: View {
         _ = try? await calendarService.requestAccess(to: .reminder)
     }
     
-    func requestAccessibilityPermission() async -> Bool {
+    func requestAccessibilityPermission() async {
         await XPCHelperClient.shared.ensureAccessibilityAuthorization(promptIfNeeded: true)
     }
 }

@@ -18,7 +18,6 @@ enum SneakContentType {
     case mic
     case battery
     case download
-    case bluetoothDevice
 }
 
 struct sneakPeek {
@@ -45,9 +44,6 @@ struct ExpandedItem {
     var type: SneakContentType = .battery
     var value: CGFloat = 0
     var browser: BrowserType = .chromium
-    var title: String = ""
-    var subtitle: String = ""
-    var icon: String = "airpodspro"
 }
 
 @MainActor
@@ -133,14 +129,8 @@ class AnotherNotchViewCoordinator: ObservableObject {
             queue: .main
         ) { _ in
             Task { @MainActor in
-                let authorized = await XPCHelperClient.shared.isAccessibilityAuthorized()
-                if Defaults[.hudReplacement] && authorized {
+                if Defaults[.hudReplacement] {
                     await MediaKeyInterceptor.shared.start(promptIfNeeded: false)
-                } else {
-                    MediaKeyInterceptor.shared.stop()
-                    if Defaults[.hudReplacement] {
-                        Defaults[.hudReplacement] = false
-                    }
                 }
             }
         }
@@ -187,29 +177,32 @@ class AnotherNotchViewCoordinator: ObservableObject {
     
     @objc func sneakPeekEvent(_ notification: Notification) {
         let decoder = JSONDecoder()
-        guard let data = notification.userInfo?.values.first(where: { $0 is Data }) as? Data,
-              let decodedData = try? decoder.decode(SharedSneakPeek.self, from: data)
-        else {
+        if let decodedData = try? decoder.decode(
+            SharedSneakPeek.self, from: notification.userInfo?.first?.value as! Data)
+        {
+            let contentType =
+                decodedData.type == "brightness"
+                ? SneakContentType.brightness
+                : decodedData.type == "volume"
+                    ? SneakContentType.volume
+                    : decodedData.type == "backlight"
+                        ? SneakContentType.backlight
+                        : decodedData.type == "mic"
+                            ? SneakContentType.mic : SneakContentType.brightness
+
+            let formatter = NumberFormatter()
+            formatter.locale = Locale(identifier: "en_US_POSIX")
+            formatter.numberStyle = .decimal
+            let value = CGFloat((formatter.number(from: decodedData.value) ?? 0.0).floatValue)
+            let icon = decodedData.icon
+
+            print("Decoded: \(decodedData), Parsed value: \(value)")
+
+            toggleSneakPeek(status: decodedData.show, type: contentType, value: value, icon: icon)
+
+        } else {
             print("Failed to decode JSON data")
-            return
         }
-
-        let contentType =
-            decodedData.type == "brightness"
-            ? SneakContentType.brightness
-            : decodedData.type == "volume"
-                ? SneakContentType.volume
-                : decodedData.type == "backlight"
-                    ? SneakContentType.backlight
-                    : decodedData.type == "mic"
-                        ? SneakContentType.mic : SneakContentType.brightness
-
-        let formatter = NumberFormatter()
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.numberStyle = .decimal
-        let value = CGFloat((formatter.number(from: decodedData.value) ?? 0.0).floatValue)
-
-        toggleSneakPeek(status: decodedData.show, type: contentType, value: value, icon: decodedData.icon)
     }
 
     func toggleSneakPeek(
@@ -270,10 +263,7 @@ class AnotherNotchViewCoordinator: ObservableObject {
         status: Bool,
         type: SneakContentType,
         value: CGFloat = 0,
-        browser: BrowserType = .chromium,
-        title: String = "",
-        subtitle: String = "",
-        icon: String = "airpodspro"
+        browser: BrowserType = .chromium
     ) {
         Task { @MainActor in
             withAnimation(.smooth) {
@@ -281,9 +271,6 @@ class AnotherNotchViewCoordinator: ObservableObject {
                 self.expandingView.type = type
                 self.expandingView.value = value
                 self.expandingView.browser = browser
-                self.expandingView.title = title
-                self.expandingView.subtitle = subtitle
-                self.expandingView.icon = icon
             }
         }
     }

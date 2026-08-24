@@ -21,8 +21,11 @@ struct OpenNotchHUD: View {
             Group {
                 switch type {
                 case .volume:
-                    OutputDeviceSelectorButton {
-                        OutputDeviceIcon()
+                    if icon.isEmpty {
+                        Image(systemName: SpeakerSymbol(value))
+                            .contentTransition(.interpolate)
+                    } else {
+                        Image(systemName: icon)
                             .contentTransition(.interpolate)
                     }
                 case .brightness:
