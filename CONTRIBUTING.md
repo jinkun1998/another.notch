@@ -8,7 +8,6 @@ You can contribute in many ways: writing code, improving documentation, reportin
 
 ## Table of Contents
 
-- [Localizations](#localizations)
 - [Contributing Code](#contributing-code)
   - [Before You Start](#before-you-start)
   - [Setting Up Your Environment](#setting-up-your-environment)
@@ -18,10 +17,6 @@ You can contribute in many ways: writing code, improving documentation, reportin
 - [Reporting Bugs](#reporting-bugs)
 - [Feature Requests](#feature-requests)
 - [Getting Help](#getting-help)
-
-## Localizations
-
-Please submit all translations to [Crowdin](https://crowdin.com/project/another-notch). New strings added to the `dev` branch from code changes will sync automatically to Crowdin, and Crowdin will automatically open a new PR with translations to allow us to integrate them.
 
 ## Contributing Code
 

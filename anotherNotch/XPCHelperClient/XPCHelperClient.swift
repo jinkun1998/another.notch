@@ -1,6 +1,6 @@
 import Foundation
 import Cocoa
-import AsyncXPCConnection
+@preconcurrency import AsyncXPCConnection
 import ApplicationServices
 
 final class XPCHelperClient: NSObject {
@@ -12,6 +12,10 @@ final class XPCHelperClient: NSObject {
     private var connection: NSXPCConnection?
     private var lastKnownAuthorization: Bool?
     private var monitoringTask: Task<Void, Never>?
+
+    private override init() {
+        super.init()
+    }
     
     deinit {
         connection?.invalidate()
@@ -74,11 +78,10 @@ final class XPCHelperClient: NSObject {
     nonisolated func startMonitoringAccessibilityAuthorization(every interval: TimeInterval = 3.0) {
         // Ensure only one monitor exists
         stopMonitoringAccessibilityAuthorization()
-        monitoringTask = Task.detached { [weak self] in
-            guard let self = self else { return }
+        monitoringTask = Task.detached {
             while !Task.isCancelled {
                 // Call the helper method periodically which will notify on change
-                _ = await self.isAccessibilityAuthorized()
+                _ = await Self.shared.isAccessibilityAuthorized()
                 do {
                     try await Task.sleep(for: .seconds(interval))
                 } catch { break }
@@ -106,7 +109,7 @@ final class XPCHelperClient: NSObject {
     nonisolated func isAccessibilityAuthorized() async -> Bool {
         let authorized = AXIsProcessTrusted()
         await MainActor.run {
-            notifyAuthorizationChange(authorized)
+            Self.shared.notifyAuthorizationChange(authorized)
         }
         return authorized
     }
@@ -124,7 +127,7 @@ final class XPCHelperClient: NSObject {
     nonisolated func isKeyboardBrightnessAvailable() async -> Bool {
         do {
             let service = await MainActor.run {
-                ensureRemoteService()
+                Self.shared.ensureRemoteService()
             }
             return try await service.withContinuation { service, continuation in
                 service.isKeyboardBrightnessAvailable { available in
@@ -139,7 +142,7 @@ final class XPCHelperClient: NSObject {
     nonisolated func currentKeyboardBrightness() async -> Float? {
         do {
             let service = await MainActor.run {
-                ensureRemoteService()
+                Self.shared.ensureRemoteService()
             }
             let result: NSNumber? = try await service.withContinuation { service, continuation in
                 service.currentKeyboardBrightness { value in
@@ -155,7 +158,7 @@ final class XPCHelperClient: NSObject {
     nonisolated func setKeyboardBrightness(_ value: Float) async -> Bool {
         do {
             let service = await MainActor.run {
-                ensureRemoteService()
+                Self.shared.ensureRemoteService()
             }
             return try await service.withContinuation { service, continuation in
                 service.setKeyboardBrightness(value) { success in
@@ -172,7 +175,7 @@ final class XPCHelperClient: NSObject {
     nonisolated func isScreenBrightnessAvailable() async -> Bool {
         do {
             let service = await MainActor.run {
-                ensureRemoteService()
+                Self.shared.ensureRemoteService()
             }
             return try await service.withContinuation { service, continuation in
                 service.isScreenBrightnessAvailable { available in
@@ -187,7 +190,7 @@ final class XPCHelperClient: NSObject {
     nonisolated func currentScreenBrightness() async -> Float? {
         do {
             let service = await MainActor.run {
-                ensureRemoteService()
+                Self.shared.ensureRemoteService()
             }
             let result: NSNumber? = try await service.withContinuation { service, continuation in
                 service.currentScreenBrightness { value in
@@ -203,7 +206,7 @@ final class XPCHelperClient: NSObject {
     nonisolated func setScreenBrightness(_ value: Float) async -> Bool {
         do {
             let service = await MainActor.run {
-                ensureRemoteService()
+                Self.shared.ensureRemoteService()
             }
             return try await service.withContinuation { service, continuation in
                 service.setScreenBrightness(value) { success in
