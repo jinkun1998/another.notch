@@ -13,9 +13,9 @@ name: "CodeQL Advanced"
 
 on:
   push:
-    branches: [ "main", "dev" ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ "main", "dev" ]
+    branches: [ "main" ]
   schedule:
     - cron: '31 15 * * 1'
 
@@ -81,14 +81,6 @@ jobs:
 
         # For more details on CodeQL's query packs, refer to: https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/configuring-code-scanning#using-queries-in-ql-packs
         # queries: security-extended,security-and-quality
-
-    - name: Resolve Swift package dependencies
-      if: matrix.language == 'swift'
-      run: |
-        xcodebuild \
-          -resolvePackageDependencies \
-          -project anotherNotch.xcodeproj \
-          -scheme anotherNotch
 
     - name: Build Another Notch
       if: matrix.language == 'swift'

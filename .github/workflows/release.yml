@@ -52,7 +52,7 @@ jobs:
           HEAD_REPO=$(echo "$PR_DATA" | jq -r '.head_repo')
           BASE_REPO=$(echo "$PR_DATA" | jq -r '.base_repo')
 
-          if [[ "$HEAD_REPO" == "$REPO" && "$BASE_REPO" == "$REPO" && "$HEAD_REF" == "dev" && "$BASE_REF" == "main" ]]; then
+          if [[ "$HEAD_REPO" == "$REPO" && "$BASE_REPO" == "$REPO" && "$HEAD_REF" != "main" && "$BASE_REF" == "main" ]]; then
             IS_ELIGIBLE_PR=true
           fi
 
@@ -337,7 +337,7 @@ jobs:
 
       - name: Generate signed appcast
         env:
-          SPARKLE_PRIVATE_KEY: ${{ secrets.PRIVATE_SPARKLE_KEY }}
+          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
         run: |
           set -euo pipefail
           test -x "$RUNNER_TEMP/generate_appcast" || {
