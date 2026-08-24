@@ -1,4 +1,4 @@
-name: Build for macOS
+name: Build Another Notch
 
 on:
   push:
@@ -20,26 +20,11 @@ permissions:
 jobs:
   build:
     name: Build Another Notch
-    strategy:
-      matrix:
-        platform:
-          - macOS
-        xcode:
-          - ^16
-        scheme:
-          - anotherNotch
     runs-on: macos-latest
     steps:
-    - name: Code Checkout
-      # TODO: pin to immutable SHA
-      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-    - # TODO: pin to immutable SHA
-      uses: mxcl/xcodebuild@d3ee9b419c1be9a988086c58fe0988f32d99cfc5 # v3.6.0
-      with:
-        xcode: ${{ matrix.xcode }}
-        platform: ${{ matrix.platform }}
-        scheme: ${{ matrix.scheme }}
-        action: build
-        verbosity: xcpretty
-        upload-logs: always
-        configuration: release
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Build
+        run: >-
+          xcodebuild -project anotherNotch.xcodeproj -scheme anotherNotch
+          -configuration Release -sdk macosx build

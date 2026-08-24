@@ -10,7 +10,7 @@ body:
       value: |
         ## Feature Request
         
-        Thanks for helping make **Another Notch** better! Please check [existing requests](https://github.com/TheBoredTeam/another.notch/issues?q=is%3Aissue) before submitting to avoid duplicates.
+        Thanks for helping make **Another Notch** better! Please check [existing requests](https://github.com/jinkun1998/another.notch/issues?q=is%3Aissue) before submitting to avoid duplicates.
 
   - type: textarea
     id: problem
