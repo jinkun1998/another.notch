@@ -10,6 +10,7 @@ import Foundation
 import Combine
 import SwiftUI
 
+@MainActor
 final class YouTubeMusicController: MediaControllerProtocol {
     // MARK: - Published Properties
     @Published var playbackState = PlaybackState(
