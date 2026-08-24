@@ -2,15 +2,11 @@
 Please, go through these steps before you submit a PR.
 
 1. Make sure that your PR is not a duplicate.
-2. If not, then make sure that:
-
-    a. Your changes MUST NOT change translations. Please submit translations on [Crowdin](https://crowdin.com/project/another-notch).
-
-    b. You have tested the code yourself to ensure it builds correctly and functions as intended.
+2. If not, test your changes to ensure they build and work correctly.
 
 3. **After** these steps, you're ready to open a pull request.
 
-    a. Your pull request MUST NOT target the `main` branch on this repository. You probably want to target `dev` instead.
+    a. Target the `main` branch.
 
     b. Give a descriptive title to your PR.
 

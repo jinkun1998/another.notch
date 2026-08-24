@@ -6,7 +6,6 @@
 
 
 <p align="center">
-  <a title="Crowdin" target="_blank" href="https://crowdin.com/project/another-notch"><img src="https://badges.crowdin.net/another-notch/localized.svg"></a>
   <img src="https://github.com/jinkun1998/another.notch/actions/workflows/cicd.yml/badge.svg" alt="Another Notch Build & Test" style="margin-right: 10px;" />
 </p>
 
