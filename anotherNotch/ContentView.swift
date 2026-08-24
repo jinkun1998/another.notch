@@ -7,6 +7,7 @@
 //
 
 import AVFoundation
+import AppKit
 import Combine
 import Defaults
 import KeyboardShortcuts
@@ -59,6 +60,19 @@ struct ContentView: View {
 
     private let extendedHoverPadding: CGFloat = 30
     private let zeroHeightHoverPadding: CGFloat = 10
+    private let powerNotificationIconWidth: CGFloat = 44
+    private let powerNotificationTextOuterMargin: CGFloat = 20
+    private let powerNotificationNotchMargin: CGFloat = 40
+
+    private var physicalNotchWidth: CGFloat {
+        max(0, vm.closedNotchSize.width - cornerRadiusInsets.closed.top)
+    }
+
+    private var powerNotificationTextWidth: CGFloat {
+        let font = NSFont.preferredFont(forTextStyle: .subheadline)
+        let textWidth = (batteryModel.statusText as NSString).size(withAttributes: [.font: font]).width
+        return ceil(textWidth) + powerNotificationTextOuterMargin + powerNotificationNotchMargin
+    }
 
     private func interpolate(_ from: CGFloat, _ to: CGFloat) -> CGFloat {
         from + (to - from) * shellExpansion
@@ -153,14 +167,29 @@ struct ContentView: View {
             && vm.notchState == .closed
     }
 
+    private var showsMusicSneakPeek: Bool {
+        coordinator.sneakPeek.show
+            && coordinator.sneakPeek.type == .music
+            && vm.notchState == .closed
+            && !vm.hideOnClosed
+            && Defaults[.sneakPeekStyles] == .standard
+    }
+
     private var closedNotchContentSize: CGSize {
         let baseSize = CGSize(width: vm.closedNotchSize.width, height: vm.effectiveClosedNotchHeight)
         guard baseSize.height > 0 else { return baseSize }
 
+        if showsMusicSneakPeek {
+            return .init(width: max(baseSize.width, 260), height: baseSize.height + 34)
+        }
+
         if coordinator.expandingView.type == .battery && coordinator.expandingView.show
             && vm.notchState == .closed && Defaults[.showPowerStatusNotifications]
         {
-            return .init(width: max(baseSize.width + 120, 320), height: baseSize.height)
+            return .init(
+                width: physicalNotchWidth + powerNotificationTextWidth + powerNotificationIconWidth,
+                height: baseSize.height
+            )
         }
 
         if coordinator.expandingView.type == .bluetoothDevice && coordinator.expandingView.show
@@ -449,27 +478,26 @@ struct ContentView: View {
                         && vm.notchState == .closed && Defaults[.showPowerStatusNotifications]
                     {
                         HStack(spacing: 0) {
-                            HStack {
-                                Text(batteryModel.statusText)
-                                    .font(.subheadline)
-                                    .foregroundStyle(.white)
-                            }
+                            Text(batteryModel.statusText)
+                                .font(.subheadline)
+                                .foregroundStyle(.white)
+                                .padding(.leading, powerNotificationTextOuterMargin)
+                                .padding(.trailing, powerNotificationNotchMargin)
+                                .frame(width: powerNotificationTextWidth, alignment: .trailing)
 
                             Rectangle()
                                 .fill(.black)
-                                .frame(width: vm.closedNotchSize.width + 10)
+                                .frame(width: physicalNotchWidth)
 
-                            HStack {
-                                AnotherNotchBatteryView(
-                                    batteryWidth: 30,
-                                    isCharging: batteryModel.isCharging,
-                                    isInLowPowerMode: batteryModel.isInLowPowerMode,
-                                    isPluggedIn: batteryModel.isPluggedIn,
-                                    levelBattery: batteryModel.levelBattery,
-                                    isForNotification: true
-                                )
-                            }
-                            .frame(width: 76, alignment: .trailing)
+                            BatteryView(
+                                levelBattery: batteryModel.levelBattery,
+                                isPluggedIn: batteryModel.isPluggedIn,
+                                isCharging: batteryModel.isCharging,
+                                isInLowPowerMode: batteryModel.isInLowPowerMode,
+                                batteryWidth: 30,
+                                isForNotification: true
+                            )
+                            .frame(width: powerNotificationIconWidth, alignment: .leading)
                         }
                         .frame(height: vm.effectiveClosedNotchHeight, alignment: .center)
                     } else if coordinator.expandingView.type == .bluetoothDevice && coordinator.expandingView.show
@@ -513,13 +541,14 @@ struct ContentView: View {
                       if !isClosingShell && coordinator.sneakPeek.show {
                           // Old sneak peek music
                           if coordinator.sneakPeek.type == .music {
-                              if vm.notchState == .closed && !vm.hideOnClosed && Defaults[.sneakPeekStyles] == .standard {
+                              if showsMusicSneakPeek {
                                   HStack(alignment: .center) {
                                       Image(systemName: "music.note")
-                                      GeometryReader { geo in
-                                          MarqueeText(.constant(musicManager.songTitle + " - " + musicManager.artistName),  textColor: Defaults[.playerColorTinting] ? Color(nsColor: musicManager.avgColor).ensureMinimumBrightness(factor: 0.6) : .gray, minDuration: 1, frameWidth: geo.size.width)
+                                      GeometryReader { geometry in
+                                          MarqueeText(.constant(playbackSneakPeekText), textColor: Defaults[.playerColorTinting] ? Color(nsColor: musicManager.avgColor).ensureMinimumBrightness(factor: 0.6) : .gray, minDuration: 1, frameWidth: geometry.size.width)
                                       }
                                   }
+                                  .frame(width: max(vm.closedNotchSize.width, 260))
                                   .foregroundStyle(.gray)
                                   .padding(.bottom, 10)
                               }
@@ -572,6 +601,12 @@ struct ContentView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .onDrop(of: [.fileURL, .url, .utf8PlainText, .plainText, .data], delegate: GeneralDropTargetDelegate(isTargeted: $vm.generalDropTargeting))
+    }
+
+    private var playbackSneakPeekText: String {
+        [musicManager.songTitle, musicManager.artistName]
+            .filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+            .joined(separator: " - ")
     }
 
     @ViewBuilder

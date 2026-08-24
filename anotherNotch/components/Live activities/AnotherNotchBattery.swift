@@ -40,8 +40,47 @@ struct BatteryView: View {
     }
 
     var body: some View {
-        ZStack(alignment: .leading) {
+        if #available(macOS 27.0, *) {
+            macOS27Battery
+        } else {
+            legacyBattery
+        }
+    }
 
+    private var macOS27Battery: some View {
+        ZStack {
+            Image(systemName: batterySymbolName)
+                .font(.system(size: batteryWidth * 0.62, weight: .medium))
+                .symbolRenderingMode(.monochrome)
+                .foregroundStyle(batteryColor)
+
+            if isCharging {
+                Image(systemName: "bolt.fill")
+                    .font(.system(size: batteryWidth * 0.28, weight: .bold))
+                    .foregroundStyle(.black.opacity(0.8))
+            }
+        }
+        .frame(width: batteryWidth, height: batteryWidth)
+        .accessibilityLabel("Battery \(Int(levelBattery)) percent")
+    }
+
+    private var batterySymbolName: String {
+        switch levelBattery {
+        case ..<12.5:
+            return "battery.0percent"
+        case ..<37.5:
+            return "battery.25percent"
+        case ..<62.5:
+            return "battery.50percent"
+        case ..<87.5:
+            return "battery.75percent"
+        default:
+            return "battery.100percent"
+        }
+    }
+
+    private var legacyBattery: some View {
+        ZStack(alignment: .leading) {
             Image(systemName: icon)
                 .resizable()
                 .fontWeight(.thin)

@@ -29,6 +29,34 @@ final class VolumeManager: NSObject, ObservableObject {
                 || transportType == kAudioDeviceTransportTypeBluetoothLE
         }
 
+        var isBuiltIn: Bool {
+            transportType == kAudioDeviceTransportTypeBuiltIn
+        }
+
+        var audioSourceIcon: String {
+            if isBuiltIn {
+                return "laptopcomputer"
+            }
+            if isBluetooth && bluetoothBatteryPercentage != nil {
+                return "airpodspro"
+            }
+
+            switch transportType {
+            case kAudioDeviceTransportTypeBluetooth, kAudioDeviceTransportTypeBluetoothLE:
+                return "headphones"
+            case kAudioDeviceTransportTypeAirPlay:
+                return "airplayaudio"
+            case kAudioDeviceTransportTypeUSB,
+                 kAudioDeviceTransportTypeHDMI,
+                 kAudioDeviceTransportTypeDisplayPort,
+                 kAudioDeviceTransportTypeThunderbolt,
+                 kAudioDeviceTransportTypeAggregate:
+                return "hifispeaker.2"
+            default:
+                return "speaker.wave.2"
+            }
+        }
+
         var icon: String {
             if isBluetooth && bluetoothBatteryPercentage != nil {
                 return "airpodspro"
@@ -56,6 +84,7 @@ final class VolumeManager: NSObject, ObservableObject {
     @Published private(set) var rawVolume: Float = 0
     @Published private(set) var isMuted: Bool = false
     @Published private(set) var lastChangeAt: Date = .distantPast
+    @Published private(set) var currentOutputDevice: OutputDevice?
     private var knownBluetoothDeviceIDs: Set<AudioObjectID> = []
     private var isFirstDeviceDiscovery: Bool = true
 
@@ -169,6 +198,7 @@ final class VolumeManager: NSObject, ObservableObject {
 
     func refreshOutputDevices() {
         let devices = outputDevices()
+        let defaultDeviceID = systemOutputDeviceID()
         let previousKnown = knownBluetoothDeviceIDs
         var currentKnown: Set<AudioObjectID> = []
         var newlyConnected: OutputDevice?
@@ -185,6 +215,7 @@ final class VolumeManager: NSObject, ObservableObject {
         isFirstDeviceDiscovery = false
 
         DispatchQueue.main.async {
+            self.currentOutputDevice = devices.first { $0.id == defaultDeviceID }
             if let device = newlyConnected, Defaults[.showBluetoothDeviceConnectionIndicator] {
                 AnotherNotchViewCoordinator.shared.toggleExpandingView(
                     status: true,

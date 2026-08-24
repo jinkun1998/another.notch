@@ -755,6 +755,7 @@ struct Media: View {
     @Default(.hideNotchOption) var hideNotchOption
     @Default(.enableSneakPeek) private var enableSneakPeek
     @Default(.sneakPeekStyles) var sneakPeekStyles
+    @Default(.sneakPeekDuration) private var sneakPeekDuration
 
     @Default(.enableLyrics) var enableLyrics
 
@@ -805,6 +806,14 @@ struct Media: View {
                 Picker("Sneak Peek Style", selection: $sneakPeekStyles) {
                     ForEach(SneakPeekStyle.allCases) { style in
                         Text(style.rawValue).tag(style)
+                    }
+                }
+                Stepper(value: $sneakPeekDuration, in: 0.5...10, step: 0.5) {
+                    HStack {
+                        Text("Sneak Peek Duration")
+                        Spacer()
+                        Text("\(sneakPeekDuration, specifier: "%.1f") seconds")
+                            .foregroundStyle(.secondary)
                     }
                 }
                 HStack {

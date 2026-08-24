@@ -286,6 +286,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        _ = VolumeManager.shared
+
+        let normalizedMusicControls = MusicControlButton.normalizedLayout(Defaults[.musicControlSlots])
+        if Defaults[.musicControlSlots] != normalizedMusicControls {
+            Defaults[.musicControlSlots] = normalizedMusicControls
+        }
 
         NotificationCenter.default.addObserver(
             self,

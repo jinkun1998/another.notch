@@ -247,7 +247,7 @@ struct MusicControlsView: View {
     }
 
     private var activeSlots: [MusicControlButton] {
-        Array(slotConfig.padded(to: MusicControlButton.maxSlotCount, filler: .none).prefix(MusicControlButton.maxSlotCount))
+        MusicControlButton.normalizedLayout(slotConfig)
     }
 
     private var canSeek: Bool {
@@ -286,9 +286,7 @@ struct MusicControlsView: View {
         case .volume:
             VolumeControlView()
         case .airPlay:
-            DynamicIslandMusicButton(icon: "airplayaudio") {
-                openAudioOutputSettings()
-            }
+            AudioSourceButton()
         case .favorite:
             FavoriteControlButton()
         case .goBackward:
@@ -326,13 +324,6 @@ struct MusicControlsView: View {
         case .all, .one:
             return .red
         }
-    }
-
-    private func openAudioOutputSettings() {
-        guard let url = URL(string: "x-apple.systempreferences:com.apple.Sound-Settings.extension") else {
-            return
-        }
-        NSWorkspace.shared.open(url)
     }
 
 }
@@ -384,6 +375,7 @@ struct DynamicIslandWaveform: View {
 
 private struct DynamicIslandMusicButton: View {
     let icon: String
+    var image: NSImage? = nil
     var tint: Color = .white
     var isPrimary = false
     let action: () -> Void
@@ -393,13 +385,21 @@ private struct DynamicIslandMusicButton: View {
 
     var body: some View {
         Button(action: action) {
-            Image(systemName: icon)
-                .font(.system(size: isPrimary ? 32 : 22, weight: .bold))
-                .contentTransition(.symbolEffect)
-                .foregroundStyle(tint.opacity(isHovering ? 1 : isPrimary ? 1 : 0.82))
-                .frame(width: isPrimary ? 52 : 40, height: isPrimary ? 52 : 40)
-                .contentShape(Circle())
-                .scaleEffect(!reduceMotion && isHovering ? 1.08 : 1)
+            Group {
+                if let image {
+                    Image(nsImage: image)
+                        .resizable()
+                        .scaledToFit()
+                } else {
+                    Image(systemName: icon)
+                        .font(.system(size: isPrimary ? 32 : 22, weight: .bold))
+                        .contentTransition(.symbolEffect)
+                        .foregroundStyle(tint.opacity(isHovering ? 1 : isPrimary ? 1 : 0.82))
+                }
+            }
+            .frame(width: isPrimary ? 52 : 40, height: isPrimary ? 52 : 40)
+            .contentShape(Circle())
+            .scaleEffect(!reduceMotion && isHovering ? 1.08 : 1)
         }
         .buttonStyle(.plain)
         .onHover { hovering in
@@ -431,10 +431,23 @@ struct FavoriteControlButton: View {
     }
 }
 
-private extension Array where Element == MusicControlButton {
-    func padded(to length: Int, filler: MusicControlButton) -> [MusicControlButton] {
-        if count >= length { return self }
-        return self + Array(repeating: filler, count: length - count)
+private struct AudioSourceButton: View {
+    @ObservedObject private var volumeManager = VolumeManager.shared
+
+    var body: some View {
+        DynamicIslandMusicButton(icon: outputDevice?.audioSourceIcon ?? "speaker.wave.2", image: deviceIcon) {
+            guard let url = URL(string: "x-apple.systempreferences:com.apple.Sound-Settings.extension") else { return }
+            NSWorkspace.shared.open(url)
+        }
+    }
+
+    private var outputDevice: VolumeManager.OutputDevice? {
+        volumeManager.currentOutputDevice
+    }
+
+    private var deviceIcon: NSImage? {
+        guard let outputDevice, !outputDevice.isBuiltIn, let iconURL = outputDevice.iconURL else { return nil }
+        return NSImage(contentsOf: iconURL)
     }
 }
 
