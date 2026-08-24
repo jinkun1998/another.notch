@@ -6,6 +6,7 @@
 //
 
 import AVFoundation
+import AppKit
 import Defaults
 import EventKit
 import KeyboardShortcuts
@@ -36,6 +37,7 @@ private enum SettingsPage: String, CaseIterable, Identifiable {
     case calendar = "Calendar"
     case hud = "HUD"
     case battery = "Battery"
+    case bluetooth = "Bluetooth"
     case shelf = "Shelf"
     case shortcuts = "Shortcuts"
     case advanced = "Advanced"
@@ -51,6 +53,7 @@ private enum SettingsPage: String, CaseIterable, Identifiable {
         case .calendar: "calendar"
         case .hud: "slider.horizontal.3"
         case .battery: "battery.100percent"
+        case .bluetooth: "airpodspro"
         case .shelf: "books.vertical"
         case .shortcuts: "keyboard"
         case .advanced: "gearshape.2"
@@ -66,6 +69,7 @@ private enum SettingsPage: String, CaseIterable, Identifiable {
         case .calendar: "Events, reminders, and calendar display."
         case .hud: "System volume, brightness, and status indicators."
         case .battery: "Battery status notifications and charging options."
+        case .bluetooth: "Bluetooth output connection notifications."
         case .shelf: "Drag, drop, and saved Shelf items."
         case .shortcuts: "Keyboard shortcuts for quick actions."
         case .advanced: "Accent color, window behavior, and privacy."
@@ -116,6 +120,7 @@ struct SettingsView: View {
                     sidebarRow(.calendar)
                     sidebarRow(.hud)
                     sidebarRow(.battery)
+                    sidebarRow(.bluetooth)
                     sidebarRow(.shelf)
                 }
 
@@ -163,6 +168,8 @@ struct SettingsView: View {
                     HUD()
                     case .battery:
                     Charge()
+                    case .bluetooth:
+                    BluetoothDeviceNotifications()
                     case .shelf:
                     Shelf()
                     case .shortcuts:
@@ -490,6 +497,31 @@ struct Charge: View {
     }
 }
 
+struct BluetoothDeviceNotifications: View {
+    @Default(.bluetoothDeviceIndicatorRows) private var indicatorRows
+
+    var body: some View {
+        Form {
+            Section("Bluetooth Device Notifications") {
+                Defaults.Toggle(key: .showBluetoothDeviceConnectionIndicator) {
+                    Text("Show Bluetooth device connection indicator")
+                }
+            }
+            Section("Indicator Layout") {
+                Picker("Rows", selection: $indicatorRows) {
+                    ForEach(BluetoothDeviceIndicatorRows.allCases) { rows in
+                        Text(rows.rawValue).tag(rows)
+                    }
+                }
+                Defaults.Toggle(key: .showBluetoothDeviceName) {
+                    Text("Show device name")
+                }
+            }
+        }
+        .accentColor(.effectiveAccent)
+    }
+}
+
 //struct Downloads: View {
 //    @Default(.selectedDownloadIndicatorStyle) var selectedDownloadIndicatorStyle
 //    @Default(.selectedDownloadIconStyle) var selectedDownloadIconStyle
@@ -572,7 +604,7 @@ struct Charge: View {
 
 struct HUD: View {
     @EnvironmentObject var vm: AnotherNotchViewModel
-    @Default(.inlineHUD) var inlineHUD
+    @Default(.closedHUDRows) var closedHUDRows
     @Default(.enableGradient) var enableGradient
     @Default(.optionKeyAction) var optionKeyAction
     @Default(.hudReplacement) var hudReplacement
@@ -592,27 +624,28 @@ struct HUD: View {
                             .fixedSize(horizontal: false, vertical: true)
                     }
                     Spacer(minLength: 40)
-                    Defaults.Toggle("", key: .hudReplacement)
+                    Toggle("", isOn: Binding(
+                        get: { hudReplacement },
+                        set: setHUDReplacement
+                    ))
                     .labelsHidden()
                     .toggleStyle(.switch)
                     .controlSize(.large)
-                    .disabled(!accessibilityAuthorized)
                 }
-                
-                if !accessibilityAuthorized {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Accessibility access is required to replace the system HUD.")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
+            }
 
-                        HStack(spacing: 12) {
-                            Button("Request Accessibility") {
-                                XPCHelperClient.shared.requestAccessibilityAuthorization()
-                            }
-                            .buttonStyle(.borderedProminent)
-                        }
+            Section("Accessibility permission") {
+                HStack {
+                    Text(accessibilityAuthorized ? "Allowed" : "Not allowed")
+                        .foregroundStyle(accessibilityAuthorized ? .green : .secondary)
+                    Spacer()
+                    Button(accessibilityAuthorized ? "Manage" : "Grant") {
+                    if accessibilityAuthorized {
+                        openPrivacySettings("Privacy_Accessibility")
+                    } else {
+                        XPCHelperClient.shared.requestAccessibilityAuthorization()
                     }
-                    .padding(.top, 6)
+                }
                 }
             }
             
@@ -657,21 +690,12 @@ struct HUD: View {
             .disabled(!hudReplacement)
             
             Section {
-                Picker("HUD style", selection: $inlineHUD) {
-                    Text("Default")
-                        .tag(false)
-                    Text("Inline")
-                        .tag(true)
-                }
-                .onChange(of: Defaults[.inlineHUD]) {
-                    if Defaults[.inlineHUD] {
-                        withAnimation {
-                            Defaults[.systemEventIndicatorShadow] = false
-                            Defaults[.enableGradient] = false
-                        }
+                Picker("HUD rows", selection: $closedHUDRows) {
+                    ForEach(ClosedHUDRows.allCases) { rows in
+                        Text(rows.rawValue).tag(rows)
                     }
                 }
-                
+
                 Defaults.Toggle(key: .showClosedNotchHUDPercentage) {
                     Text("Show percentage")
                 }
@@ -694,6 +718,32 @@ struct HUD: View {
             if let granted = notification.userInfo?["granted"] as? Bool {
                 accessibilityAuthorized = granted
             }
+        }
+    }
+
+    private func openPrivacySettings(_ pane: String) {
+        guard let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?\(pane)") else { return }
+        NSWorkspace.shared.open(url)
+    }
+
+    private func setHUDReplacement(_ enabled: Bool) {
+        guard enabled else {
+            hudReplacement = false
+            MediaKeyInterceptor.shared.stop()
+            return
+        }
+
+        Task { @MainActor in
+            let granted = await XPCHelperClient.shared.isAccessibilityAuthorized()
+            accessibilityAuthorized = granted
+
+            guard granted else {
+                XPCHelperClient.shared.requestAccessibilityAuthorization()
+                return
+            }
+
+            hudReplacement = true
+            await MediaKeyInterceptor.shared.start(promptIfNeeded: false)
         }
     }
 }
@@ -839,15 +889,14 @@ struct CalendarSettings: View {
             }
             Section(header: Text("Calendars")) {
                 if calendarManager.calendarAuthorizationStatus != .fullAccess {
-                    Text("Calendar access is denied. Please enable it in System Settings.")
+                    Text("Calendar access is required to show events.")
                         .foregroundColor(.red)
                         .multilineTextAlignment(.center)
                         .padding()
-                    Button("Open Calendar Settings") {
-                        if let settingsURL = URL(
-                            string:
-                                "x-apple.systempreferences:com.apple.preference.security?Privacy_Calendars"
-                        ) {
+                    Button(calendarManager.calendarAuthorizationStatus == .notDetermined ? "Grant Calendar Access" : "Open Calendar Settings") {
+                        if calendarManager.calendarAuthorizationStatus == .notDetermined {
+                            Task { await calendarManager.checkCalendarAuthorization() }
+                        } else if let settingsURL = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Calendars") {
                             NSWorkspace.shared.open(settingsURL)
                         }
                     }
@@ -875,15 +924,14 @@ struct CalendarSettings: View {
             }
             Section(header: Text("Reminders")) {
                 if calendarManager.reminderAuthorizationStatus != .fullAccess {
-                    Text("Reminder access is denied. Please enable it in System Settings.")
+                    Text("Reminder access is required to show reminders.")
                         .foregroundColor(.red)
                         .multilineTextAlignment(.center)
                         .padding()
-                    Button("Open Reminder Settings") {
-                        if let settingsURL = URL(
-                            string:
-                                "x-apple.systempreferences:com.apple.preference.security?Privacy_Reminders"
-                        ) {
+                    Button(calendarManager.reminderAuthorizationStatus == .notDetermined ? "Grant Reminder Access" : "Open Reminder Settings") {
+                        if calendarManager.reminderAuthorizationStatus == .notDetermined {
+                            Task { await calendarManager.checkReminderAuthorization() }
+                        } else if let settingsURL = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Reminders") {
                             NSWorkspace.shared.open(settingsURL)
                         }
                     }
@@ -1300,6 +1348,7 @@ struct Appearance: View {
     @State private var name: String = ""
     @State private var url: String = ""
     @State private var speed: CGFloat = 1.0
+    @State private var cameraAuthorization = AVCaptureDevice.authorizationStatus(for: .video)
     var body: some View {
         Form {
             Section {
@@ -1540,6 +1589,14 @@ struct Appearance: View {
                     Text("Enable camera mirror")
                 }
                     .disabled(!checkVideoInput())
+                HStack {
+                    Text(cameraAuthorization == .authorized ? "Camera access allowed" : "Camera access needed")
+                        .foregroundStyle(cameraAuthorization == .authorized ? .green : .secondary)
+                    Spacer()
+                    Button(cameraAuthorization == .authorized ? "Manage" : "Grant") {
+                        requestCameraAccess()
+                    }
+                }
                 Picker("Mirror shape", selection: $mirrorShape) {
                     Text("Circle")
                         .tag(MirrorShapeEnum.circle)
@@ -1556,6 +1613,9 @@ struct Appearance: View {
             }
         }
         .accentColor(.effectiveAccent)
+        .onAppear {
+            cameraAuthorization = AVCaptureDevice.authorizationStatus(for: .video)
+        }
     }
 
     func checkVideoInput() -> Bool {
@@ -1564,6 +1624,19 @@ struct Appearance: View {
         }
 
         return false
+    }
+
+    private func requestCameraAccess() {
+        guard cameraAuthorization == .notDetermined else {
+            guard let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Camera") else { return }
+            NSWorkspace.shared.open(url)
+            return
+        }
+
+        Task {
+            _ = await AVCaptureDevice.requestAccess(for: .video)
+            cameraAuthorization = AVCaptureDevice.authorizationStatus(for: .video)
+        }
     }
 }
 
