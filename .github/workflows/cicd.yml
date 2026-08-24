@@ -27,4 +27,5 @@ jobs:
       - name: Build
         run: >-
           xcodebuild -project anotherNotch.xcodeproj -scheme anotherNotch
-          -configuration Release -sdk macosx build
+          -configuration Release -sdk macosx
+          CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO build
