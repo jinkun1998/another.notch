@@ -13,7 +13,7 @@ env:
   BETA_CHANNEL_NAME: beta
   RELEASE_COMMAND: /release
   CODE_SIGN_IDENTITY: ${{ vars.CODE_SIGN_IDENTITY || 'Apple Development' }}
-  XCODE_VERSION: "16.4"
+  XCODE_VERSION: "default"
 
 permissions:
   contents: read
