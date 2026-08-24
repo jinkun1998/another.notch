@@ -9,6 +9,7 @@ import Foundation
 import AppKit
 import Combine
 
+@MainActor
 protocol MediaControllerProtocol: ObservableObject {
     var playbackStatePublisher: AnyPublisher<PlaybackState, Never> { get }
     var supportsVolumeControl: Bool { get }
