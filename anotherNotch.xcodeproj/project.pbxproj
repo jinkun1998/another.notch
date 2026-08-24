@@ -1437,7 +1437,7 @@
 			repositoryURL = "https://github.com/sindresorhus/Defaults";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 9.0.2;
+				minimumVersion = 9.0.9;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
