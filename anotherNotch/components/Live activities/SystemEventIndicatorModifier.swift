@@ -4,7 +4,6 @@
 //
 
 import Defaults
-import AppKit
 import SwiftUI
 
 struct SystemEventIndicatorModifier: View {
@@ -72,14 +71,12 @@ struct SystemEventIndicatorModifier: View {
     private var eventIcon: some View {
         switch eventType {
         case .volume:
-            OutputDeviceSelectorButton {
-                OutputDeviceIcon()
-                    .contentTransition(.interpolate)
-                    .opacity(value.isZero ? 0.6 : 1)
-                    .scaleEffect(value.isZero ? 0.85 : 1)
-                    .frame(width: 20, height: 15, alignment: .leading)
-                    .foregroundStyle(.white)
-            }
+            Image(systemName: icon.isEmpty ? speakerSymbol(value) : icon)
+                .contentTransition(.interpolate)
+                .opacity(value.isZero ? 0.6 : 1)
+                .scaleEffect(value.isZero ? 0.85 : 1)
+                .frame(width: 20, height: 15, alignment: .leading)
+                .foregroundStyle(.white)
         case .brightness:
             Image(systemName: "sun.max.fill")
                 .contentTransition(.symbolEffect)
@@ -110,186 +107,13 @@ struct SystemEventIndicatorModifier: View {
             .frame(alignment: .trailing)
     }
 
-}
-
-struct OutputDeviceSelectorButton<Label: View>: View {
-    @EnvironmentObject private var vm: AnotherNotchViewModel
-    @StateObject private var popoverController = OutputDevicePopoverController()
-    @State private var anchorView: NSView?
-    private let label: () -> Label
-
-    init(@ViewBuilder label: @escaping () -> Label) {
-        self.label = label
-    }
-
-    var body: some View {
-        Button {
-            VolumeManager.shared.refreshOutputDevices()
-            guard let anchorView else { return }
-            popoverController.show(relativeTo: anchorView, viewModel: vm)
-        } label: {
-            label()
+    private func speakerSymbol(_ value: CGFloat) -> String {
+        switch value {
+        case 0: "speaker.slash"
+        case 0...0.3: "speaker.wave.1"
+        case 0.3...0.8: "speaker.wave.2"
+        default: "speaker.wave.3"
         }
-        .buttonStyle(.plain)
-        .overlay {
-            OutputDevicePopoverAnchor { anchorView = $0 }
-                .allowsHitTesting(false)
-        }
-    }
-}
-
-@MainActor
-private final class OutputDevicePopoverController: NSObject, ObservableObject, NSPopoverDelegate {
-    private let popover = NSPopover()
-    private weak var viewModel: AnotherNotchViewModel?
-    private var keepsNotchOpen = false
-    private var eventMonitors: [Any] = []
-
-    override init() {
-        super.init()
-        popover.behavior = .transient
-        popover.delegate = self
-    }
-
-    func show(relativeTo anchorView: NSView, viewModel: AnotherNotchViewModel) {
-        guard !popover.isShown else { return }
-        self.viewModel = viewModel
-        keepsNotchOpen = false
-        popover.contentViewController = NSHostingController(
-            rootView: OutputDevicePicker { [weak self] device in
-                self?.select(device)
-            }
-        )
-        popover.show(relativeTo: anchorView.bounds, of: anchorView, preferredEdge: .maxY)
-        VolumeManager.shared.setOutputDevicePickerPresented(true)
-        installOutsideClickMonitors()
-    }
-
-    private func select(_ device: VolumeManager.OutputDevice) {
-        keepsNotchOpen = true
-        VolumeManager.shared.selectOutputDevice(device)
-        popover.performClose(nil)
-    }
-
-    func popoverDidClose(_ notification: Notification) {
-        removeEventMonitors()
-        VolumeManager.shared.setOutputDevicePickerPresented(false)
-        if !keepsNotchOpen {
-            viewModel?.close()
-        }
-        keepsNotchOpen = false
-    }
-
-    private func installOutsideClickMonitors() {
-        removeEventMonitors()
-        let mask: NSEvent.EventTypeMask = [.leftMouseDown, .rightMouseDown, .otherMouseDown]
-        if let monitor = NSEvent.addLocalMonitorForEvents(matching: mask, handler: { [weak self] event in
-            Task { @MainActor in
-                self?.closeForOutsideClick(event)
-            }
-            return event
-        }) {
-            eventMonitors.append(monitor)
-        }
-        if let monitor = NSEvent.addGlobalMonitorForEvents(matching: mask, handler: { [weak self] event in
-            Task { @MainActor in
-                self?.closeForOutsideClick(event)
-            }
-        }) {
-            eventMonitors.append(monitor)
-        }
-    }
-
-    private func closeForOutsideClick(_ event: NSEvent) {
-        guard popover.isShown, !eventIsInsidePopover(event) else { return }
-        popover.performClose(nil)
-    }
-
-    private func eventIsInsidePopover(_ event: NSEvent) -> Bool {
-        guard let window = popover.contentViewController?.view.window else { return false }
-        let location = event.window.map {
-            $0.convertToScreen(NSRect(origin: event.locationInWindow, size: .zero)).origin
-        } ?? NSEvent.mouseLocation
-        return window.frame.contains(location)
-    }
-
-    private func removeEventMonitors() {
-        eventMonitors.forEach(NSEvent.removeMonitor)
-        eventMonitors.removeAll()
-    }
-}
-
-private struct OutputDevicePopoverAnchor: NSViewRepresentable {
-    let didCreateView: (NSView) -> Void
-
-    func makeNSView(context: Context) -> NSView {
-        let view = NSView()
-        view.wantsLayer = true
-        DispatchQueue.main.async {
-            didCreateView(view)
-        }
-        return view
-    }
-
-    func updateNSView(_ nsView: NSView, context: Context) {}
-}
-
-struct OutputDeviceIcon: View {
-    @ObservedObject private var volumeManager = VolumeManager.shared
-    private let device: VolumeManager.OutputDevice?
-
-    init(_ device: VolumeManager.OutputDevice? = nil) {
-        self.device = device
-    }
-
-    var body: some View {
-        let device = device ?? volumeManager.activeOutputDevice
-        Image(systemName: device?.icon ?? volumeManager.activeOutputDeviceIcon)
-    }
-}
-
-private struct OutputDevicePicker: View {
-    @ObservedObject private var volumeManager = VolumeManager.shared
-    let didSelectOutputDevice: (VolumeManager.OutputDevice) -> Void
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text("Output")
-                .font(.headline)
-                .padding(.horizontal, 12)
-                .padding(.top, 10)
-
-            if volumeManager.availableOutputDevices.isEmpty {
-                Text("No output devices available")
-                    .foregroundStyle(.secondary)
-                    .padding(12)
-            } else {
-                ForEach(volumeManager.availableOutputDevices) { device in
-                    Button {
-                        didSelectOutputDevice(device)
-                    } label: {
-                        HStack(spacing: 10) {
-                            OutputDeviceIcon(device)
-                                .frame(width: 18)
-                            Text(device.name)
-                                .lineLimit(1)
-                            Spacer(minLength: 12)
-                            if device.id == volumeManager.activeOutputDeviceID {
-                                Image(systemName: "checkmark")
-                                    .fontWeight(.semibold)
-                            }
-                        }
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 8)
-                        .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
-        }
-        .frame(width: 260, alignment: .leading)
-        .padding(.bottom, 6)
-        .onAppear { volumeManager.refreshOutputDevices() }
     }
 }
 

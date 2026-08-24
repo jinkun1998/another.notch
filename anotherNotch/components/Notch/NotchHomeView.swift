@@ -286,13 +286,8 @@ struct MusicControlsView: View {
         case .volume:
             VolumeControlView()
         case .airPlay:
-            OutputDeviceSelectorButton {
-                OutputDeviceIcon()
-                    .font(.system(size: 22, weight: .bold))
-                    .contentTransition(.symbolEffect)
-                    .foregroundStyle(.white.opacity(0.82))
-                    .frame(width: 40, height: 40)
-                    .contentShape(Circle())
+            DynamicIslandMusicButton(icon: "airplayaudio") {
+                openAudioOutputSettings()
             }
         case .favorite:
             FavoriteControlButton()
@@ -331,6 +326,13 @@ struct MusicControlsView: View {
         case .all, .one:
             return .red
         }
+    }
+
+    private func openAudioOutputSettings() {
+        guard let url = URL(string: "x-apple.systempreferences:com.apple.Sound-Settings.extension") else {
+            return
+        }
+        NSWorkspace.shared.open(url)
     }
 
 }
