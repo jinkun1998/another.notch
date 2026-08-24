@@ -81,6 +81,9 @@ Homebrew support is coming soon. Until then, install manually using the release 
 ### 📋 Roadmap
 
 - [x] Playback live activity
+- [x] Playback sneak peek with configurable duration
+- [x] Configurable five-button music controls
+- [x] Audio source control with output device icons
 - [x] Calendar integration with month & daily events
 - [x] Reminders integration
 - [x] Mirror & webcam preview
@@ -92,7 +95,7 @@ Homebrew support is coming soon. Until then, install manually using the release 
 - [x] Liquid-glass edge and transparency controls
 - [x] Modern macOS System Settings UI
 - [x] System HUD replacements (volume, brightness, backlight)
-- [ ] Bluetooth device live activity
+- [x] Bluetooth device live activity
 - [ ] Lock screen widgets
 - [ ] Extension system
 
