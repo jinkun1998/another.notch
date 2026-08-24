@@ -216,7 +216,7 @@ class AnotherNotchViewCoordinator: ObservableObject {
         status: Bool, type: SneakContentType, duration: TimeInterval = 1.5, value: CGFloat = 0,
         icon: String = ""
     ) {
-        sneakPeekDuration = duration
+        sneakPeekDuration = type == .music ? Defaults[.sneakPeekDuration] : duration
         if type != .music {
             // close()
             if !Defaults[.hudReplacement] {
@@ -250,7 +250,6 @@ class AnotherNotchViewCoordinator: ObservableObject {
             await MainActor.run {
                 withAnimation {
                     self.toggleSneakPeek(status: false, type: .music)
-                    self.sneakPeekDuration = 1.5
                 }
             }
         }

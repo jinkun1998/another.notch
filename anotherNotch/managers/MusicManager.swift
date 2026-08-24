@@ -180,6 +180,12 @@ class MusicManager: ObservableObject {
     // MARK: - Update Methods
     @MainActor
     private func updateFromPlaybackState(_ state: PlaybackState) {
+        let playbackStarted = state.isPlaying && !self.isPlaying
+        let playbackMetadataChanged = state.title != self.songTitle
+            || state.artist != self.artistName
+            || state.album != self.album
+            || state.bundleIdentifier != self.bundleIdentifier
+
         // Check for playback state changes (playing/paused)
         if state.isPlaying != self.isPlaying {
             NSLog("Playback state changed: \(state.isPlaying ? "Playing" : "Paused")")
@@ -188,9 +194,6 @@ class MusicManager: ObservableObject {
                 self.updateIdleState(state: state.isPlaying)
             }
 
-            if state.isPlaying && !state.title.isEmpty && !state.artist.isEmpty {
-                self.updateSneakPeek()
-            }
         }
 
         // Check for changes in track metadata using last artwork change values
@@ -224,11 +227,6 @@ class MusicManager: ObservableObject {
                 self.lastArtworkArtist = state.artist
                 self.lastArtworkAlbum = state.album
                 self.lastArtworkBundleIdentifier = state.bundleIdentifier
-            }
-
-            // Only update sneak peek if there's actual content and something changed
-            if !state.title.isEmpty && !state.artist.isEmpty && state.isPlaying {
-                self.updateSneakPeek()
             }
 
             // Fetch lyrics on content change
@@ -285,6 +283,10 @@ class MusicManager: ObservableObject {
         
         if volumeChanged {
             self.volume = state.volume
+        }
+
+        if state.isPlaying && (playbackStarted || playbackMetadataChanged) {
+            self.updateSneakPeek()
         }
         
         self.timestampDate = state.lastUpdated
@@ -582,12 +584,15 @@ class MusicManager: ObservableObject {
     }
 
     private func updateSneakPeek() {
-        if isPlaying && Defaults[.enableSneakPeek] {
-            if Defaults[.sneakPeekStyles] == .standard {
-                coordinator.toggleSneakPeek(status: true, type: .music)
-            } else {
-                coordinator.toggleExpandingView(status: true, type: .music)
-            }
+        guard isPlaying,
+              Defaults[.enableSneakPeek],
+              !songTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        else { return }
+
+        if Defaults[.sneakPeekStyles] == .standard {
+            coordinator.toggleSneakPeek(status: true, type: .music)
+        } else {
+            coordinator.toggleExpandingView(status: true, type: .music)
         }
     }
 
