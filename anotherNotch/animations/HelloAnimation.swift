@@ -62,7 +62,6 @@ struct GlowingSnake<
 >: View, Animatable {
     
     var progress: Double
-    var delay: Double = 1.0
     var fill: Fill
     var lineWidth = 4.0
     var blurRadius = 8.0
@@ -77,15 +76,7 @@ struct GlowingSnake<
     var body: some View {
         shape
             .trim(
-                from: {
-                    if progress > 1 - delay {
-                        2 * progress - 1.0
-                    } else if progress > delay {
-                        progress - delay
-                    } else {
-                        .zero
-                    }
-                }(),
+                from: .zero,
                 to: progress
             )
             .glow(
@@ -111,16 +102,16 @@ struct HelloAnimation: View {
         )
         .task {
             // Wait for the "opening" animation (notch expansion) to complete before starting the snake
-            try? await Task.sleep(for: .seconds(0.6))
+            try? await Task.sleep(for: .seconds(0.3))
             
             withAnimation(
-                .easeInOut(duration: 4.0)
+                .easeInOut(duration: 2.4)
             ) {
                 progress = 1.0
             }
             
-            // Wait for the animation to complete
-            try? await Task.sleep(for: .seconds(4.0))
+            try? await Task.sleep(for: .seconds(2.4))
+            try? await Task.sleep(for: .seconds(2))
             
             onFinish()
         }

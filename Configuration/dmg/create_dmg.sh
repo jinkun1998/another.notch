@@ -83,12 +83,12 @@ BACKGROUND_TIFF="$BACKGROUND_DIR/background.tiff"
 
 export DMG_BACKGROUND="$(abs_path "$BACKGROUND_TIFF")"
 
-# Badge icon: use the app's icon for badging the volume icon
+# Volume icon: use the app's icon directly instead of a generic disk badge.
 if DMG_ICON_ICNS="$(find_app_icns "$DMG_APP_PATH" 2>/dev/null)"; then
-  export DMG_BADGE_ICON="$(abs_path "$DMG_ICON_ICNS")"
-  echo "Using badge icon for DMG volume."
+  export DMG_VOLUME_ICON="$(abs_path "$DMG_ICON_ICNS")"
+  echo "Using app icon for DMG volume."
 else
-  echo "No app icon found, skipping badge."
+  echo "No app icon found, using the default volume icon."
 fi
 
 echo "Creating DMG via dmgbuild: app=$DMG_APP_PATH output=$DMG_OUTPUT volume=$DMG_VOLUME_NAME"
