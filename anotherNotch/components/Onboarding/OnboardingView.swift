@@ -23,14 +23,15 @@ private let calendarService = CalendarService()
 
 struct OnboardingBackground: View {
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+    @Default(.notchTransparency) private var notchTransparency
+
+    private let shape = RoundedRectangle(cornerRadius: 28, style: .continuous)
 
     var body: some View {
-        Group {
-            if #available(macOS 26.0, *), !reduceTransparency {
-                LiquidGlassSurface(shape: Rectangle())
-            } else {
-                VisualEffectView(material: .underWindowBackground, blendingMode: .behindWindow)
-            }
+        ZStack {
+            shape.fill(.black.opacity(0.35))
+            LiquidGlassSurface(shape: shape, opacity: notchTransparency)
+            LiquidGlassEdge(shape: shape, opacity: notchTransparency)
         }
         .ignoresSafeArea()
     }
