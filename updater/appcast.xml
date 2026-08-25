@@ -5,6 +5,37 @@
         <link>https://github.com/jinkun1998/another.notch/releases</link>
         <description>anotherNotch updates</description>
         <item>
+            <title>1.0.0-beta.2</title>
+            <pubDate>Tue, 25 Aug 2026 04:02:15 +0000</pubDate>
+            <link>https://github.com/jinkun1998/another.notch/releases</link>
+            <sparkle:channel>beta</sparkle:channel>
+            <sparkle:version>9</sparkle:version>
+            <sparkle:shortVersionString>1.0.0-beta.2</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <description><![CDATA[## What’s New
+
+  - Customizable music-control buttons. Drag actions into your preferred layout.
+  - Added an Audio Source control with current output-device presentation.
+  - Sneak Peek now appears for playback track changes. Timeout configurable; default: 2 seconds.
+  - Onboarding now reopens from the menu bar and uses the notch’s transparent glass style.
+
+  ## Fixes
+
+  - Fixed HUD updates after Accessibility permission is granted.
+  - Fixed release builds that could exit before showing the menu-bar app.
+  - Added required Bluetooth privacy disclosure.
+  - Fixed Sparkle appcast signing key mismatch.
+
+  ## Release
+
+  - Release assets now use the `anotherNotch` name.
+  - Tagged prereleases generate Sparkle appcast entries.
+
+  > Note: Sparkle signing keys were rotated. Install this release manually once; older builds may not auto-update.
+]]></description>
+            <enclosure url="https://github.com/jinkun1998/another.notch/releases/download/v1.0.0-beta.2/anotherNotch.dmg" length="8954765" type="application/octet-stream" sparkle:edSignature="TnBBhHbUJODI/keE4v6zRZYH8MPFdlfZLTLB09qeMKWE7ydSeeMe4Y9uAEsirFYVyV2aTavb56m1jC7iYI/6BQ=="/>
+        </item>
+        <item>
             <title>1.0.0-beta.1</title>
             <pubDate>Tue, 25 Aug 2026 03:39:02 +0000</pubDate>
             <link>https://github.com/jinkun1998/another.notch/releases</link>
