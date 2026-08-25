@@ -84,6 +84,8 @@ Homebrew support is coming soon. Until then, install manually using the release 
 - [x] Playback sneak peek with configurable duration
 - [x] Configurable five-button music controls
 - [x] Audio source control with output device icons
+- [x] Guided onboarding for Accessibility, Camera, Calendar, Reminders, and Bluetooth accessories
+- [x] In-app Sparkle update checks with published appcast feeds
 - [x] Calendar integration with month & daily events
 - [x] Reminders integration
 - [x] Mirror & webcam preview

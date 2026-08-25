@@ -172,6 +172,7 @@ class AnotherNotchViewModel: NSObject, ObservableObject {
                 coordinator.helloAnimationRunning = false
                 close()
             }
+            NotificationCenter.default.post(name: .welcomeAnimationDidFinish, object: nil)
         }
     }
 }

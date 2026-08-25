@@ -632,7 +632,11 @@ private enum BluetoothDeviceBridge {
     )?.load() ?? false
 
     static func batteryPercentage(outputUID: String, isBluetooth: Bool) -> Int? {
-        guard isBluetooth, !outputUID.isEmpty else { return nil }
+        guard UserDefaults.standard.bool(forKey: "onboardingCompleted"),
+              Defaults[.showBluetoothDeviceConnectionIndicator],
+              isBluetooth,
+              !outputUID.isEmpty
+        else { return nil }
         _ = frameworkLoaded
         guard
               let deviceClass = NSClassFromString("IOBluetoothDevice") as? NSObject.Type,

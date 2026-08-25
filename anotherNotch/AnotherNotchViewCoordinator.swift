@@ -152,7 +152,9 @@ class AnotherNotchViewCoordinator: ObservableObject {
 
                     if change.newValue {
                         self.hudEnableTask = Task { @MainActor in
-                            let granted = await XPCHelperClient.shared.ensureAccessibilityAuthorization(promptIfNeeded: true)
+                            let granted = await XPCHelperClient.shared.ensureAccessibilityAuthorization(
+                                promptIfNeeded: UserDefaults.standard.bool(forKey: "onboardingCompleted")
+                            )
                             if Task.isCancelled { return }
 
                             if granted {
@@ -168,8 +170,6 @@ class AnotherNotchViewCoordinator: ObservableObject {
             }
 
         Task { @MainActor in
-            helloAnimationRunning = firstLaunch
-
             if Defaults[.hudReplacement] {
                 let authorized = await XPCHelperClient.shared.isAccessibilityAuthorized()
                 if !authorized {
