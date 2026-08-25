@@ -5,6 +5,34 @@
         <link>https://github.com/jinkun1998/another.notch/releases</link>
         <description>anotherNotch updates</description>
         <item>
+            <title>1.0.0-beta.3</title>
+            <pubDate>Tue, 25 Aug 2026 08:34:30 +0000</pubDate>
+            <link>https://github.com/jinkun1998/another.notch/releases</link>
+            <sparkle:channel>beta</sparkle:channel>
+            <sparkle:version>10</sparkle:version>
+            <sparkle:shortVersionString>1.0.0-beta.3</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <description><![CDATA[## What's New
+  - Refined first-run welcome with an animated notch greeting before onboarding.
+  - Added Bluetooth Accessories onboarding. Connection notifications enable only after
+  Bluetooth access is granted.
+  - Calendar tab now enables automatically after Calendar access is granted.
+  - Added `Check for Updates…` in About via Sparkle.
+  - Updated onboarding branding and README roadmap.
+
+  ## Improvements
+  - Bluetooth permission no longer interrupts the welcome animation.
+  - Improved DMG mount presentation.
+
+  ## Fixes
+  - Prevented duplicate Accessibility permission prompts during onboarding.
+  - Fixed first-launch welcome sequencing and notch presentation.
+  - 
+**Full Changelog**: https://github.com/jinkun1998/another.notch/compare/v1.0.0-beta.2...v1.0.0-beta.3
+]]></description>
+            <enclosure url="https://github.com/jinkun1998/another.notch/releases/download/v1.0.0-beta.3/anotherNotch.dmg" length="8375352" type="application/octet-stream" sparkle:edSignature="OgEnlgNmlbCSTy5ZuoTPRg+ptD6ZgFwANbg7wuUhfZTsJVXR/PYsJZCsja6zBLevj6+Y94fdFJpzrJ89I2tMAw=="/>
+        </item>
+        <item>
             <title>1.0.0-beta.2</title>
             <pubDate>Tue, 25 Aug 2026 04:02:15 +0000</pubDate>
             <link>https://github.com/jinkun1998/another.notch/releases</link>
@@ -68,40 +96,6 @@
 **Full Changelog**: https://github.com/jinkun1998/another.notch/commits/v1.0.0-beta.1
 ]]></description>
             <enclosure url="https://github.com/jinkun1998/another.notch/releases/download/v1.0.0-beta.1/anotherNotch.dmg" length="8952694" type="application/octet-stream" sparkle:edSignature="hPSJ6XqPINeCzTow/1Z7jpbnjLQ0lL9/5eKXGSqLrfY0nBzi8tuiZZ0+KjqpT2LRLXngNQeRsJgBoKvVa8IUAQ=="/>
-        </item>
-        <item>
-            <title>1.0.0-beta.1</title>
-            <pubDate>Tue, 25 Aug 2026 03:05:38 +0000</pubDate>
-            <link>https://github.com/jinkun1998/another.notch/releases</link>
-            <sparkle:channel>beta</sparkle:channel>
-            <sparkle:version>7</sparkle:version>
-            <sparkle:shortVersionString>1.0.0-beta.1</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-            <description><![CDATA[# Another Notch v1.0.0
-
-  First stable release of Another Notch.
-
-  ## Highlights
-  - Music live activity with customizable five-button controls.
-  - Playback sneak peek, configurable timeout; defaults to 2 seconds.
-  - Audio Source control opens macOS Sound Settings with output-device icons.
-  - Bluetooth connection indicator.
-  - Calendar, battery, camera, gestures, notch sizing, liquid-glass controls.
-  - File Shelf with drag-and-drop and AirDrop support.
-  - Improved dark-mode settings contrast.
-
-  ## Install
-  Download `AnotherNotch.dmg`, move the app to `/Applications`.
-
-  macOS may require removing quarantine before first launch:
-
-  ```sh
-  xattr -dr com.apple.quarantine /Applications/anotherNotch.app
-  ```
-
-**Full Changelog**: https://github.com/jinkun1998/another.notch/commits/v1.0.0-beta.1
-]]></description>
-            <enclosure url="https://github.com/jinkun1998/another.notch/releases/download/v1.0.0-beta.1/AnotherNotch.dmg" length="8954035" type="application/octet-stream"/>
         </item>
     </channel>
 </rss>
