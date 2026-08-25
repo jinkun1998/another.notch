@@ -36,9 +36,6 @@ struct DynamicNotchApp: App {
                 }
             }
             .keyboardShortcut(KeyEquivalent(","), modifiers: .command)
-            Button("Onboarding") {
-                appDelegate.showOnboardingWindow()
-            }
             Divider()
             Button("Restart anotherNotch") {
                 ApplicationRelauncher.restart()
@@ -59,6 +56,7 @@ struct DynamicNotchApp: App {
 }
 
 class AppDelegate: NSObject, NSApplicationDelegate {
+    private static let onboardingCompletedKey = "onboardingCompleted"
     var statusItem: NSStatusItem?
     var windows: [String: NSWindow] = [:] // UUID -> NSWindow
     var viewModels: [String: AnotherNotchViewModel] = [:] // UUID -> AnotherNotchViewModel
@@ -437,7 +435,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         setupDragDetectors()
 
-        if coordinator.firstLaunch {
+        if coordinator.firstLaunch || !UserDefaults.standard.bool(forKey: Self.onboardingCompletedKey) {
             DispatchQueue.main.async {
                 self.showOnboardingWindow()
             }
@@ -573,7 +571,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         NSApplication.shared.terminate(self)
     }
 
-    func showOnboardingWindow(step: OnboardingStep = .welcome) {
+    private func showOnboardingWindow(step: OnboardingStep = .welcome) {
         if onboardingWindowController == nil {
             let window = NSWindow(
                 contentRect: NSRect(x: 0, y: 0, width: 400, height: 600),
@@ -591,6 +589,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 rootView: OnboardingView(
                     step: step,
                     onFinish: {
+                        UserDefaults.standard.set(true, forKey: Self.onboardingCompletedKey)
                         window.orderOut(nil)
 //                        NSApp.setActivationPolicy(.accessory)
                         window.close()
