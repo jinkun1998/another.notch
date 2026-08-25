@@ -38,7 +38,7 @@ jobs:
       contents: write
     env:
       PROJECT_NAME: anotherNotch
-      ARTIFACT_NAME: AnotherNotch
+      ARTIFACT_NAME: anotherNotch
       EXPORT_METHOD: ${{ vars.EXPORT_METHOD || 'development' }}
       VERSION_INPUT: ${{ inputs.version }}
       BUILD_NUMBER_INPUT: ${{ inputs.build_number }}
@@ -141,6 +141,8 @@ jobs:
           ditto \
             "${{ env.PROJECT_NAME }}.xcarchive/Products/Applications/${{ env.PROJECT_NAME }}.app" \
             "Release/${{ env.PROJECT_NAME }}.app"
+          codesign --force --deep --sign - "Release/${{ env.PROJECT_NAME }}.app"
+          codesign --verify --deep --strict --verbose=2 "Release/${{ env.PROJECT_NAME }}.app"
 
       - name: Create DMG
         run: |
@@ -153,7 +155,7 @@ jobs:
           ./Configuration/dmg/create_dmg.sh \
             "Release/${{ env.PROJECT_NAME }}.app" \
             "Release/${{ env.ARTIFACT_NAME }}.dmg" \
-            "Another Notch ${{ env.VERSION_INPUT }}"
+            "anotherNotch ${{ env.VERSION_INPUT }}"
 
       - name: Upload DMG
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
