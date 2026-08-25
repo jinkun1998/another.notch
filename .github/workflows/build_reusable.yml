@@ -142,12 +142,6 @@ jobs:
             "${{ env.PROJECT_NAME }}.xcarchive/Products/Applications/${{ env.PROJECT_NAME }}.app" \
             "Release/${{ env.PROJECT_NAME }}.app"
 
-      - name: Verify generate_appcast exists
-        run: |
-          if [ ! -x Configuration/sparkle/generate_appcast ]; then
-            echo "::warning title=Missing generate_appcast::Configuration/sparkle/generate_appcast is not present or not executable; skipping appcast generation verification."
-          fi
-
       - name: Create DMG
         run: |
           VENV_DIR="$RUNNER_TEMP/venv"
