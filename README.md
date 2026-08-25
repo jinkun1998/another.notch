@@ -1,15 +1,13 @@
-<h1 align="center">
-  <br>
-  Another Notch
-  <br>
-</h1>
+# Another Notch — macOS app for a useful MacBook notch
 
 
 <p align="center">
   <img src="https://github.com/jinkun1998/another.notch/actions/workflows/cicd.yml/badge.svg" alt="Another Notch Build & Test" style="margin-right: 10px;" />
 </p>
 
-Say hello to **Another Notch**, a polished way to make your MacBook’s notch useful. Music controls, calendar integration, file shelf with AirDrop support, HUD replacement, battery, and camera features all stay one hover away.
+**Another Notch** is a free, open-source macOS menu bar app that turns your MacBook notch into a Dynamic Island-style utility. Music controls, calendar integration, file shelf with AirDrop support, system HUD replacement, battery status, and camera features stay one hover away.
+
+[Website](https://jinkun1998.github.io/another.notch/) · [Download for macOS](https://github.com/jinkun1998/another.notch/releases/latest) · [Source code](https://github.com/jinkun1998/another.notch)
 
 > **Upstream attribution:** Another Notch is a modified version of [TheBoredTeam’s original Boring Notch](https://github.com/TheBoredTeam/boring.notch). Original copyright and GPL-3.0 notices are retained. Last materially modified on August 23, 2026.
 

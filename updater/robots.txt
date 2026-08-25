@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://jinkun1998.github.io/another.notch/sitemap.xml
