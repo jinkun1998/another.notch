@@ -127,35 +127,20 @@ jobs:
             -scheme ${{ env.PROJECT_NAME }} \
             -archivePath ${{ env.PROJECT_NAME }} \
             -destination "generic/platform=macOS" \
-            DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM" \
-            CODE_SIGN_IDENTITY="$CODE_SIGN_IDENTITY" \
+            DEVELOPMENT_TEAM="" \
+            CODE_SIGN_IDENTITY="-" \
             CODE_SIGN_STYLE=Manual \
             PROVISIONING_PROFILE_SPECIFIER="" \
             ENABLE_HARDENED_RUNTIME=YES \
             ONLY_ACTIVE_ARCH=NO
 
-      - name: Export app
+      - name: Extract app from archive
         run: |
-          cat > "$RUNNER_TEMP/export_options.plist" <<PLIST
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-            <key>method</key>
-            <string>${{ env.EXPORT_METHOD }}</string>
-            <key>signingStyle</key>
-            <string>manual</string>
-            <key>signingCertificate</key>
-            <string>${CODE_SIGN_IDENTITY}</string>
-            <key>teamID</key>
-            <string>${DEVELOPMENT_TEAM}</string>
-          </dict>
-          </plist>
-          PLIST
-          xcodebuild -exportArchive \
-            -archivePath "${{ env.PROJECT_NAME }}.xcarchive" \
-            -exportPath Release \
-            -exportOptionsPlist "$RUNNER_TEMP/export_options.plist"
+          rm -rf Release
+          mkdir -p Release
+          ditto \
+            "${{ env.PROJECT_NAME }}.xcarchive/Products/Applications/${{ env.PROJECT_NAME }}.app" \
+            "Release/${{ env.PROJECT_NAME }}.app"
 
       - name: Verify generate_appcast exists
         run: |

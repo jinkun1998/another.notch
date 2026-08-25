@@ -15,7 +15,7 @@ on:
       xcode_version:
         description: 'Xcode version (optional)'
         required: false
-        default: '16.4'
+        default: 'default'
 
 # Least-privilege: workflow_dispatch build only; no token access needed beyond artifacts.
 permissions:
@@ -24,13 +24,13 @@ permissions:
 
 jobs:
   build:
-    name: Build and sign app
+    name: Build app
     uses: ./.github/workflows/build_reusable.yml
     with:
       head_ref: ${{ github.event.inputs.head_ref || github.ref_name || 'main' }}
       version: ${{ github.event.inputs.version || '' }}
       build_number: ${{ github.event.inputs.build_number || '' }}
-      xcode_version: ${{ github.event.inputs.xcode_version || '16.4' }}
+      xcode_version: ${{ github.event.inputs.xcode_version || 'default' }}
       code_sign_identity: "Apple Development"
     secrets:
       BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
