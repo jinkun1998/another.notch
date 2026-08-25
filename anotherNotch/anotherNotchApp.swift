@@ -22,7 +22,7 @@ struct DynamicNotchApp: App {
 
     init() {
         updaterController = SPUStandardUpdaterController(
-            startingUpdater: false, updaterDelegate: nil, userDriverDelegate: nil)
+            startingUpdater: true, updaterDelegate: nil, userDriverDelegate: nil)
 
         // Initialize the settings window controller with the updater controller
         SettingsWindowController.shared.setUpdaterController(updaterController)
@@ -69,6 +69,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var closeNotchTask: Task<Void, Never>?
     private var previousScreens: [NSScreen]?
     private var onboardingWindowController: NSWindowController?
+    private var welcomeAnimationObserver: Any?
     private var screenLockedObserver: Any?
     private var screenUnlockedObserver: Any?
     private var isScreenLocked: Bool = false
@@ -81,6 +82,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationWillTerminate(_ notification: Notification) {
         NotificationCenter.default.removeObserver(self)
+        if let welcomeAnimationObserver {
+            NotificationCenter.default.removeObserver(welcomeAnimationObserver)
+        }
         if let observer = screenLockedObserver {
             DistributedNotificationCenter.default().removeObserver(observer)
             screenLockedObserver = nil
@@ -435,10 +439,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         setupDragDetectors()
 
-        if coordinator.firstLaunch || !UserDefaults.standard.bool(forKey: Self.onboardingCompletedKey) {
-            DispatchQueue.main.async {
-                self.showOnboardingWindow()
-            }
+        let shouldShowOnboarding = coordinator.firstLaunch
+            || !UserDefaults.standard.bool(forKey: Self.onboardingCompletedKey)
+
+        if shouldShowOnboarding {
+            showOnboardingAfterWelcomeAnimation()
+            coordinator.helloAnimationRunning = true
             playWelcomeSound()
         } else if MusicManager.shared.isNowPlayingDeprecated
             && Defaults[.mediaController] == .nowPlaying
@@ -594,6 +600,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 //                        NSApp.setActivationPolicy(.accessory)
                         window.close()
                         NSApp.deactivate()
+                        DispatchQueue.main.async {
+                            VolumeManager.shared.refreshOutputDevices()
+                        }
                     },
                     onOpenSettings: {
                         window.close()
@@ -611,6 +620,19 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         onboardingWindowController?.window?.makeKeyAndOrderFront(nil)
         onboardingWindowController?.window?.orderFrontRegardless()
     }
+
+    private func showOnboardingAfterWelcomeAnimation() {
+        welcomeAnimationObserver = NotificationCenter.default.addObserver(
+            forName: .welcomeAnimationDidFinish,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            guard let self, let welcomeAnimationObserver = self.welcomeAnimationObserver else { return }
+            NotificationCenter.default.removeObserver(welcomeAnimationObserver)
+            self.welcomeAnimationObserver = nil
+            self.showOnboardingWindow()
+        }
+    }
 }
 
 extension Notification.Name {
@@ -619,6 +641,7 @@ extension Notification.Name {
     static let showOnAllDisplaysChanged = Notification.Name("showOnAllDisplaysChanged")
     static let automaticallySwitchDisplayChanged = Notification.Name("automaticallySwitchDisplayChanged")
     static let expandedDragDetectionChanged = Notification.Name("expandedDragDetectionChanged")
+    static let welcomeAnimationDidFinish = Notification.Name("welcomeAnimationDidFinish")
 }
 
 extension CGRect: @retroactive Hashable {
