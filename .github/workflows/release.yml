@@ -9,7 +9,7 @@ concurrency:
 
 env:
   PROJECT_NAME: anotherNotch
-  ARTIFACT_NAME: AnotherNotch
+  ARTIFACT_NAME: anotherNotch
   BETA_CHANNEL_NAME: beta
   RELEASE_COMMAND: /release
   CODE_SIGN_IDENTITY: ${{ vars.CODE_SIGN_IDENTITY || 'Apple Development' }}
@@ -386,7 +386,7 @@ jobs:
           if [[ "${IS_BETA}" == "true" ]]; then
             RELEASE_FLAGS=(--prerelease)
           fi
-          gh release create "v${VERSION}" Release/AnotherNotch.dmg \
+          gh release create "v${VERSION}" Release/anotherNotch.dmg \
             --title "v${VERSION} - ${TITLE}" \
             --notes "$NOTES" \
             "${RELEASE_FLAGS[@]}"
@@ -403,7 +403,7 @@ jobs:
       - name: Generate cask files
         run: |
           set -euo pipefail
-          DMG_URL="${{ github.server_url }}/${{ github.repository }}/releases/download/v${VERSION}/AnotherNotch.dmg"
+          DMG_URL="${{ github.server_url }}/${{ github.repository }}/releases/download/v${VERSION}/anotherNotch.dmg"
 
           # Retry SHA calculation (release may need a moment to propagate)
           for attempt in 1 2 3; do
