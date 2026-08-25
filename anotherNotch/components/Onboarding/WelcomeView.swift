@@ -29,7 +29,7 @@ struct WelcomeView: View {
                     Text("anotherNotch")
                         .font(.system(.largeTitle, design: .default))
                         .fontWeight(.semibold)
-                    Text("Hello")
+                    Text("Another Notch app for macOS")
                         .font(.title)
                         .foregroundStyle(.secondary)
                         .padding(.bottom, 30)
@@ -63,14 +63,6 @@ struct WelcomeView: View {
                 .padding(.top)
             }
             
-            Image("anothernotch")
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(height: 22)
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-                .padding()
-                .padding(.bottom, 36)
-                .blendMode(.overlay)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .ignoresSafeArea()

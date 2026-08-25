@@ -7,6 +7,7 @@
 
 import SwiftUI
 import AVFoundation
+import CoreBluetooth
 import Defaults
 
 enum OnboardingStep {
@@ -15,6 +16,7 @@ enum OnboardingStep {
     case cameraPermission
     case calendarPermission
     case remindersPermission
+    case bluetoothPermission
     case musicPermission
     case finished
 }
@@ -106,8 +108,10 @@ struct OnboardingView: View {
                     description: "anotherNotch can show all your upcoming events in one place. Access to your calendar is needed to display your schedule.",
                     privacyNote: "Your calendar data is only used to show your events and is never shared.",
                     onAllow: {
-                        Task {
-                                await requestCalendarPermission()
+                            Task {
+                                if await requestCalendarPermission() {
+                                    Defaults[.showCalendar] = true
+                                }
                                 withAnimation(.easeInOut(duration: 0.6)) {
                                     step = .remindersPermission
                                 }
@@ -131,17 +135,41 @@ struct OnboardingView: View {
                             Task {
                                 await requestRemindersPermission()
                                 withAnimation(.easeInOut(duration: 0.6)) {
-                                    step = .musicPermission
+                                    step = .bluetoothPermission
                                 }
                             }
                         },
                         onSkip: {
                             withAnimation(.easeInOut(duration: 0.6)) {
-                                step = .musicPermission
+                                step = .bluetoothPermission
                             }
                         }
                     )
                     .transition(.opacity)
+
+            case .bluetoothPermission:
+                PermissionRequestView(
+                    icon: Image(systemName: "headphones"),
+                    title: "Enable Bluetooth Accessories",
+                    description: "anotherNotch can show when your Bluetooth audio accessories connect, including their battery level when available.",
+                    privacyNote: "Bluetooth access is used only for connected accessory notifications.",
+                    onAllow: {
+                        Task {
+                            if await requestBluetoothPermission() {
+                                Defaults[.showBluetoothDeviceConnectionIndicator] = true
+                            }
+                            withAnimation(.easeInOut(duration: 0.6)) {
+                                step = .musicPermission
+                            }
+                        }
+                    },
+                    onSkip: {
+                        withAnimation(.easeInOut(duration: 0.6)) {
+                            step = .musicPermission
+                        }
+                    }
+                )
+                .transition(.opacity)
                 
             case .musicPermission:
                 MusicControllerSelectionView(
@@ -167,8 +195,8 @@ struct OnboardingView: View {
         await AVCaptureDevice.requestAccess(for: .video)
     }
 
-    func requestCalendarPermission() async {
-        _ = try? await calendarService.requestAccess(to: .event)
+    func requestCalendarPermission() async -> Bool {
+        (try? await calendarService.requestAccess(to: .event)) ?? false
     }
 
     func requestRemindersPermission() async {
@@ -177,5 +205,51 @@ struct OnboardingView: View {
     
     func requestAccessibilityPermission() async -> Bool {
         await XPCHelperClient.shared.ensureAccessibilityAuthorization(promptIfNeeded: true)
+    }
+
+    func requestBluetoothPermission() async -> Bool {
+        await bluetoothPermissionRequester.requestAccess()
+    }
+}
+
+private let bluetoothPermissionRequester = BluetoothPermissionRequester()
+
+private final class BluetoothPermissionRequester: NSObject, CBCentralManagerDelegate {
+    private var centralManager: CBCentralManager?
+    private var continuation: CheckedContinuation<Bool, Never>?
+
+    func requestAccess() async -> Bool {
+        switch CBManager.authorization {
+        case .allowedAlways:
+            return true
+        case .denied, .restricted:
+            return false
+        case .notDetermined:
+            return await withCheckedContinuation { continuation in
+                self.continuation = continuation
+                centralManager = CBCentralManager(delegate: self, queue: .main)
+            }
+        @unknown default:
+            return false
+        }
+    }
+
+    func centralManagerDidUpdateState(_ central: CBCentralManager) {
+        switch CBManager.authorization {
+        case .allowedAlways:
+            finish(with: true)
+        case .denied, .restricted:
+            finish(with: false)
+        case .notDetermined:
+            break
+        @unknown default:
+            finish(with: false)
+        }
+    }
+
+    private func finish(with granted: Bool) {
+        continuation?.resume(returning: granted)
+        continuation = nil
+        centralManager = nil
     }
 }

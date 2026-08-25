@@ -85,7 +85,10 @@ struct ContentView: View {
     }
 
     private var shellHorizontalPadding: CGFloat {
-        interpolate(cornerRadiusInsets.closed.bottom, openedHorizontalPadding)
+        if coordinator.helloAnimationRunning {
+            return 0
+        }
+        return interpolate(cornerRadiusInsets.closed.bottom, openedHorizontalPadding)
     }
 
     private var topCornerRadius: CGFloat {
@@ -178,6 +181,10 @@ struct ContentView: View {
     private var closedNotchContentSize: CGSize {
         let baseSize = CGSize(width: vm.closedNotchSize.width, height: vm.effectiveClosedNotchHeight)
         guard baseSize.height > 0 else { return baseSize }
+
+        if coordinator.helloAnimationRunning {
+            return .init(width: baseSize.width * 1.26, height: 120)
+        }
 
         if showsMusicSneakPeek {
             return .init(width: max(baseSize.width, 260), height: baseSize.height + 34)
@@ -450,25 +457,15 @@ struct ContentView: View {
         VStack(alignment: .center, spacing: 0) {
             VStack(alignment: .center, spacing: 0) {
                 if coordinator.helloAnimationRunning {
-                    Spacer()
                     HelloAnimation(onFinish: {
                         vm.closeHello()
-                    }).frame(
-                        width: getClosedNotchSize().width,
-                        height: 80
+                    })
+                    .padding(.vertical, 8)
+                    .frame(
+                        width: vm.closedNotchSize.width,
+                        height: 72
                     )
-                    .background {
-                        RoundedRectangle(cornerRadius: 32, style: .continuous)
-                            .fill(.black)
-                            .overlay {
-                                LiquidGlassEdge(
-                                    shape: RoundedRectangle(cornerRadius: 32, style: .continuous),
-                                    opacity: notchTransparency
-                                )
-                            }
-                    }
-                    .padding(.top, 40)
-                    Spacer()
+                    .padding(.top, 38)
                 } else {
                     if vm.notchState == .open || isClosingShell {
                         AnotherNotchHeader()

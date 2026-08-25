@@ -9,7 +9,7 @@ import os
 APP_PATH = os.environ.get('DMG_APP_PATH')
 VOLUME_NAME = os.environ.get('DMG_VOLUME_NAME', 'anotherNotch')
 BACKGROUND = os.environ.get('DMG_BACKGROUND', '')
-BADGE_ICON = os.environ.get('DMG_BADGE_ICON', '')
+VOLUME_ICON = os.environ.get('DMG_VOLUME_ICON', '')
 
 # If DMG_BACKGROUND not provided, default to the hiDPI TIFF in .background.
 if not BACKGROUND:
@@ -46,6 +46,6 @@ show_statusbar = False
 show_tabview = False
 show_toolbar = False
 
-# Optionally set a custom icon for the DMG volume (leave empty to skip)
-if BADGE_ICON and os.path.exists(BADGE_ICON):
-    badge_icon = BADGE_ICON
+# Use the app icon directly instead of a generic disk with a badge.
+if VOLUME_ICON and os.path.exists(VOLUME_ICON):
+    icon = VOLUME_ICON

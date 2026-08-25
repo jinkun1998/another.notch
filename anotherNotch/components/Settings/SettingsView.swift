@@ -1050,6 +1050,8 @@ struct About: View {
                 } label: {
                     Label("View on GitHub", systemImage: "arrow.up.right.square")
                 }
+
+                CheckForUpdatesView(updater: updaterController.updater)
             }
 
             Section("Support & Donate") {
