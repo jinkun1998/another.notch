@@ -32,7 +32,7 @@ jobs:
           echo "is_prerelease=$([[ "$TAG" == *-* ]] && echo true || echo false)" >> "$GITHUB_OUTPUT"
 
   build:
-    name: Build and sign
+    name: Build release
     needs: validate_tag
     permissions:
       contents: write
