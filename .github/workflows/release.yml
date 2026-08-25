@@ -210,7 +210,7 @@ jobs:
           git push origin "$HEAD_REF"
 
   build:
-    name: Build and sign
+    name: Build release
     needs: preparation
     permissions:
       contents: write
