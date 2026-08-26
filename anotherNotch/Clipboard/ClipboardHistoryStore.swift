@@ -1,0 +1,231 @@
+import AppKit
+import Combine
+import Defaults
+import Foundation
+import SwiftUI
+
+enum ClipboardEntryKind: String, Codable {
+    case text
+    case url
+    case image
+}
+
+struct ClipboardEntry: Codable, Identifiable, Hashable {
+    let id: UUID
+    let timestamp: Date
+    let kind: ClipboardEntryKind
+    fileprivate let value: String?
+    fileprivate let imageFileName: String?
+
+    init(kind: ClipboardEntryKind, value: String? = nil, imageFileName: String? = nil) {
+        id = UUID()
+        timestamp = Date()
+        self.kind = kind
+        self.value = value
+        self.imageFileName = imageFileName
+    }
+
+    var preview: String {
+        switch kind {
+        case .text, .url:
+            value ?? ""
+        case .image:
+            "Image"
+        }
+    }
+}
+
+@MainActor
+final class ClipboardHistoryStore: ObservableObject {
+    static let shared = ClipboardHistoryStore()
+
+    @Published private(set) var entries: [ClipboardEntry] = []
+    @Published private(set) var hudEntry: ClipboardEntry?
+
+    private let pasteboard = NSPasteboard.general
+    private let fileManager = FileManager.default
+    private var timer: Timer?
+    private var lastChangeCount = NSPasteboard.general.changeCount
+    private var hudTask: Task<Void, Never>?
+    private var selfWriteSuppressionDeadline = Date.distantPast
+
+    private var directory: URL {
+        let appSupport = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+        return appSupport.appendingPathComponent(bundleIdentifier, isDirectory: true)
+            .appendingPathComponent("ClipboardHistory", isDirectory: true)
+    }
+
+    private var metadataURL: URL {
+        directory.appendingPathComponent("history.json")
+    }
+
+    private init() {
+        createDirectory()
+        load()
+    }
+
+    func startMonitoring() {
+        guard timer == nil else { return }
+        lastChangeCount = pasteboard.changeCount
+        timer = Timer.scheduledTimer(withTimeInterval: 0.35, repeats: true) { [weak self] _ in
+            Task { @MainActor in self?.captureIfNeeded() }
+        }
+    }
+
+    func stopMonitoring() {
+        timer?.invalidate()
+        timer = nil
+        hudTask?.cancel()
+    }
+
+    func copy(_ entry: ClipboardEntry) {
+        hudTask?.cancel()
+        withAnimation(.easeOut(duration: 0.16)) {
+            hudEntry = nil
+        }
+        selfWriteSuppressionDeadline = Date().addingTimeInterval(0.75)
+
+        switch entry.kind {
+        case .text:
+            pasteboard.clearContents()
+            pasteboard.setString(entry.value ?? "", forType: .string)
+        case .url:
+            guard let value = entry.value, let url = URL(string: value) else { return }
+            pasteboard.clearContents()
+            pasteboard.writeObjects([url as NSURL])
+        case .image:
+            guard let data = imageData(for: entry), let image = NSImage(data: data) else { return }
+            pasteboard.clearContents()
+            pasteboard.writeObjects([image])
+        }
+
+        lastChangeCount = pasteboard.changeCount
+    }
+
+    func delete(_ entry: ClipboardEntry) {
+        entries.removeAll { $0.id == entry.id }
+        removeImageFile(for: entry)
+        persist()
+    }
+
+    func clear() {
+        entries.forEach { removeImageFile(for: $0) }
+        entries = []
+        hudEntry = nil
+        persist()
+    }
+
+    func enforceRetention() {
+        trim()
+    }
+
+    func imageData(for entry: ClipboardEntry) -> Data? {
+        guard let fileName = entry.imageFileName else { return nil }
+        return try? Data(contentsOf: directory.appendingPathComponent(fileName))
+    }
+
+    private func captureIfNeeded() {
+        guard Defaults[.clipboardHistoryEnabled], pasteboard.changeCount != lastChangeCount else { return }
+        lastChangeCount = pasteboard.changeCount
+        guard Date() >= selfWriteSuppressionDeadline else { return }
+
+        if let urlValue = pasteboard.string(forType: NSPasteboard.PasteboardType("public.url")), isURL(urlValue) {
+            append(kind: .url, value: urlValue)
+        } else if let imageData = pngData(), imageData.count <= imageLimitBytes {
+            let fileName = "\(UUID().uuidString).png"
+            do {
+                try imageData.write(to: directory.appendingPathComponent(fileName), options: .atomic)
+                append(kind: .image, imageFileName: fileName)
+            } catch {
+                return
+            }
+        } else if let text = pasteboard.string(forType: .string), !text.isEmpty {
+            append(kind: isURL(text) ? .url : .text, value: text)
+        }
+    }
+
+    private var imageLimitBytes: Int {
+        Defaults[.clipboardImageLimitMB] * 1_024 * 1_024
+    }
+
+    private func append(kind: ClipboardEntryKind, value: String? = nil, imageFileName: String? = nil) {
+        let entry = ClipboardEntry(kind: kind, value: value, imageFileName: imageFileName)
+        guard fingerprint(for: entry) != entries.first.map({ fingerprint(for: $0) }) else {
+            removeImageFile(for: entry)
+            return
+        }
+
+        entries.insert(entry, at: 0)
+        while entries.count > Defaults[.clipboardHistoryLimit] {
+            removeImageFile(for: entries.removeLast())
+        }
+        persist()
+        showHUD(for: entry)
+    }
+
+    private func showHUD(for entry: ClipboardEntry) {
+        hudTask?.cancel()
+        withAnimation(.easeOut(duration: 0.16)) {
+            hudEntry = entry
+        }
+        hudTask = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(2))
+            guard !Task.isCancelled else { return }
+            withAnimation(.easeOut(duration: 0.24)) {
+                self?.hudEntry = nil
+            }
+        }
+    }
+
+    private func fingerprint(for entry: ClipboardEntry) -> String {
+        if entry.kind == .image, let data = imageData(for: entry) {
+            return "image:\(data.hashValue)"
+        }
+        return "\(entry.kind.rawValue):\(entry.value ?? "")"
+    }
+
+    private func isURL(_ value: String) -> Bool {
+        guard let url = URL(string: value), let scheme = url.scheme?.lowercased() else { return false }
+        return ["http", "https", "ftp", "mailto"].contains(scheme)
+    }
+
+    private func pngData() -> Data? {
+        if let data = pasteboard.data(forType: .png) {
+            return data
+        }
+        guard let image = NSImage(pasteboard: pasteboard),
+              let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil)
+        else { return nil }
+        return NSBitmapImageRep(cgImage: cgImage).representation(using: .png, properties: [:])
+    }
+
+    private func load() {
+        guard let data = try? Data(contentsOf: metadataURL),
+              let decoded = try? JSONDecoder().decode([ClipboardEntry].self, from: data)
+        else { return }
+        entries = decoded.filter { $0.kind != .image || imageData(for: $0) != nil }
+        trim()
+    }
+
+    private func trim() {
+        while entries.count > Defaults[.clipboardHistoryLimit] {
+            removeImageFile(for: entries.removeLast())
+        }
+        persist()
+    }
+
+    private func persist() {
+        createDirectory()
+        guard let data = try? JSONEncoder().encode(entries) else { return }
+        try? data.write(to: metadataURL, options: .atomic)
+    }
+
+    private func createDirectory() {
+        try? fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
+    }
+
+    private func removeImageFile(for entry: ClipboardEntry) {
+        guard let fileName = entry.imageFileName else { return }
+        try? fileManager.removeItem(at: directory.appendingPathComponent(fileName))
+    }
+}

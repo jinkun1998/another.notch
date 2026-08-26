@@ -58,7 +58,7 @@ class AnotherNotchSkyLightWindow: NSPanel {
         titlebarAppearsTransparent = true
         backgroundColor = .clear
         isMovable = false
-        level = .mainMenu + 3
+        level = .screenSaver
         hasShadow = false
         isReleasedWhenClosed = false
         

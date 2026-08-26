@@ -1,0 +1,149 @@
+import SwiftUI
+
+struct ClipboardHistoryView: View {
+    @ObservedObject private var store = ClipboardHistoryStore.shared
+    @EnvironmentObject var vm: AnotherNotchViewModel
+
+    var body: some View {
+        if store.entries.isEmpty {
+            ContentUnavailableView("Clipboard is empty", systemImage: "clipboard")
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        } else {
+            ScrollView {
+                LazyVStack(spacing: 8) {
+                    ForEach(store.entries) { entry in
+                        ClipboardEntryRow(entry: entry) {
+                            store.copy(entry)
+                            vm.close()
+                        }
+                    }
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 4)
+                .padding(.bottom, 14)
+            }
+            .contentMargins(.top, 0, for: .scrollContent)
+            .scrollIndicators(.automatic)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        }
+    }
+}
+
+private struct ClipboardEntryRow: View {
+    @ObservedObject private var store = ClipboardHistoryStore.shared
+    let entry: ClipboardEntry
+    let onSelect: () -> Void
+    @State private var isHovering = false
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Button {
+                onSelect()
+            } label: {
+                HStack(spacing: 10) {
+                    entryPreview
+                        .frame(width: 40, height: 40)
+                        .background(Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+
+                    VStack(alignment: .leading, spacing: 3) {
+                        HStack(spacing: 6) {
+                            Text(entry.kind == .url ? "URL" : entry.kind == .image ? "Image" : "Text")
+                                .font(.system(size: 11, weight: .semibold))
+                                .foregroundStyle(.secondary)
+                            Text(entry.timestamp, style: .time)
+                                .font(.system(size: 10))
+                                .foregroundStyle(.secondary.opacity(0.8))
+                        }
+                        Text(detail)
+                            .lineLimit(2)
+                            .font(.system(size: 12))
+                            .foregroundStyle(.white)
+                            .multilineTextAlignment(.leading)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+
+            Button {
+                store.delete(entry)
+            } label: {
+                Image(systemName: "trash.fill")
+                    .font(.system(size: 11))
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(isHovering ? .red.opacity(0.8) : .secondary)
+            .accessibilityLabel("Delete clipboard entry")
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
+        .background(
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .fill(isHovering ? Color.white.opacity(0.12) : Color.white.opacity(0.05))
+        )
+        .onHover { isHovering = $0 }
+    }
+
+    private var detail: String {
+        guard entry.kind == .image,
+              let data = store.imageData(for: entry),
+              let image = NSImage(data: data)
+        else { return entry.preview }
+        return "\(Int(image.size.width)) × \(Int(image.size.height)) · \(ByteCountFormatter.string(fromByteCount: Int64(data.count), countStyle: .file))"
+    }
+
+    @ViewBuilder
+    private var entryPreview: some View {
+        if entry.kind == .image, let data = store.imageData(for: entry), let image = NSImage(data: data) {
+            Image(nsImage: image)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 38, height: 38)
+                .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
+        } else {
+            Image(systemName: entry.kind == .url ? "link" : "doc.on.clipboard")
+                .font(.system(size: 14))
+                .foregroundStyle(.secondary)
+        }
+    }
+}
+
+struct ClipboardHUD: View {
+    @ObservedObject private var store = ClipboardHistoryStore.shared
+    let entry: ClipboardEntry
+
+    var body: some View {
+        if entry.kind == .image {
+            HStack(spacing: 10) {
+                Image(systemName: "clipboard.fill")
+                    .foregroundStyle(.white)
+                Spacer(minLength: 0)
+                if let data = store.imageData(for: entry), let image = NSImage(data: data) {
+                    Image(nsImage: image)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 46, height: 34)
+                        .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                }
+            }
+            .padding(.horizontal, 14)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        } else {
+            VStack(alignment: .leading, spacing: 3) {
+                HStack {
+                    Image(systemName: "clipboard.fill")
+                    Spacer(minLength: 0)
+                    Image(systemName: "checkmark")
+                }
+                Text(entry.preview)
+                    .lineLimit(1)
+                    .font(.system(size: 12))
+                    .foregroundStyle(.secondary)
+            }
+            .padding(.horizontal, 14)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+        }
+    }
+}

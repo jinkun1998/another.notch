@@ -39,6 +39,7 @@ enum HideNotchOption: String, Defaults.Serializable {
 // Define notification names at file scope
 extension Notification.Name {
     static let mediaControllerChanged = Notification.Name("mediaControllerChanged")
+    static let notchContentSizeChanged = Notification.Name("notchContentSizeChanged")
 }
 
 // Media controller types for selection in settings
@@ -106,6 +107,11 @@ extension Defaults.Keys {
     //static let openLastTabByDefault = Key<Bool>("openLastTabByDefault", default: false)
     static let showOnLockScreen = Key<Bool>("showOnLockScreen", default: false)
     static let hideFromScreenRecording = Key<Bool>("hideFromScreenRecording", default: false)
+
+    // MARK: Clipboard
+    static let clipboardHistoryEnabled = Key<Bool>("clipboardHistoryEnabled", default: true)
+    static let clipboardHistoryLimit = Key<Int>("clipboardHistoryLimit", default: 100)
+    static let clipboardImageLimitMB = Key<Int>("clipboardImageLimitMB", default: 10)
     
     // MARK: Appearance
     static let showEmojis = Key<Bool>("showEmojis", default: false)
@@ -130,7 +136,7 @@ extension Defaults.Keys {
     )
     static let playerColorTinting = Key<Bool>("playerColorTinting", default: true)
     static let rotateAlbumArt = Key<Bool>("rotateAlbumArt", default: true)
-    static let waveformMatchesAlbumArt = Key<Bool>("waveformMatchesAlbumArt", default: false)
+    static let waveformMatchesAlbumArt = Key<Bool>("waveformMatchesAlbumArt", default: true)
     static let useMusicVisualizer = Key<Bool>("useMusicVisualizer", default: true)
     static let customVisualizers = Key<[CustomVisualizer]>("customVisualizers", default: [])
     static let selectedVisualizer = Key<CustomVisualizer?>("selectedVisualizer", default: nil)
@@ -142,7 +148,7 @@ extension Defaults.Keys {
     
     // MARK: Media playback
     static let coloredSpectrogram = Key<Bool>("coloredSpectrogram", default: true)
-    static let enableSneakPeek = Key<Bool>("enableSneakPeek", default: false)
+    static let enableSneakPeek = Key<Bool>("enableSneakPeek", default: true)
     static let sneakPeekStyles = Key<SneakPeekStyle>("sneakPeekStyles", default: .standard)
     static let sneakPeekDuration = Key<Double>("sneakPeekDuration", default: 2)
     static let waitInterval = Key<Double>("waitInterval", default: 3)
