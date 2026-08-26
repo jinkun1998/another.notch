@@ -13,35 +13,23 @@ struct AnotherNotchHeader: View {
     @ObservedObject var batteryModel = BatteryStatusViewModel.shared
     @ObservedObject var coordinator = AnotherNotchViewCoordinator.shared
     @ObservedObject var webcamManager = WebcamManager.shared
-    @StateObject var tvm = ShelfStateViewModel.shared
-    @Default(.boringShelf) private var boringShelf
-    @Default(.showCalendar) private var showCalendar
+    @ObservedObject private var clipboardHistory = ClipboardHistoryStore.shared
     @Default(.showMirror) private var showMirror
+
     var body: some View {
         HStack(spacing: 0) {
-            HStack {
-                if ((!tvm.isEmpty || coordinator.alwaysShowTabs) && boringShelf)
-                    || showCalendar
-                    || (showMirror && webcamManager.cameraAvailable)
-                {
-                    TabSelectionView()
-                } else if vm.notchState == .open {
-                    EmptyView()
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .opacity(vm.notchState == .closed ? 0 : 1)
-            .blur(radius: vm.notchState == .closed ? 20 : 0)
-            .zIndex(2)
+            TabSelectionView()
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.leading, 10)
+                .opacity(vm.notchState == .closed ? 0 : 1)
+                .blur(radius: vm.notchState == .closed ? 20 : 0)
+                .zIndex(2)
 
-            if vm.notchState == .open {
-                Rectangle()
-                    .fill(NSScreen.screen(withUUID: coordinator.selectedScreenUUID)?.safeAreaInsets.top ?? 0 > 0 ? .black : .clear)
-                    .frame(width: vm.closedNotchSize.width)
-                    .mask {
-                        NotchShape()
-                    }
-            }
+            Rectangle()
+                .fill(notchDebugColor)
+                .frame(width: vm.closedNotchSize.width)
+                .frame(maxHeight: .infinity, alignment: .top)
+                .mask { NotchShape() }
 
             HStack(spacing: 4) {
                 if vm.notchState == .open {
@@ -49,6 +37,16 @@ struct AnotherNotchHeader: View {
                         OpenNotchHUD(type: $coordinator.sneakPeek.type, value: $coordinator.sneakPeek.value, icon: $coordinator.sneakPeek.icon)
                             .transition(.scale(scale: 0.8).combined(with: .opacity))
                     } else {
+                        if coordinator.currentView == .clipboard {
+                            Button(role: .destructive) {
+                                clipboardHistory.clear()
+                            } label: {
+                                Label("Clear", systemImage: "trash")
+                                    .font(.system(size: 11, weight: .medium))
+                            }
+                            .buttonStyle(.plain)
+                            .disabled(clipboardHistory.entries.isEmpty)
+                        }
                         if showMirror && webcamManager.cameraAvailable {
                             Button(action: {
                                 withAnimation(.smooth) {
@@ -97,12 +95,22 @@ struct AnotherNotchHeader: View {
             }
             .font(.system(.headline, design: .rounded))
             .frame(maxWidth: .infinity, alignment: .trailing)
+            .padding(.trailing, 10)
             .opacity(vm.notchState == .closed ? 0 : 1)
             .blur(radius: vm.notchState == .closed ? 20 : 0)
             .zIndex(2)
         }
         .foregroundColor(.gray)
         .environmentObject(vm)
+    }
+
+    private var notchDebugColor: Color {
+        #if DEBUG
+        .red.opacity(0.9)
+        #else
+        NSScreen.screen(withUUID: coordinator.selectedScreenUUID)?.safeAreaInsets.top ?? 0 > 0
+            ? .black : .clear
+        #endif
     }
 
     func isHUDType(_ type: SneakContentType) -> Bool {

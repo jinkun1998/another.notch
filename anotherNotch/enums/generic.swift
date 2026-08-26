@@ -26,6 +26,7 @@ public enum NotchState {
 
 public enum NotchViews: Hashable {
     case home
+    case clipboard
     case shelf
     case calendar
     case camera

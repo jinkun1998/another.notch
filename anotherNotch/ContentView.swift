@@ -23,6 +23,7 @@ struct ContentView: View {
     @ObservedObject var musicManager = MusicManager.shared
     @ObservedObject var batteryModel = BatteryStatusViewModel.shared
     @ObservedObject var brightnessManager = BrightnessManager.shared
+    @ObservedObject private var clipboardHistory = ClipboardHistoryStore.shared
     @State private var hoverTask: Task<Void, Never>?
     @State private var closingShellTask: Task<Void, Never>?
     @State private var musicHeroTransitionTask: Task<Void, Never>?
@@ -118,7 +119,7 @@ struct ContentView: View {
 
     private var expandedContentHeight: CGFloat {
         let notchHeight = isClosingShell
-            ? openNotchSize(for: coordinator.currentView).height
+            ? openNotchSize(for: coordinator.currentView, screenUUID: vm.screenUUID).height
             : vm.notchSize.height
         return max(0, notchHeight - openNotchHeaderHeight)
     }
@@ -178,6 +179,15 @@ struct ContentView: View {
             && Defaults[.sneakPeekStyles] == .standard
     }
 
+    private var isScrollableTab: Bool {
+        switch coordinator.currentView {
+        case .clipboard, .calendar, .shelf:
+            true
+        case .home, .camera:
+            false
+        }
+    }
+
     private var closedNotchContentSize: CGSize {
         let baseSize = CGSize(width: vm.closedNotchSize.width, height: vm.effectiveClosedNotchHeight)
         guard baseSize.height > 0 else { return baseSize }
@@ -188,6 +198,13 @@ struct ContentView: View {
 
         if showsMusicSneakPeek {
             return .init(width: max(baseSize.width, 260), height: baseSize.height + 34)
+        }
+
+        if let entry = clipboardHistory.hudEntry {
+            if entry.kind == .image {
+                return .init(width: max(baseSize.width + 96, 260), height: max(baseSize.height, 54))
+            }
+            return .init(width: max(baseSize.width + 130, 280), height: max(baseSize.height, 58))
         }
 
         if coordinator.expandingView.type == .battery && coordinator.expandingView.show
@@ -294,13 +311,13 @@ struct ContentView: View {
                     .onTapGesture {
                         doOpen()
                     }
-                    .conditionalModifier(Defaults[.enableGestures]) { view in
+                    .conditionalModifier(Defaults[.enableGestures] && !isScrollableTab) { view in
                         view
                             .panGesture(direction: .down) { translation, phase in
                                 handleDownGesture(translation: translation, phase: phase)
                             }
                     }
-                    .conditionalModifier(Defaults[.closeGestureEnabled] && Defaults[.enableGestures]) { view in
+                    .conditionalModifier(Defaults[.closeGestureEnabled] && Defaults[.enableGestures] && !isScrollableTab) { view in
                         view
                             .panGesture(direction: .up) { translation, phase in
                                 handleUpGesture(translation: translation, phase: phase)
@@ -344,7 +361,11 @@ struct ContentView: View {
                         }
 
                         guard vm.notchState == .open else { return }
-                        vm.notchSize = openNotchSize(for: view)
+                        vm.notchSize = openNotchSize(for: view, screenUUID: vm.screenUUID)
+                    }
+                    .onReceive(clipboardHistory.$entries) { _ in
+                        guard vm.notchState == .open, coordinator.currentView == .clipboard else { return }
+                        vm.notchSize = openNotchSize(for: .clipboard, screenUUID: vm.screenUUID)
                     }
                     .onChange(of: vm.isBatteryPopoverActive) {
                         if !vm.isBatteryPopoverActive && !isHovering && vm.notchState == .open && !SharingStateManager.shared.preventNotchClose {
@@ -382,7 +403,11 @@ struct ContentView: View {
             }
         }
         .padding(.bottom, 8)
-        .frame(maxWidth: windowSize.width, maxHeight: windowSize.height, alignment: .top)
+        .frame(
+            maxWidth: windowSize.width,
+            maxHeight: max(windowSize.height, vm.notchSize.height + shadowPadding),
+            alignment: .top
+        )
         .compositingGroup()
         .scaleEffect(
             x: gestureScale,
@@ -471,6 +496,9 @@ struct ContentView: View {
                         AnotherNotchHeader()
                             .frame(height: openNotchHeaderHeight)
                             .opacity(gestureProgress != 0 ? 1.0 - min(abs(gestureProgress) * 0.1, 0.3) : 1.0)
+                    } else if let entry = clipboardHistory.hudEntry, vm.notchState == .closed {
+                        ClipboardHUD(entry: entry)
+                            .transition(.opacity)
                     } else if coordinator.expandingView.type == .battery && coordinator.expandingView.show
                         && vm.notchState == .closed && Defaults[.showPowerStatusNotifications]
                     {
@@ -567,6 +595,10 @@ struct ContentView: View {
                             isHeroTransitionActive: isMusicHeroTransitionActive
                         )
                             .frame(width: musicContentSize.width, height: musicContentSize.height)
+                    case .clipboard:
+                        ClipboardHistoryView()
+                            .frame(maxWidth: .infinity)
+                            .frame(maxHeight: max(0, vm.notchSize.height - openNotchHeaderHeight), alignment: .top)
                     case .shelf:
                         ShelfView()
                             .padding(.vertical, 8)
@@ -811,6 +843,7 @@ struct ContentView: View {
                 await MainActor.run {
                     guard self.vm.notchState == .closed,
                           self.isHovering,
+                          self.vm.isMouseHovering(),
                           !self.coordinator.sneakPeek.show else { return }
                     
                     self.doOpen()
@@ -837,7 +870,7 @@ struct ContentView: View {
     // MARK: - Gesture Handling
 
     private func handleDownGesture(translation: CGFloat, phase: NSEvent.Phase) {
-        guard vm.notchState == .closed else { return }
+        guard !isScrollableTab, vm.notchState == .closed else { return }
 
         if phase == .ended {
             withAnimation(interactionAnimation) { gestureProgress = .zero }
@@ -860,7 +893,7 @@ struct ContentView: View {
     }
 
     private func handleUpGesture(translation: CGFloat, phase: NSEvent.Phase) {
-        guard vm.notchState == .open && !vm.isHoveringCalendar else { return }
+        guard !isScrollableTab, vm.notchState == .open && !vm.isHoveringCalendar else { return }
 
         withAnimation(interactionAnimation) {
             gestureProgress = (translation / Defaults[.gestureSensitivity]) * -20
