@@ -7,26 +7,30 @@
 
 import SwiftUI
 
-struct AnotherNotchLargeButtons: View {
-    var action: () -> Void
-    var icon: Image
-    var title: String
+private struct NotchActionButton: View {
+    let action: () -> Void
+    let icon: Image
+    let title: String
+
     var body: some View {
-        Button (
-            action:action,
-            label: {
-                VStack(spacing: 8) {
-                    icon.resizable()
-                        .aspectRatio(contentMode: .fit).frame(width:20)
-                    Text(title).font(.body)
-                }
-                .frame(width: 70, height: 70)
-                .liquidGlassControl(in: RoundedRectangle(cornerRadius: 12.0))
-            }).buttonStyle(PlainButtonStyle()).shadow(color: .black.opacity(0.5), radius: 10)
+        Button(action: action) {
+            VStack(spacing: 8) {
+                icon.resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 20)
+                Text(title)
+                    .font(.body)
+            }
+            .frame(width: 70, height: 70)
+            .liquidGlassControl(in: RoundedRectangle(cornerRadius: 12))
+        }
+        .buttonStyle(.plain)
+        .shadow(color: .black.opacity(0.5), radius: 10)
+        .accessibilityLabel(title)
     }
 }
 
-struct AnotherNotchExtrasMenu : View {
+struct AnotherNotchExtrasMenu: View {
     @ObservedObject var vm: AnotherNotchViewModel
     
     var body: some View {
@@ -37,8 +41,8 @@ struct AnotherNotchExtrasMenu : View {
         }
     }
     
-    var github: some View {
-        AnotherNotchLargeButtons(
+    private var github: some View {
+        NotchActionButton(
             action: {
                 if let url = URL(string: "https://github.com/jinkun1998/another.notch") {
                     NSWorkspace.shared.open(url)
@@ -49,25 +53,16 @@ struct AnotherNotchExtrasMenu : View {
         )
     }
     
-    var settings: some View {
-        Button(action: {
-            DispatchQueue.main.async {
-                SettingsWindowController.shared.showWindow()
-            }
-        }) {
-            VStack(spacing: 8) {
-                Image(systemName: "gear").resizable()
-                    .aspectRatio(contentMode: .fit).frame(width:20)
-                Text("Settings").font(.body)
-            }
-            .frame(width: 70, height: 70)
-            .liquidGlassControl(in: RoundedRectangle(cornerRadius: 12.0))
-        }
-        .buttonStyle(PlainButtonStyle()).shadow(color: .black.opacity(0.5), radius: 10)
+    private var settings: some View {
+        NotchActionButton(
+            action: SettingsWindowController.present,
+            icon: Image(systemName: "gear"),
+            title: "Settings"
+        )
     }
     
-    var hide: some View {
-        AnotherNotchLargeButtons(
+    private var hide: some View {
+        NotchActionButton(
             action: {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
                     //vm.openMusic()
@@ -78,8 +73,8 @@ struct AnotherNotchExtrasMenu : View {
         )
     }
     
-    var close: some View {
-        AnotherNotchLargeButtons(
+    private var close: some View {
+        NotchActionButton(
             action: {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {

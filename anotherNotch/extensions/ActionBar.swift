@@ -1,10 +1,3 @@
-//
-//  ActionBar.swift
-//  anotherNotch
-//
-//  Created by Richard Kunkli on 15/09/2024.
-//
-
 import SwiftUI
 
 extension View {
@@ -16,7 +9,7 @@ extension View {
                     Divider()
                     HStack(spacing: 0) {
                         content()
-                            .buttonStyle(PlainButtonStyle())
+                            .buttonStyle(.plain)
                     }
                     .frame(height: 16)
                     .padding(.vertical, 4)
