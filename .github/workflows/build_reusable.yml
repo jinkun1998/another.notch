@@ -42,7 +42,7 @@ jobs:
       EXPORT_METHOD: ${{ vars.EXPORT_METHOD || 'development' }}
       VERSION_INPUT: ${{ inputs.version }}
       BUILD_NUMBER_INPUT: ${{ inputs.build_number }}
-      DEVELOPMENT_TEAM: XW87KZT6AP
+      DEVELOPMENT_TEAM: C366DWS54X
       CODE_SIGN_IDENTITY: ${{ inputs.code_sign_identity }}
       XCODE_VERSION: ${{ inputs.xcode_version }}
     steps:
@@ -131,10 +131,7 @@ jobs:
             -scheme ${{ env.PROJECT_NAME }} \
             -archivePath ${{ env.PROJECT_NAME }} \
             -destination "generic/platform=macOS" \
-            DEVELOPMENT_TEAM="${{ env.DEVELOPMENT_TEAM }}" \
-            CODE_SIGN_IDENTITY="${{ env.CODE_SIGN_IDENTITY }}" \
-            CODE_SIGN_STYLE=Manual \
-            PROVISIONING_PROFILE_SPECIFIER="" \
+            CODE_SIGNING_ALLOWED=NO \
             ENABLE_HARDENED_RUNTIME=YES \
             ONLY_ACTIVE_ARCH=NO
 
