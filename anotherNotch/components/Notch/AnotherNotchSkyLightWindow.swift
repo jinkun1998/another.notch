@@ -109,6 +109,6 @@ class AnotherNotchSkyLightWindow: NSPanel {
     
     private var observers: Set<AnyCancellable> = []
     
-    override var canBecomeKey: Bool { false }
+    override var canBecomeKey: Bool { true }
     override var canBecomeMain: Bool { false }
 }
