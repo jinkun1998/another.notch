@@ -5,6 +5,25 @@
         <link>https://github.com/jinkun1998/another.notch/releases</link>
         <description>anotherNotch updates</description>
         <item>
+            <title>1.0.0-beta8</title>
+            <pubDate>Thu, 27 Aug 2026 10:07:11 +0000</pubDate>
+            <link>https://github.com/jinkun1998/another.notch/releases</link>
+            <sparkle:channel>beta</sparkle:channel>
+            <sparkle:version>15</sparkle:version>
+            <sparkle:shortVersionString>1.0.0-beta8</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <description><![CDATA[## What's Changed in 1.0.0-beta.8
+
+  - Smoother Animations: Fixed jitter and layout crunch when closing the Clipboard and expanded tabs.
+  - Better Notch Fit: Closed notch stays flush with physical hardware during transitions.
+  - Update Channels: Added Stable and Beta release switcher in Settings → About.
+  - Clipboard Search: Keyboard input focus and rounded search bar styling.
+
+  Full Changelog: https://github.com/jinkun1998/another.notch/compare/v1.0.0-beta.7...v1.0.0-beta.8
+]]></description>
+            <enclosure url="https://github.com/jinkun1998/another.notch/releases/download/v1.0.0-beta8/anotherNotch.dmg" length="8594517" type="application/octet-stream" sparkle:edSignature="V0BjIEC8E+adwhR4oVJCGOa6LcwtXZGq/y+HPvnYLiJFMtZYVCtQBwmM7HKYXxF4AzFtfuRibz9XPnAa+vCsAw=="/>
+        </item>
+        <item>
             <title>1.0.0-beta.7</title>
             <pubDate>Thu, 27 Aug 2026 09:53:57 +0000</pubDate>
             <link>https://github.com/jinkun1998/another.notch/releases</link>
@@ -69,41 +88,6 @@
 **Full Changelog**: https://github.com/jinkun1998/another.notch/compare/v1.0.0-beta.4...v1.0.0-beta.5
 ]]></description>
             <enclosure url="https://github.com/jinkun1998/another.notch/releases/download/v1.0.0-beta.6/anotherNotch.dmg" length="8595132" type="application/octet-stream" sparkle:edSignature="brdlTcM4TtaPciBeczELrLKU2Z9SQKu+93RHYkgwtvTHfvdS6ij3WHRQg6dVv2WD6wUK3AK1OVvfgBaNnVRtAA=="/>
-        </item>
-        <item>
-            <title>1.0.0-beta.5</title>
-            <pubDate>Thu, 27 Aug 2026 09:16:03 +0000</pubDate>
-            <link>https://github.com/jinkun1998/another.notch/releases</link>
-            <sparkle:channel>beta</sparkle:channel>
-            <sparkle:version>12</sparkle:version>
-            <sparkle:shortVersionString>1.0.0-beta.5</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-            <description><![CDATA[## What’s New
-
-  ### Modular Notch
-
-  - Install, remove, and reorder bundled Clipboard, Shelf, Calendar, and Camera tabs.
-  - Module services start only when installed, reducing unused background activity.
-
-  ### Refined Layout
-
-  - Unified expanded-notch spacing across every tab.
-  - Adaptive side and bottom clearance responds to transparency coverage.
-  - Improved physical-notch alignment, shell sizing, transitions, and multi-display positioning.
-
-  ### Clipboard Polish
-
-  - Clipboard search now accepts keyboard input.
-  - Refined search field with rounded visual treatment.
-
-  ### Improvements
-
-  - Refined onboarding and Settings navigation for installed modules.
-  - Improved tab visibility, header actions, and module-specific behavior.
-
-**Full Changelog**: https://github.com/jinkun1998/another.notch/compare/v1.0.0-beta.4...v1.0.0-beta.5
-]]></description>
-            <enclosure url="https://github.com/jinkun1998/another.notch/releases/download/v1.0.0-beta.5/anotherNotch.dmg" length="8586632" type="application/octet-stream" sparkle:edSignature="S0FbXN2z6sJV5kXekLuKR2z5JzGa7FvG+a7ezquDqaIkTSrS+4FDLaINuRpcRQEtKR0Mqdg5JnN1Npc5JdGxBA=="/>
         </item>
     </channel>
 </rss>
