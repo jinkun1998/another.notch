@@ -329,7 +329,7 @@ struct ContentView: View {
                         color: ((shellExpansion > 0 || isHovering) && Defaults[.enableShadow])
                             ? .black.opacity(0.7) : .clear, radius: Defaults[.cornerRadiusScaling] ? 6 : 4
                     )
-                    .scaleEffect(closingShellScale, anchor: .top)
+                    .scaleEffect(x: closingShellScale, y: 1, anchor: .top)
                     .padding(
                         .bottom,
                         vm.effectiveClosedNotchHeight == 0 ? 10 : 0
