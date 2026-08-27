@@ -54,7 +54,20 @@ struct ExpandedItem {
 class AnotherNotchViewCoordinator: ObservableObject {
     static let shared = AnotherNotchViewCoordinator()
 
-    @Published var currentView: NotchViews = .home
+    @Published var currentView: FeatureModuleID = .home {
+        didSet {
+            let modules = FeatureModuleRegistry.shared
+            guard modules.isAvailable(currentView) else {
+                currentView = .home
+                return
+            }
+
+            if oldValue == .camera, currentView != .camera {
+                modules.deactivate(.camera)
+            }
+            modules.activate(currentView)
+        }
+    }
     @Published var helloAnimationRunning: Bool = false
     private var sneakPeekDispatch: DispatchWorkItem?
     private var expandingViewDispatch: DispatchWorkItem?

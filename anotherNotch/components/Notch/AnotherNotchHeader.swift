@@ -12,24 +12,31 @@ struct AnotherNotchHeader: View {
     @EnvironmentObject var vm: AnotherNotchViewModel
     @ObservedObject var batteryModel = BatteryStatusViewModel.shared
     @ObservedObject var coordinator = AnotherNotchViewCoordinator.shared
-    @ObservedObject var webcamManager = WebcamManager.shared
     @ObservedObject private var clipboardHistory = ClipboardHistoryStore.shared
-    @Default(.showMirror) private var showMirror
+    @ObservedObject private var modules = FeatureModuleRegistry.shared
 
     var body: some View {
-        HStack(spacing: 0) {
-            TabSelectionView()
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.leading, 10)
-                .notchHeaderVisibility(vm.notchState != .closed)
+        let tabCount = CGFloat(modules.installedModules.count)
+        let tabContentWidth = tabCount * moduleTabWidth
 
+        ZStack {
             Rectangle()
                 .fill(notchDebugColor)
                 .frame(width: vm.closedNotchSize.width)
                 .frame(maxHeight: .infinity, alignment: .top)
                 .mask { NotchShape() }
 
-            HStack(spacing: 4) {
+            HStack(spacing: 0) {
+                TabSelectionView(tabWidth: moduleTabWidth)
+                    .frame(width: tabContentWidth, alignment: .leading)
+                    .padding(.leading, moduleTabLeadingPadding)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .notchHeaderVisibility(vm.notchState != .closed)
+
+                Color.clear
+                    .frame(width: vm.closedNotchSize.width)
+
+                HStack(spacing: 4) {
                 if vm.notchState == .open {
                     if isHUDType(coordinator.sneakPeek.type) && coordinator.sneakPeek.show && Defaults[.showOpenNotchHUD] {
                         OpenNotchHUD(type: $coordinator.sneakPeek.type, value: $coordinator.sneakPeek.value, icon: $coordinator.sneakPeek.icon)
@@ -44,18 +51,6 @@ struct AnotherNotchHeader: View {
                             }
                             .buttonStyle(.plain)
                             .disabled(clipboardHistory.entries.isEmpty)
-                        }
-                        if showMirror && webcamManager.cameraAvailable {
-                            HoverButton(
-                                icon: "web.camera",
-                                iconColor: .white,
-                                showsHoverHighlight: false,
-                                accessibilityLabel: "Show camera"
-                            ) {
-                                withAnimation(.smooth) {
-                                    coordinator.currentView = .camera
-                                }
-                            }
                         }
                         if Defaults[.settingsIconInNotch] {
                             HoverButton(
@@ -79,13 +74,15 @@ struct AnotherNotchHeader: View {
                             )
                         }
                     }
+                    }
                 }
+                .font(.system(.headline, design: .rounded))
+                .padding(.trailing, 10)
+                .frame(maxWidth: .infinity, alignment: .trailing)
+                .notchHeaderVisibility(vm.notchState != .closed)
             }
-            .font(.system(.headline, design: .rounded))
-            .frame(maxWidth: .infinity, alignment: .trailing)
-            .padding(.trailing, 10)
-            .notchHeaderVisibility(vm.notchState != .closed)
         }
+        .frame(maxWidth: .infinity, maxHeight: openNotchHeaderHeight)
         .foregroundColor(.gray)
         .environmentObject(vm)
     }

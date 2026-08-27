@@ -14,6 +14,10 @@ let batterySneakSize: CGSize = .init(width: 160, height: 1)
 
 let shadowPadding: CGFloat = 20
 let tabBarMinimumOpenWidth: CGFloat = 416
+let moduleTabWidth: CGFloat = 40
+let moduleTabLeadingPadding: CGFloat = 6
+let moduleTabNotchGap: CGFloat = 10
+let notchOuterHorizontalPadding: CGFloat = 19 + 12
 let openNotchHeaderHeight: CGFloat = 30
 let calendarContentSize: CGSize = .init(width: 504, height: 160)
 let calendarOpenNotchSize: CGSize = .init(
@@ -23,11 +27,10 @@ let calendarOpenNotchSize: CGSize = .init(
 let shelfOpenNotchSize: CGSize = .init(width: 640, height: 190)
 let clipboardOpenNotchWidth: CGFloat = calendarOpenNotchSize.width
 let musicOpenNotchSize: CGSize = calendarOpenNotchSize
-let maximumOpenNotchSize: CGSize = .init(
+let baseMaximumOpenNotchSize: CGSize = .init(
     width: max(shelfOpenNotchSize.width, musicOpenNotchSize.width, calendarOpenNotchSize.width),
     height: max(shelfOpenNotchSize.height, musicOpenNotchSize.height, calendarOpenNotchSize.height)
 )
-let windowSize: CGSize = .init(width: maximumOpenNotchSize.width, height: maximumOpenNotchSize.height + shadowPadding)
 
 @MainActor
 func maxClipboardOpenNotchHeight(screenUUID: String? = nil) -> CGFloat {
@@ -50,29 +53,61 @@ func clipboardOpenNotchSize(screenUUID: String? = nil) -> CGSize {
 let cornerRadiusInsets: (opened: (top: CGFloat, bottom: CGFloat), closed: (top: CGFloat, bottom: CGFloat)) = (opened: (top: 19, bottom: 24), closed: (top: 6, bottom: 14))
 
 @MainActor
+func tabHeaderMinimumOpenWidth(screenUUID: String? = nil) -> CGFloat {
+    let tabCount = CGFloat(FeatureModuleRegistry.shared.installedModules.count)
+    let tabStripWidth = tabCount * moduleTabWidth
+    let requiredInnerWingWidth = moduleTabLeadingPadding + tabStripWidth + moduleTabNotchGap
+    let physicalWidth = getClosedNotchSize(screenUUID: screenUUID).width
+    let dynamicWidth = physicalWidth + (requiredInnerWingWidth * 2) + (notchOuterHorizontalPadding * 2)
+    return max(tabBarMinimumOpenWidth, dynamicWidth)
+}
+
+@MainActor
+func moduleTabWingWidth() -> CGFloat {
+    moduleTabLeadingPadding
+        + CGFloat(FeatureModuleRegistry.shared.installedModules.count) * moduleTabWidth
+}
+
+@MainActor
+func maximumOpenNotchSize(screenUUID: String? = nil) -> CGSize {
+    .init(
+        width: max(baseMaximumOpenNotchSize.width, tabHeaderMinimumOpenWidth(screenUUID: screenUUID)),
+        height: baseMaximumOpenNotchSize.height
+    )
+}
+
+@MainActor
+func notchWindowSize(screenUUID: String? = nil) -> CGSize {
+    let maximumSize = maximumOpenNotchSize(screenUUID: screenUUID)
+    return .init(width: maximumSize.width, height: maximumSize.height + shadowPadding)
+}
+
+@MainActor
 func openNotchSize(for view: NotchViews, screenUUID: String? = nil) -> CGSize {
+    let minWidth = tabHeaderMinimumOpenWidth(screenUUID: screenUUID)
     let contentWidth: CGFloat
     let contentHeight: CGFloat
 
     switch view {
     case .home:
-        contentWidth = musicOpenNotchSize.width
+        contentWidth = max(musicOpenNotchSize.width, minWidth)
         contentHeight = musicOpenNotchSize.height
     case .clipboard:
-        return clipboardOpenNotchSize(screenUUID: screenUUID)
+        let size = clipboardOpenNotchSize(screenUUID: screenUUID)
+        return .init(width: max(size.width, minWidth), height: size.height)
     case .shelf:
-        contentWidth = shelfOpenNotchSize.width
+        contentWidth = max(shelfOpenNotchSize.width, minWidth)
         contentHeight = shelfOpenNotchSize.height
     case .calendar:
-        contentWidth = calendarOpenNotchSize.width
+        contentWidth = max(calendarOpenNotchSize.width, minWidth)
         contentHeight = calendarOpenNotchSize.height
     case .camera:
-        contentWidth = 256
+        contentWidth = max(256, minWidth)
         contentHeight = 190
     }
 
     return .init(
-        width: max(contentWidth, tabBarMinimumOpenWidth),
+        width: contentWidth,
         height: contentHeight
     )
 }

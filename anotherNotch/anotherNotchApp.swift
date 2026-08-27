@@ -92,7 +92,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             screenUnlockedObserver = nil
         }
         MusicManager.shared.destroy()
-        ClipboardHistoryStore.shared.stopMonitoring()
+        FeatureModuleRegistry.shared.deactivate(.clipboard)
         cleanupDragDetectors()
         cleanupWindows()
         XPCHelperClient.shared.stopMonitoringAccessibilityAuthorization()
@@ -206,8 +206,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         guard let uuid = screen.displayUUID else { return }
         
         let screenFrame = screen.frame
-        let notchHeight = maximumOpenNotchSize.height
-        let notchWidth = maximumOpenNotchSize.width
+        let maximumSize = maximumOpenNotchSize(screenUUID: uuid)
+        let notchHeight = maximumSize.height
+        let notchWidth = maximumSize.width
         
         // Create notch region at the top-center of the screen where an open notch would occupy
         let notchRegion = CGRect(
@@ -231,6 +232,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func handleDragEntersNotchRegion(onScreen screen: NSScreen) {
         guard let uuid = screen.displayUUID else { return }
+        guard FeatureModuleRegistry.shared.isAvailable(.shelf) else { return }
         
         if Defaults[.showOnAllDisplays], let viewModel = viewModels[uuid] {
             viewModel.open()
@@ -242,7 +244,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func createAnotherNotchWindow(for screen: NSScreen, with viewModel: AnotherNotchViewModel) -> NSWindow {
-        let rect = NSRect(x: 0, y: 0, width: windowSize.width, height: windowSize.height)
+        let size = notchWindowSize(screenUUID: viewModel.screenUUID)
+        let rect = NSRect(x: 0, y: 0, width: size.width, height: size.height)
         let styleMask: NSWindow.StyleMask = [.borderless, .nonactivatingPanel, .utilityWindow, .hudWindow]
         
         let window = AnotherNotchSkyLightWindow(contentRect: rect, styleMask: styleMask, backing: .buffered, defer: false)
@@ -302,17 +305,23 @@ class AppDelegate: NSObject, NSApplicationDelegate {
               let screen = targetWindow.screen ?? viewModel.screenUUID.flatMap({ NSScreen.screen(withUUID: $0) }) ?? NSScreen.main
         else { return }
 
+        let windowSize = notchWindowSize(screenUUID: viewModel.screenUUID)
         let size = CGSize(
             width: windowSize.width,
             height: max(windowSize.height, viewModel.notchSize.height + shadowPadding)
         )
-        targetWindow.setFrame(NSRect(origin: targetWindow.frame.origin, size: size), display: true)
-        positionWindow(targetWindow, on: screen)
+        let frame = NSRect(
+            x: screen.frame.midX - size.width / 2,
+            y: screen.frame.maxY - size.height + 1,
+            width: size.width,
+            height: size.height
+        )
+        targetWindow.setFrame(frame, display: true)
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         _ = VolumeManager.shared
-        ClipboardHistoryStore.shared.startMonitoring()
+        FeatureModuleRegistry.shared.startInstalledServices()
 
         let normalizedMusicControls = MusicControlButton.normalizedLayout(Defaults[.musicControlSlots])
         if Defaults[.musicControlSlots] != normalizedMusicControls {
