@@ -688,10 +688,11 @@ struct ContentView: View {
                 .padding(.bottom, sharedExpandedContentInset)
                 .frame(
                     maxWidth: .infinity,
-                    maxHeight: expandedContentHeight,
+                    maxHeight: max(0, openNotchSize(for: coordinator.currentView, screenUUID: vm.screenUUID).height - openNotchHeaderHeight),
                     alignment: .top
                 )
                 .scaleEffect(expandedContentScale, anchor: .top)
+                .opacity(shellExpansion)
                 .zIndex(1)
                 .allowsHitTesting(vm.notchState == .open)
                 .opacity(
