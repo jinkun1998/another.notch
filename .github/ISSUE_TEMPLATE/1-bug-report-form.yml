@@ -36,8 +36,8 @@ body:
         Settings > About)
       options:
         - Select a version
-        - v1.0.0-beta9
         - v1.0.0-beta8
+        - v1.0.0-beta.9
         - v1.0.0-beta.7
         - v1.0.0-beta.6
         - v1.0.0-beta.5
