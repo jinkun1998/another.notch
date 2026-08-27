@@ -147,8 +147,8 @@ struct ContentView: View {
         notchGradientBlackCoverage
     }
 
-    private var expandedContentBottomInset: CGFloat {
-        expandedContentHeight * (1 - opaqueNotchCoverage)
+    private var sharedExpandedContentInset: CGFloat {
+        expandedContentInset(screenUUID: vm.screenUUID)
     }
 
     private var closingShellScale: CGFloat {
@@ -159,7 +159,7 @@ struct ContentView: View {
         let notchHeight = isClosingShell
             ? openNotchSize(for: coordinator.currentView, screenUUID: vm.screenUUID).height
             : vm.notchSize.height
-        return max(0, notchHeight - openNotchHeaderHeight - expandedContentTopPadding(screenUUID: vm.screenUUID))
+        return max(0, notchHeight - openNotchHeaderHeight)
     }
 
     private var albumArtTransition: Animation {
@@ -414,6 +414,13 @@ struct ContentView: View {
                             vm.notchSize = closedSize
                         }
                     }
+                    .onChange(of: notchGradientBlackCoverage) { _, _ in
+                        guard vm.notchState == .open else { return }
+                        vm.notchSize = openNotchSize(
+                            for: coordinator.currentView,
+                            screenUUID: vm.screenUUID
+                        )
+                    }
                     .onReceive(clipboardHistory.$entries) { _ in
                         guard vm.notchState == .open, coordinator.currentView == .clipboard else { return }
                         vm.notchSize = openNotchSize(for: .clipboard, screenUUID: vm.screenUUID)
@@ -660,10 +667,8 @@ struct ContentView: View {
                     case .clipboard:
                         ClipboardHistoryView()
                             .frame(maxWidth: .infinity)
-                            .frame(maxHeight: max(0, vm.notchSize.height - openNotchHeaderHeight), alignment: .top)
                     case .shelf:
                         ShelfView()
-                            .padding(.vertical, 8)
                     case .calendar:
                         CalendarView()
                             .frame(maxWidth: .infinity)
@@ -674,13 +679,13 @@ struct ContentView: View {
                     case .camera:
                         CameraPreviewView(webcamManager: webcamManager)
                             .frame(width: 160, height: 160)
-                            .padding(8)
                     }
                 }
                 .animation(nil, value: coordinator.currentView)
                 .id(contentIdentity)
                 .padding(.top, expandedContentTopPadding(screenUUID: vm.screenUUID))
-                .padding(.bottom, expandedContentBottomInset)
+                .padding(.horizontal, sharedExpandedContentInset)
+                .padding(.bottom, sharedExpandedContentInset)
                 .frame(
                     maxWidth: .infinity,
                     maxHeight: expandedContentHeight,
