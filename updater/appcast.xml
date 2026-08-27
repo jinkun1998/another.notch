@@ -5,6 +5,18 @@
         <link>https://github.com/jinkun1998/another.notch/releases</link>
         <description>anotherNotch updates</description>
         <item>
+            <title>1.0.0-beta.10</title>
+            <pubDate>Thu, 27 Aug 2026 13:48:22 +0000</pubDate>
+            <link>https://github.com/jinkun1998/another.notch/releases</link>
+            <sparkle:channel>beta</sparkle:channel>
+            <sparkle:version>19</sparkle:version>
+            <sparkle:shortVersionString>1.0.0-beta.10</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <description><![CDATA[**Full Changelog**: https://github.com/jinkun1998/another.notch/compare/v1.0.0-beta.9...v1.0.0-beta.10
+]]></description>
+            <enclosure url="https://github.com/jinkun1998/another.notch/releases/download/v1.0.0-beta.10/anotherNotch.dmg" length="8679970" type="application/octet-stream" sparkle:edSignature="SilFlSM4y1SK36gcP4gzetPrn6KZY/CmT+20Vx+B6Y/eH4DDN4a1/7M+/+nn35aScu7RcaKAqJt3fHAogvsnCg=="/>
+        </item>
+        <item>
             <title>1.0.0-beta8</title>
             <pubDate>Thu, 27 Aug 2026 10:07:11 +0000</pubDate>
             <link>https://github.com/jinkun1998/another.notch/releases</link>
@@ -53,41 +65,6 @@
   **Full Changelog**: https://github.com/jinkun1998/another.notch/compare/v1.0.0-beta.5...v1.0.0-beta.6
 ]]></description>
             <enclosure url="https://github.com/jinkun1998/another.notch/releases/download/v1.0.0-beta.7/anotherNotch.dmg" length="8595018" type="application/octet-stream" sparkle:edSignature="jdbwyVcjpdKwsuPEccmzx7z0gegPSMrBGeiMAUS5zv9A9gdJscdaaDwluYhla9+3sC2lQPbUB7cMs23FntP0BA=="/>
-        </item>
-        <item>
-            <title>1.0.0-beta.6</title>
-            <pubDate>Thu, 27 Aug 2026 09:31:27 +0000</pubDate>
-            <link>https://github.com/jinkun1998/another.notch/releases</link>
-            <sparkle:channel>beta</sparkle:channel>
-            <sparkle:version>13</sparkle:version>
-            <sparkle:shortVersionString>1.0.0-beta.6</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-            <description><![CDATA[## What’s New
-
-  ### Modular Notch
-
-  - Install, remove, and reorder bundled Clipboard, Shelf, Calendar, and Camera tabs.
-  - Module services start only when installed, reducing unused background activity.
-
-  ### Refined Layout
-
-  - Unified expanded-notch spacing across every tab.
-  - Adaptive side and bottom clearance responds to transparency coverage.
-  - Improved physical-notch alignment, shell sizing, transitions, and multi-display positioning.
-
-  ### Clipboard Polish
-
-  - Clipboard search now accepts keyboard input.
-  - Refined search field with rounded visual treatment.
-
-  ### Improvements
-
-  - Refined onboarding and Settings navigation for installed modules.
-  - Improved tab visibility, header actions, and module-specific behavior.
-
-**Full Changelog**: https://github.com/jinkun1998/another.notch/compare/v1.0.0-beta.4...v1.0.0-beta.5
-]]></description>
-            <enclosure url="https://github.com/jinkun1998/another.notch/releases/download/v1.0.0-beta.6/anotherNotch.dmg" length="8595132" type="application/octet-stream" sparkle:edSignature="brdlTcM4TtaPciBeczELrLKU2Z9SQKu+93RHYkgwtvTHfvdS6ij3WHRQg6dVv2WD6wUK3AK1OVvfgBaNnVRtAA=="/>
         </item>
     </channel>
 </rss>
