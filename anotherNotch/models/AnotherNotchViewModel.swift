@@ -34,7 +34,11 @@ class AnotherNotchViewModel: NSObject, ObservableObject {
 
     @Published var screenUUID: String?
 
-    @Published var notchSize: CGSize = getClosedNotchSize()
+    @Published var notchSize: CGSize = getClosedNotchSize() {
+        didSet {
+            NotificationCenter.default.post(name: .notchContentSizeChanged, object: self)
+        }
+    }
     @Published var closedNotchSize: CGSize = getClosedNotchSize()
     
     deinit {
@@ -138,7 +142,7 @@ class AnotherNotchViewModel: NSObject, ObservableObject {
     }
 
     func open() {
-        self.notchSize = openNotchSize(for: coordinator.currentView)
+        self.notchSize = openNotchSize(for: coordinator.currentView, screenUUID: self.screenUUID)
         self.notchState = .open
         
         // Force music information update when notch is opened

@@ -21,15 +21,36 @@ let calendarOpenNotchSize: CGSize = .init(
     height: max(190, calendarContentSize.height + 12)
 )
 let shelfOpenNotchSize: CGSize = .init(width: 640, height: 190)
+let clipboardOpenNotchWidth: CGFloat = calendarOpenNotchSize.width
 let musicOpenNotchSize: CGSize = calendarOpenNotchSize
 let maximumOpenNotchSize: CGSize = .init(
     width: max(shelfOpenNotchSize.width, musicOpenNotchSize.width, calendarOpenNotchSize.width),
     height: max(shelfOpenNotchSize.height, musicOpenNotchSize.height, calendarOpenNotchSize.height)
 )
 let windowSize: CGSize = .init(width: maximumOpenNotchSize.width, height: maximumOpenNotchSize.height + shadowPadding)
+
+@MainActor
+func maxClipboardOpenNotchHeight(screenUUID: String? = nil) -> CGFloat {
+    let screen = screenUUID.flatMap { NSScreen.screen(withUUID: $0) } ?? NSScreen.main
+    return max(190, (screen?.frame.height ?? 900) / 2)
+}
+
+@MainActor
+func clipboardOpenNotchSize(screenUUID: String? = nil) -> CGSize {
+    let store = ClipboardHistoryStore.shared
+    let maxAllowed = maxClipboardOpenNotchHeight(screenUUID: screenUUID)
+    if store.entries.isEmpty {
+        return .init(width: clipboardOpenNotchWidth, height: min(220, maxAllowed))
+    }
+    let entryCount = store.entries.count
+    let listHeight = CGFloat(entryCount * 56 + max(0, entryCount - 1) * 8 + 18)
+    let dynamicHeight = openNotchHeaderHeight + listHeight
+    return .init(width: clipboardOpenNotchWidth, height: max(160, min(dynamicHeight, maxAllowed)))
+}
 let cornerRadiusInsets: (opened: (top: CGFloat, bottom: CGFloat), closed: (top: CGFloat, bottom: CGFloat)) = (opened: (top: 19, bottom: 24), closed: (top: 6, bottom: 14))
 
-func openNotchSize(for view: NotchViews) -> CGSize {
+@MainActor
+func openNotchSize(for view: NotchViews, screenUUID: String? = nil) -> CGSize {
     let contentWidth: CGFloat
     let contentHeight: CGFloat
 
@@ -37,6 +58,8 @@ func openNotchSize(for view: NotchViews) -> CGSize {
     case .home:
         contentWidth = musicOpenNotchSize.width
         contentHeight = musicOpenNotchSize.height
+    case .clipboard:
+        return clipboardOpenNotchSize(screenUUID: screenUUID)
     case .shelf:
         contentWidth = shelfOpenNotchSize.width
         contentHeight = shelfOpenNotchSize.height
@@ -98,7 +121,7 @@ enum MusicPlayerImageSizes {
             // This is a display WITH a notch - use notch height settings
             notchHeight = Defaults[.notchHeight]
             if Defaults[.notchHeightMode] == .matchRealNotchSize {
-                notchHeight = screen.safeAreaInsets.top
+                notchHeight = screen.safeAreaInsets.top + 2
             } else if Defaults[.notchHeightMode] == .matchMenuBar {
                 notchHeight = screen.frame.maxY - screen.visibleFrame.maxY
             }

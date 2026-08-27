@@ -42,6 +42,7 @@ private enum SettingsPage: String, CaseIterable, Identifiable {
     case media = "Media"
     case calendar = "Calendar"
     case hud = "HUD"
+    case clipboard = "Clipboard"
     case battery = "Battery"
     case bluetooth = "Bluetooth"
     case shelf = "Shelf"
@@ -58,6 +59,7 @@ private enum SettingsPage: String, CaseIterable, Identifiable {
         case .media: "play.laptopcomputer"
         case .calendar: "calendar"
         case .hud: "slider.horizontal.3"
+        case .clipboard: "clipboard"
         case .battery: "battery.100percent"
         case .bluetooth: "airpodspro"
         case .shelf: "books.vertical"
@@ -74,6 +76,7 @@ private enum SettingsPage: String, CaseIterable, Identifiable {
         case .media: "Music controls, player sources, and visualizers."
         case .calendar: "Events, reminders, and calendar display."
         case .hud: "System volume, brightness, and status indicators."
+        case .clipboard: "Clipboard history, image storage, and capture settings."
         case .battery: "Battery status notifications and charging options."
         case .bluetooth: "Bluetooth output connection notifications."
         case .shelf: "Drag, drop, and saved Shelf items."
@@ -125,6 +128,7 @@ struct SettingsView: View {
                     sidebarRow(.media)
                     sidebarRow(.calendar)
                     sidebarRow(.hud)
+                    sidebarRow(.clipboard)
                     sidebarRow(.battery)
                     sidebarRow(.bluetooth)
                     sidebarRow(.shelf)
@@ -172,6 +176,8 @@ struct SettingsView: View {
                     CalendarSettings()
                     case .hud:
                     HUD()
+                    case .clipboard:
+                    ClipboardSettings()
                     case .battery:
                     Charge()
                     case .bluetooth:
@@ -1070,6 +1076,10 @@ struct About: View {
                 }
             }
 
+            Section("Thanks") {
+                Link("Maccy by p0deje", destination: URL(string: "https://github.com/p0deje/Maccy")!)
+            }
+
             Section {
                 Button("Quit anotherNotch", role: .destructive) {
                     NSApp.terminate(nil)
@@ -1100,6 +1110,45 @@ struct About: View {
             .padding(20)
             .frame(width: 360)
         }
+    }
+}
+
+struct ClipboardSettings: View {
+    @Default(.clipboardHistoryEnabled) private var enabled
+    @Default(.clipboardHistoryLimit) private var historyLimit
+    @Default(.clipboardImageLimitMB) private var imageLimitMB
+    @Default(.clipboardOCREnabled) private var ocrEnabled
+    @Default(.clipboardSearchMode) private var searchMode
+
+    var body: some View {
+        Form {
+            Section("Capture") {
+                Toggle("Enable clipboard history", isOn: $enabled)
+                Stepper("History limit: \(historyLimit)", value: $historyLimit, in: 10...500, step: 10)
+                    .onChange(of: historyLimit) { ClipboardHistoryStore.shared.enforceRetention() }
+                Stepper("Image limit: \(imageLimitMB) MB", value: $imageLimitMB, in: 1...25)
+            }
+            Section("Text Recognition") {
+                Toggle("Extract text from images (OCR)", isOn: $ocrEnabled)
+                Text("Uses on-device Vision to recognize text in copied images.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            Section("Search") {
+                Picker("Mode", selection: $searchMode) {
+                    ForEach(ClipboardSearchMode.allCases) { mode in
+                        Text(mode.rawValue).tag(mode)
+                    }
+                }
+                .foregroundStyle(.white)
+            }
+            Section {
+                Button("Clear History", role: .destructive) {
+                    ClipboardHistoryStore.shared.clear()
+                }
+            }
+        }
+        .accentColor(.effectiveAccent)
     }
 }
 

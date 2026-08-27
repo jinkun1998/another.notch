@@ -504,6 +504,9 @@
         }
       }
     },
+    "%.1f seconds" : {
+
+    },
     "%.1fs" : {
       "localizations" : {
         "ar" : {
@@ -1606,6 +1609,7 @@
       }
     },
     "Accessibility access is required to replace the system HUD." : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -1704,6 +1708,9 @@
           }
         }
       }
+    },
+    "Accessibility permission" : {
+
     },
     "Add" : {
       "localizations" : {
@@ -2407,6 +2414,9 @@
         }
       }
     },
+    "Allowed" : {
+
+    },
     "Always show full event titles" : {
       "localizations" : {
         "ar" : {
@@ -2710,6 +2720,9 @@
           }
         }
       }
+    },
+    "Another Notch app for macOS" : {
+
     },
     "another.notch" : {
       "extractionState" : "stale",
@@ -3520,6 +3533,9 @@
         }
       }
     },
+    "Battery %lld percent" : {
+
+    },
     "Battery Information" : {
       "localizations" : {
         "ar" : {
@@ -3820,6 +3836,9 @@
         }
       }
     },
+    "Bluetooth Device Notifications" : {
+
+    },
     "Boost your productivity with Clipboard Manager" : {
       "localizations" : {
         "ar" : {
@@ -4025,6 +4044,7 @@
       }
     },
     "Calendar access is denied. Please enable it in System Settings." : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -4123,6 +4143,9 @@
           }
         }
       }
+    },
+    "Calendar access is required to show events." : {
+
     },
     "Calendars" : {
       "localizations" : {
@@ -4224,6 +4247,12 @@
         }
       }
     },
+    "Camera access allowed" : {
+
+    },
+    "Camera access needed" : {
+
+    },
     "Cancel" : {
       "localizations" : {
         "ar" : {
@@ -4323,6 +4352,9 @@
           }
         }
       }
+    },
+    "Capture" : {
+
     },
     "Center black coverage" : {
 
@@ -5227,7 +5259,14 @@
         }
       }
     },
+    "Clear" : {
+
+    },
+    "Clear History" : {
+
+    },
     "Clear slot" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -5326,6 +5365,9 @@
           }
         }
       }
+    },
+    "Clipboard is empty" : {
+
     },
     "Close" : {
       "localizations" : {
@@ -7131,6 +7173,9 @@
         }
       }
     },
+    "Delete clipboard entry" : {
+
+    },
     "Description" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -7639,6 +7684,7 @@
       }
     },
     "Drag a control onto a slot" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -7738,7 +7784,11 @@
         }
       }
     },
+    "Drag a control onto an unlocked button" : {
+
+    },
     "Drag items in the preview to reorder or drop from the palette" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -8337,6 +8387,9 @@
           }
         }
       }
+    },
+    "Enable clipboard history" : {
+
     },
     "Enable colored spectrograms" : {
       "extractionState" : "stale",
@@ -9440,6 +9493,9 @@
         }
       }
     },
+    "Extract text from images (OCR)" : {
+
+    },
     "Features" : {
 
     },
@@ -10450,7 +10506,13 @@
         }
       }
     },
-    "Hello" : {
+    "Grant" : {
+
+    },
+    "Grant Calendar Access" : {
+
+    },
+    "Grant Reminder Access" : {
 
     },
     "Hide all-day events" : {
@@ -11253,6 +11315,9 @@
         }
       }
     },
+    "History limit: %lld" : {
+
+    },
     "Hover delay" : {
       "localizations" : {
         "ar" : {
@@ -11453,7 +11518,11 @@
         }
       }
     },
+    "HUD rows" : {
+
+    },
     "HUD style" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -11654,6 +11723,12 @@
         }
       }
     },
+    "Image" : {
+
+    },
+    "Image limit: %lld MB" : {
+
+    },
     "In progress" : {
       "localizations" : {
         "ar" : {
@@ -11754,7 +11829,11 @@
         }
       }
     },
+    "Indicator Layout" : {
+
+    },
     "Inline" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -12355,6 +12434,9 @@
         }
       }
     },
+    "Maccy by p0deje" : {
+
+    },
     "Made with 🫶🏻 by another.notch" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -12455,6 +12537,9 @@
           }
         }
       }
+    },
+    "Manage" : {
+
     },
     "Mark as complete" : {
       "localizations" : {
@@ -13657,6 +13742,7 @@
       }
     },
     "Mic %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -15056,6 +15142,9 @@
           }
         }
       }
+    },
+    "Not allowed" : {
+
     },
     "Not Now" : {
       "localizations" : {
@@ -17169,6 +17258,7 @@
       }
     },
     "Reminder access is denied. Please enable it in System Settings." : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -17267,6 +17357,9 @@
           }
         }
       }
+    },
+    "Reminder access is required to show reminders." : {
+
     },
     "Reminders" : {
       "localizations" : {
@@ -17669,6 +17762,7 @@
       }
     },
     "Request Accessibility" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -18074,6 +18168,9 @@
 
     },
     "Rotate album artwork during playback" : {
+
+    },
+    "Rows" : {
 
     },
     "Running" : {
@@ -18979,6 +19076,9 @@
         }
       }
     },
+    "Show Bluetooth device connection indicator" : {
+
+    },
     "Show calendar" : {
       "localizations" : {
         "ar" : {
@@ -19178,6 +19278,9 @@
           }
         }
       }
+    },
+    "Show device name" : {
+
     },
     "Show HUD in open notch" : {
       "localizations" : {
@@ -20379,6 +20482,9 @@
         }
       }
     },
+    "Sneak Peek Duration" : {
+
+    },
     "Sneak Peek shows the media title and artist under the notch for a few seconds." : {
       "localizations" : {
         "ar" : {
@@ -21283,6 +21389,15 @@
           }
         }
       }
+    },
+    "Text" : {
+
+    },
+    "Text Recognition" : {
+
+    },
+    "Thanks" : {
+
     },
     "Time to Full Charge: %lld min" : {
       "localizations" : {
@@ -22285,6 +22400,9 @@
         }
       }
     },
+    "URL" : {
+
+    },
     "Use music visualizer spectrogram" : {
       "localizations" : {
         "ar" : {
@@ -22484,6 +22602,9 @@
           }
         }
       }
+    },
+    "Uses on-device Vision to recognize text in copied images." : {
+
     },
     "Using System Accent" : {
       "localizations" : {

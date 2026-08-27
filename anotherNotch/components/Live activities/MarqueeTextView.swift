@@ -23,6 +23,7 @@ struct MeasureSizeModifier: ViewModifier {
 }
 
 struct MarqueeText: View {
+    private let loopingSpacing: CGFloat = 20
     @Binding var text: String
     let font: Font
     let nsFont: NSFont.TextStyle
@@ -30,12 +31,13 @@ struct MarqueeText: View {
     let backgroundColor: Color
     let minDuration: Double
     let frameWidth: CGFloat
+    let centerWhenFits: Bool
     
     @State private var animate = false
     @State private var textSize: CGSize = .zero
     @State private var offset: CGFloat = 0
     
-    init(_ text: Binding<String>, font: Font = .body, nsFont: NSFont.TextStyle = .body, textColor: Color = .primary, backgroundColor: Color = .clear, minDuration: Double = 3.0, frameWidth: CGFloat = 200) {
+    init(_ text: Binding<String>, font: Font = .body, nsFont: NSFont.TextStyle = .body, textColor: Color = .primary, backgroundColor: Color = .clear, minDuration: Double = 3.0, frameWidth: CGFloat = 200, centerWhenFits: Bool = false) {
         _text = text
         self.font = font
         self.nsFont = nsFont
@@ -43,6 +45,7 @@ struct MarqueeText: View {
         self.backgroundColor = backgroundColor
         self.minDuration = minDuration
         self.frameWidth = frameWidth
+        self.centerWhenFits = centerWhenFits
     }
     
     private var needsScrolling: Bool {
@@ -52,7 +55,7 @@ struct MarqueeText: View {
     var body: some View {
         GeometryReader { geometry in
             ZStack(alignment: .leading) {
-                HStack(spacing: 20) {
+                HStack(spacing: loopingSpacing) {
                     Text(text)
                     Text(text)
                         .opacity(needsScrolling ? 1 : 0)
@@ -61,7 +64,7 @@ struct MarqueeText: View {
                 .font(font)
                 .foregroundColor(textColor)
                 .fixedSize(horizontal: true, vertical: false)
-                .offset(x: self.animate ? offset : 0)
+                .offset(x: self.animate ? offset : (centerWhenFits && !needsScrolling ? (textSize.width + loopingSpacing) / 2 : 0))
                 .animation(
                     self.animate ?
                         .linear(duration: Double(textSize.width / 30))
@@ -84,7 +87,7 @@ struct MarqueeText: View {
                     }
                 }
             }
-            .frame(width: frameWidth, alignment: .leading)
+            .frame(width: frameWidth, alignment: centerWhenFits && !needsScrolling ? .center : .leading)
             .clipped()
         }
         .frame(height: textSize.height * 1.3)
