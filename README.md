@@ -7,7 +7,11 @@
 
 **Another Notch** is a free, open-source macOS menu bar app that turns your MacBook notch into a Dynamic Island-style utility. Music controls, calendar integration, file shelf with AirDrop support, system HUD replacement, battery status, and camera features stay one hover away.
 
-[Website](https://jinkun1998.github.io/another.notch/) · [Download for macOS](https://github.com/jinkun1998/another.notch/releases/latest) · [Source code](https://github.com/jinkun1998/another.notch)
+<p align="center">
+  <a href="https://jinkun1998.github.io/another.notch/">Website</a> ·
+  <a href="https://github.com/jinkun1998/another.notch/releases/latest">Download for macOS</a> ·
+  <a href="https://github.com/jinkun1998/another.notch">Source code</a>
+</p>
 
 > **Upstream attribution:** Another Notch is a modified version of [TheBoredTeam’s original Boring Notch](https://github.com/TheBoredTeam/boring.notch). Original copyright and GPL-3.0 notices are retained. Last materially modified on August 23, 2026.
 
@@ -62,6 +66,7 @@ Homebrew support is coming soon. Until then, install manually using the release 
 - Launch the app, and voilà—your notch is now the coolest part of your screen.
 - Hover over the notch to see it expand and reveal all its secrets.
 - Use the controls to manage your music like a rockstar.
+- Open the Clipboard tab to search and reuse recent clipboard entries.
 - Open Settings to customize the notch.
 
 ## Follow the Project
@@ -96,7 +101,7 @@ Homebrew support is coming soon. Until then, install manually using the release 
 - [x] Modern macOS System Settings UI
 - [x] System HUD replacements (volume, brightness, backlight)
 - [x] Bluetooth device live activity
-- [ ] Clipboard manager
+- [x] Searchable clipboard manager
 - [ ] Fan controls
 - [ ] Lock screen widgets
 - [ ] Extension system
