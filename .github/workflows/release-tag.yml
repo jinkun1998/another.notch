@@ -41,7 +41,7 @@ jobs:
       head_ref: ${{ github.ref }}
       version: ${{ needs.validate_tag.outputs.version }}
       build_number: ${{ github.run_number }}
-      code_sign_identity: ${{ vars.CODE_SIGN_IDENTITY || 'Apple Development' }}
+      code_sign_identity: "Apple Development: DOAN  LE QUOC THAO (V632GK6J9A)"
       persist_version_changes: false
     secrets:
       BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}

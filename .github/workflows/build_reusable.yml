@@ -18,7 +18,7 @@ on:
       code_sign_identity:
         required: false
         type: string
-        default: "Apple Development"
+        default: "Apple Development: DOAN  LE QUOC THAO (V632GK6J9A)"
       persist_version_changes:
         required: false
         type: boolean
@@ -42,7 +42,7 @@ jobs:
       EXPORT_METHOD: ${{ vars.EXPORT_METHOD || 'development' }}
       VERSION_INPUT: ${{ inputs.version }}
       BUILD_NUMBER_INPUT: ${{ inputs.build_number }}
-      DEVELOPMENT_TEAM: ${{ vars.DEVELOPMENT_TEAM_ID }}
+      DEVELOPMENT_TEAM: V632GK6J9A
       CODE_SIGN_IDENTITY: ${{ inputs.code_sign_identity }}
       XCODE_VERSION: ${{ inputs.xcode_version }}
     steps:
@@ -68,6 +68,10 @@ jobs:
           security import "$CERT_PATH" -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k "$KC"
           security list-keychain -d user -s "$KC"
           security find-identity -v -p codesigning "$KC"
+          security find-identity -v -p codesigning "$KC" | grep -Fq 'Apple Development: DOAN  LE QUOC THAO (V632GK6J9A)' || {
+            echo "::error::BUILD_CERTIFICATE_BASE64 must contain Apple Development: DOAN  LE QUOC THAO (V632GK6J9A)."
+            exit 1
+          }
 
       - name: Select Xcode
         run: |
@@ -127,8 +131,8 @@ jobs:
             -scheme ${{ env.PROJECT_NAME }} \
             -archivePath ${{ env.PROJECT_NAME }} \
             -destination "generic/platform=macOS" \
-            DEVELOPMENT_TEAM="${{ env.DEVELOPMENT_TEAM || 'V632GK6J9A' }}" \
-            CODE_SIGN_IDENTITY="${{ env.CODE_SIGN_IDENTITY || 'Apple Development' }}" \
+            DEVELOPMENT_TEAM="${{ env.DEVELOPMENT_TEAM }}" \
+            CODE_SIGN_IDENTITY="${{ env.CODE_SIGN_IDENTITY }}" \
             CODE_SIGN_STYLE=Manual \
             PROVISIONING_PROFILE_SPECIFIER="" \
             ENABLE_HARDENED_RUNTIME=YES \
@@ -142,9 +146,6 @@ jobs:
             "${{ env.PROJECT_NAME }}.xcarchive/Products/Applications/${{ env.PROJECT_NAME }}.app" \
             "Release/${{ env.PROJECT_NAME }}.app"
           SIGN_IDENTITY="${{ env.CODE_SIGN_IDENTITY }}"
-          if [[ -z "$SIGN_IDENTITY" || "$SIGN_IDENTITY" == "none" ]]; then
-            SIGN_IDENTITY="Apple Development: DOAN  LE QUOC THAO (V632GK6J9A)"
-          fi
           echo "Signing app with identity: $SIGN_IDENTITY"
           codesign --force --deep --sign "$SIGN_IDENTITY" --timestamp --options runtime "Release/${{ env.PROJECT_NAME }}.app"
           codesign --verify --deep --strict --verbose=2 "Release/${{ env.PROJECT_NAME }}.app"
