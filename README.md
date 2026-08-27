@@ -1,4 +1,4 @@
-# Another Notch — macOS app for a useful MacBook notch
+# anotherNotch - Another Notch app for macOS
 
 
 <p align="center">
