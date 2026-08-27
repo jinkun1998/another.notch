@@ -31,6 +31,12 @@ class SettingsWindowController: NSWindowController {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+
+    static func present() {
+        DispatchQueue.main.async {
+            shared.showWindow()
+        }
+    }
     
     func setUpdaterController(_ controller: SPUStandardUpdaterController) {
         self.updaterController = controller

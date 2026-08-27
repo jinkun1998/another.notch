@@ -98,7 +98,7 @@ struct WheelPicker: View {
             .background(isSelected ? Color.effectiveAccentBackground : Color.clear)
             .cornerRadius(8)
         }
-        .buttonStyle(PlainButtonStyle())
+        .buttonStyle(.plain)
         .id(id)
     }
 
@@ -428,7 +428,7 @@ struct EventListView: View {
                     }
                     .id(event.id)
                     .padding(.leading, -5)
-                    .buttonStyle(PlainButtonStyle())
+                    .buttonStyle(.plain)
                     .listRowSeparator(.automatic)
                     .listRowSeparatorTint(.gray.opacity(0.2))
                     .listRowBackground(Color.clear)
@@ -573,7 +573,7 @@ struct ReminderToggle: View {
                     .frame(width: 14, height: 14)
             }
         }
-        .buttonStyle(PlainButtonStyle())
+        .buttonStyle(.plain)
         .padding(0)
         .accessibilityLabel(isOn ? "Mark as incomplete" : "Mark as complete")
     }
