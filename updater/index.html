@@ -37,7 +37,9 @@
     .button.primary { background: #fff; border-color: #fff; color: #111; }
     .button:hover { transform: translateY(-1px); filter: brightness(1.08); }
     .release-notes { display: inline-block; margin-top: 18px; color: #a1a1a6; font-size: 14px; }
-    @media (max-width: 620px) { main { width: min(100% - 28px, 920px); } nav { inset: 20px 20px auto; } .hero { min-height: 100vh; padding: 80px 0; } .notch { height: 58px; border-radius: 0 0 26px 26px; margin-bottom: 42px; } }
+    .demo { padding: 0 0 96px; }
+    .demo video { display: block; width: 100%; border: 1px solid #ffffff18; border-radius: 24px; box-shadow: 0 28px 70px #0008; }
+    @media (max-width: 620px) { main { width: min(100% - 28px, 920px); } nav { inset: 20px 20px auto; } .hero { min-height: 100vh; padding: 80px 0; } .notch { height: 58px; border-radius: 0 0 26px 26px; margin-bottom: 42px; } .demo { padding-bottom: 48px; } .demo video { border-radius: 16px; } }
   </style>
 </head>
 <body>
@@ -58,6 +60,11 @@
         </div>
         <a class="text-link release-notes" href="https://github.com/jinkun1998/another.notch/releases">Release notes</a>
       </div>
+    </section>
+    <section class="demo" aria-label="Another Notch preview">
+      <video controls autoplay muted loop playsinline>
+        <source src="assets/another-notch-demo.mp4" type="video/mp4">
+      </video>
     </section>
   </main>
 </body>
