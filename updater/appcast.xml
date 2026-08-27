@@ -5,6 +5,37 @@
         <link>https://github.com/jinkun1998/another.notch/releases</link>
         <description>anotherNotch updates</description>
         <item>
+            <title>1.0.0-beta.7</title>
+            <pubDate>Thu, 27 Aug 2026 09:53:57 +0000</pubDate>
+            <link>https://github.com/jinkun1998/another.notch/releases</link>
+            <sparkle:channel>beta</sparkle:channel>
+            <sparkle:version>14</sparkle:version>
+            <sparkle:shortVersionString>1.0.0-beta.7</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <description><![CDATA[## What’s New in anotherNotch 1.0.0-beta.6
+
+  ### 🚀 Release Channels
+  - **Stable & Beta Updates**: Choose your update track directly in **Settings → About**.
+  - **Instant Channel Switching**: Opt in to beta releases or stay on stable builds anytime.
+
+  ### 📐 Notch Geometry & Layout
+  - **Physical Notch Alignment**: Closed state stays flush with hardware notch height during expand/collapse transitions.
+  - **Adaptive Spacing**: Dynamic left, right, and bottom insets automatically match Center Black coverage.
+
+  ### 📋 Clipboard Experience
+  - **Searchable History**: Keyboard focus and typing in the search bar.
+  - **Polished Visuals**: Rounded, layered search styling matching macOS design language.
+
+  ### ⚡ Performance & Polish
+  - Background module services only initialize when installed.
+  - Smoother shell resize and close animations.
+
+  ---
+  **Full Changelog**: https://github.com/jinkun1998/another.notch/compare/v1.0.0-beta.5...v1.0.0-beta.6
+]]></description>
+            <enclosure url="https://github.com/jinkun1998/another.notch/releases/download/v1.0.0-beta.7/anotherNotch.dmg" length="8595018" type="application/octet-stream" sparkle:edSignature="jdbwyVcjpdKwsuPEccmzx7z0gegPSMrBGeiMAUS5zv9A9gdJscdaaDwluYhla9+3sC2lQPbUB7cMs23FntP0BA=="/>
+        </item>
+        <item>
             <title>1.0.0-beta.6</title>
             <pubDate>Thu, 27 Aug 2026 09:31:27 +0000</pubDate>
             <link>https://github.com/jinkun1998/another.notch/releases</link>
@@ -73,28 +104,6 @@
 **Full Changelog**: https://github.com/jinkun1998/another.notch/compare/v1.0.0-beta.4...v1.0.0-beta.5
 ]]></description>
             <enclosure url="https://github.com/jinkun1998/another.notch/releases/download/v1.0.0-beta.5/anotherNotch.dmg" length="8586632" type="application/octet-stream" sparkle:edSignature="S0FbXN2z6sJV5kXekLuKR2z5JzGa7FvG+a7ezquDqaIkTSrS+4FDLaINuRpcRQEtKR0Mqdg5JnN1Npc5JdGxBA=="/>
-        </item>
-        <item>
-            <title>1.0.0-beta.4</title>
-            <pubDate>Thu, 27 Aug 2026 03:02:26 +0000</pubDate>
-            <link>https://github.com/jinkun1998/another.notch/releases</link>
-            <sparkle:channel>beta</sparkle:channel>
-            <sparkle:version>11</sparkle:version>
-            <sparkle:shortVersionString>1.0.0-beta.4</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-            <description><![CDATA[## What's Changed
-## Clipboard History & Search
-
-  - New Clipboard tab: revisit copied text, links, images.
-  - Search history with Exact, Mixed, Regex, Fuzzy.
-  - Image text recognition enables OCR-based search.
-  - Configure history size, image limits, OCR, search mode.
-  - Delete individual entries. Clear full history.
-  - Clipboard history persists across app relaunches.
-
-**Full Changelog**: https://github.com/jinkun1998/another.notch/compare/v1.0.0-beta.3...v1.0.0-beta.4
-]]></description>
-            <enclosure url="https://github.com/jinkun1998/another.notch/releases/download/v1.0.0-beta.4/anotherNotch.dmg" length="8527234" type="application/octet-stream" sparkle:edSignature="t0owtjHeBUnsKG75j2JTe64X0j+wksKYFJT1XSfhXgeCj5k42AT5eVnukJ7GccnSfZo/vfnPE0aH1QaFn3Y8Dw=="/>
         </item>
     </channel>
 </rss>
