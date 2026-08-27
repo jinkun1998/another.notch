@@ -1164,6 +1164,12 @@ struct CalendarSettings: View {
                 await calendarManager.checkReminderAuthorization()
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+            Task {
+                await calendarManager.checkCalendarAuthorization()
+                await calendarManager.checkReminderAuthorization()
+            }
+        }
     }
 }
 
