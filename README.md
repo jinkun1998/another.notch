@@ -96,6 +96,8 @@ Homebrew support is coming soon. Until then, install manually using the release 
 - [x] Modern macOS System Settings UI
 - [x] System HUD replacements (volume, brightness, backlight)
 - [x] Bluetooth device live activity
+- [ ] Clipboard manager
+- [ ] Fan controls
 - [ ] Lock screen widgets
 - [ ] Extension system
 
@@ -125,6 +127,8 @@ Homebrew support is coming soon. Until then, install manually using the release 
 ## Credits & Attribution
 
 This project is based on [Boring Notch](https://github.com/TheBoredTeam/boring.notch) by [TheBoredTeam](https://github.com/TheBoredTeam). Original copyright and GPL-3.0 notices are retained.
+
+Clipboard history inspiration: [Maccy](https://github.com/p0deje/Maccy) by [p0deje](https://github.com/p0deje).
 
 Boring Notch is licensed under the GNU General Public License v3.0 (GPL-3.0).
 

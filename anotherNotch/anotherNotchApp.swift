@@ -94,6 +94,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             screenUnlockedObserver = nil
         }
         MusicManager.shared.destroy()
+        ClipboardHistoryStore.shared.stopMonitoring()
         cleanupDragDetectors()
         cleanupWindows()
         XPCHelperClient.shared.stopMonitoringAccessibilityAuthorization()
@@ -285,13 +286,35 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         window.setFrameOrigin(
             NSPoint(
                 x: screenFrame.origin.x + (screenFrame.width / 2) - window.frame.width / 2,
-                y: screenFrame.origin.y + screenFrame.height - window.frame.height
+                y: screenFrame.maxY - window.frame.height + 1
             ))
         window.alphaValue = 1
     }
 
+    @MainActor
+    private func resizeNotchWindow(for viewModel: AnotherNotchViewModel) {
+        let targetWindow: NSWindow?
+        if Defaults[.showOnAllDisplays], let screenUUID = viewModel.screenUUID {
+            targetWindow = windows[screenUUID]
+        } else {
+            targetWindow = window
+        }
+
+        guard let targetWindow,
+              let screen = targetWindow.screen ?? viewModel.screenUUID.flatMap({ NSScreen.screen(withUUID: $0) }) ?? NSScreen.main
+        else { return }
+
+        let size = CGSize(
+            width: windowSize.width,
+            height: max(windowSize.height, viewModel.notchSize.height + shadowPadding)
+        )
+        targetWindow.setFrame(NSRect(origin: targetWindow.frame.origin, size: size), display: true)
+        positionWindow(targetWindow, on: screen)
+    }
+
     func applicationDidFinishLaunching(_ notification: Notification) {
         _ = VolumeManager.shared
+        ClipboardHistoryStore.shared.startMonitoring()
 
         let normalizedMusicControls = MusicControlButton.normalizedLayout(Defaults[.musicControlSlots])
         if Defaults[.musicControlSlots] != normalizedMusicControls {
@@ -304,6 +327,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             name: NSApplication.didChangeScreenParametersNotification,
             object: nil
         )
+
+        NotificationCenter.default.addObserver(
+            forName: .notchContentSizeChanged,
+            object: nil,
+            queue: .main
+        ) { [weak self] notification in
+            guard let viewModel = notification.object as? AnotherNotchViewModel else { return }
+            Task { @MainActor in
+                self?.resizeNotchWindow(for: viewModel)
+            }
+        }
 
         NotificationCenter.default.addObserver(
             forName: Notification.Name.selectedScreenChanged, object: nil, queue: nil

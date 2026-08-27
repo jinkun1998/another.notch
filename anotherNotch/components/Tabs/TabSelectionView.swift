@@ -26,6 +26,7 @@ struct TabSelectionView: View {
 
     private var tabs: [TabModel] {
         var result = [TabModel(id: .home, label: "Home", icon: "house.fill", view: .home)]
+        result.append(TabModel(id: .clipboard, label: "Clipboard", icon: "clipboard.fill", view: .clipboard))
 
         if boringShelf && (!shelfState.isEmpty || coordinator.alwaysShowTabs) {
             result.append(TabModel(id: .shelf, label: "Shelf", icon: "tray.fill", view: .shelf))
