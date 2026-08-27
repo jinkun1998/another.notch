@@ -31,7 +31,7 @@ jobs:
       version: ${{ github.event.inputs.version || '' }}
       build_number: ${{ github.event.inputs.build_number || '' }}
       xcode_version: ${{ github.event.inputs.xcode_version || 'default' }}
-      code_sign_identity: "Apple Development: DOAN  LE QUOC THAO (V632GK6J9A)"
+      code_sign_identity: "Apple Development: quocthao23061998.tg@icloud.com (XW87KZT6AP)"
     secrets:
       BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
       P12_PASSWORD:              ${{ secrets.P12_PASSWORD }}

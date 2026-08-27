@@ -18,7 +18,7 @@ on:
       code_sign_identity:
         required: false
         type: string
-        default: "Apple Development: DOAN  LE QUOC THAO (V632GK6J9A)"
+        default: "Apple Development: quocthao23061998.tg@icloud.com (XW87KZT6AP)"
       persist_version_changes:
         required: false
         type: boolean
@@ -42,7 +42,7 @@ jobs:
       EXPORT_METHOD: ${{ vars.EXPORT_METHOD || 'development' }}
       VERSION_INPUT: ${{ inputs.version }}
       BUILD_NUMBER_INPUT: ${{ inputs.build_number }}
-      DEVELOPMENT_TEAM: V632GK6J9A
+      DEVELOPMENT_TEAM: XW87KZT6AP
       CODE_SIGN_IDENTITY: ${{ inputs.code_sign_identity }}
       XCODE_VERSION: ${{ inputs.xcode_version }}
     steps:
@@ -68,8 +68,8 @@ jobs:
           security import "$CERT_PATH" -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k "$KC"
           security list-keychain -d user -s "$KC"
           security find-identity -v -p codesigning "$KC"
-          security find-identity -v -p codesigning "$KC" | grep -Fq 'Apple Development: DOAN  LE QUOC THAO (V632GK6J9A)' || {
-            echo "::error::BUILD_CERTIFICATE_BASE64 must contain Apple Development: DOAN  LE QUOC THAO (V632GK6J9A)."
+          security find-identity -v -p codesigning "$KC" | grep -Fq 'Apple Development: quocthao23061998.tg@icloud.com (XW87KZT6AP)' || {
+            echo "::error::BUILD_CERTIFICATE_BASE64 must contain Apple Development: quocthao23061998.tg@icloud.com (XW87KZT6AP)."
             exit 1
           }
 
