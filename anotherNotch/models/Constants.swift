@@ -129,7 +129,7 @@ extension Defaults.Keys {
     static let enableShadow = Key<Bool>("enableShadow", default: true)
     static let cornerRadiusScaling = Key<Bool>("cornerRadiusScaling", default: true)
     static let notchTransparency = Key<CGFloat>("notchTransparency", default: 0.8)
-    static let notchGradientBlackCoverage = Key<CGFloat>("notchGradientBlackCoverage", default: 0.82)
+    static let notchGradientBlackCoverage = Key<CGFloat>("notchGradientBlackCoverage", default: 0.85)
     static let bottomCornerRadius = Key<CGFloat>("bottomCornerRadius", default: 50)
 
     static let showNotHumanFace = Key<Bool>("showNotHumanFace", default: false)
