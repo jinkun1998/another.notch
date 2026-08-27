@@ -112,7 +112,8 @@ extension Defaults.Keys {
     static let clipboardHistoryEnabled = Key<Bool>("clipboardHistoryEnabled", default: true)
     static let clipboardHistoryLimit = Key<Int>("clipboardHistoryLimit", default: 100)
     static let clipboardImageLimitMB = Key<Int>("clipboardImageLimitMB", default: 10)
-    
+    static let clipboardOCREnabled = Key<Bool>("clipboardOCREnabled", default: true)
+
     // MARK: Appearance
     static let showEmojis = Key<Bool>("showEmojis", default: false)
     //static let alwaysShowTabs = Key<Bool>("alwaysShowTabs", default: true)

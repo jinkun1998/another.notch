@@ -3,6 +3,7 @@ import Combine
 import Defaults
 import Foundation
 import SwiftUI
+import Vision
 
 enum ClipboardEntryKind: String, Codable {
     case text
@@ -16,13 +17,15 @@ struct ClipboardEntry: Codable, Identifiable, Hashable {
     let kind: ClipboardEntryKind
     fileprivate let value: String?
     fileprivate let imageFileName: String?
+    fileprivate var ocrText: String?
 
-    init(kind: ClipboardEntryKind, value: String? = nil, imageFileName: String? = nil) {
+    init(kind: ClipboardEntryKind, value: String? = nil, imageFileName: String? = nil, ocrText: String? = nil) {
         id = UUID()
         timestamp = Date()
         self.kind = kind
         self.value = value
         self.imageFileName = imageFileName
+        self.ocrText = ocrText
     }
 
     var preview: String {
@@ -32,6 +35,16 @@ struct ClipboardEntry: Codable, Identifiable, Hashable {
         case .image:
             "Image"
         }
+    }
+
+    var searchableText: String {
+        [value, ocrText]
+            .compactMap { $0 }
+            .joined(separator: "\n")
+    }
+
+    var extractedText: String? {
+        ocrText
     }
 }
 
@@ -160,6 +173,7 @@ final class ClipboardHistoryStore: ObservableObject {
             removeImageFile(for: entries.removeLast())
         }
         persist()
+        recognizeText(in: entry)
         showHUD(for: entry)
     }
 
@@ -199,12 +213,61 @@ final class ClipboardHistoryStore: ObservableObject {
         return NSBitmapImageRep(cgImage: cgImage).representation(using: .png, properties: [:])
     }
 
+    private func recognizeText(in entry: ClipboardEntry) {
+        guard Defaults[.clipboardOCREnabled], entry.kind == .image, let data = imageData(for: entry) else { return }
+
+        Task.detached(priority: .utility) { [weak self] in
+            guard let text = Self.recognizedText(in: data) else {
+                print("🔍 OCR: no text found in image \(entry.id)")
+                return
+            }
+            print("✅ OCR: recognized \(text.count) chars in image \(entry.id)")
+            await self?.storeOCRText(text, for: entry.id)
+        }
+    }
+
+    private func storeOCRText(_ text: String, for entryID: UUID) {
+        guard let index = entries.firstIndex(where: { $0.id == entryID }), entries[index].ocrText != text else { return }
+        var entry = entries[index]
+        entry.ocrText = text
+        entries[index] = entry
+        persist()
+    }
+
+    nonisolated private static func recognizedText(in data: Data) -> String? {
+        guard let image = NSImage(data: data),
+              let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil)
+        else {
+            print("⚠️ OCR: failed to create CGImage from clipboard data")
+            return nil
+        }
+
+        let request = VNRecognizeTextRequest()
+        request.recognitionLevel = .accurate
+        request.usesLanguageCorrection = true
+        request.automaticallyDetectsLanguage = true
+
+        do {
+            try VNImageRequestHandler(cgImage: cgImage).perform([request])
+        } catch {
+            print("❌ OCR: recognition failed – \(error.localizedDescription)")
+            return nil
+        }
+
+        let text = request.results?
+            .compactMap { $0.topCandidates(1).first?.string }
+            .joined(separator: "\n")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        return text?.isEmpty == false ? text : nil
+    }
+
     private func load() {
         guard let data = try? Data(contentsOf: metadataURL),
               let decoded = try? JSONDecoder().decode([ClipboardEntry].self, from: data)
         else { return }
         entries = decoded.filter { $0.kind != .image || imageData(for: $0) != nil }
         trim()
+        entries.filter { $0.kind == .image && $0.ocrText == nil }.forEach(recognizeText)
     }
 
     private func trim() {

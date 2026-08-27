@@ -1117,6 +1117,7 @@ struct ClipboardSettings: View {
     @Default(.clipboardHistoryEnabled) private var enabled
     @Default(.clipboardHistoryLimit) private var historyLimit
     @Default(.clipboardImageLimitMB) private var imageLimitMB
+    @Default(.clipboardOCREnabled) private var ocrEnabled
 
     var body: some View {
         Form {
@@ -1125,6 +1126,12 @@ struct ClipboardSettings: View {
                 Stepper("History limit: \(historyLimit)", value: $historyLimit, in: 10...500, step: 10)
                     .onChange(of: historyLimit) { ClipboardHistoryStore.shared.enforceRetention() }
                 Stepper("Image limit: \(imageLimitMB) MB", value: $imageLimitMB, in: 1...25)
+            }
+            Section("Text Recognition") {
+                Toggle("Extract text from images (OCR)", isOn: $ocrEnabled)
+                Text("Uses on-device Vision to recognize text in copied images.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
             Section {
                 Button("Clear History", role: .destructive) {

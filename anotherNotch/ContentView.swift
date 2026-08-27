@@ -69,6 +69,13 @@ struct ContentView: View {
         max(0, vm.closedNotchSize.width - cornerRadiusInsets.closed.top)
     }
 
+    private var clipboardNotchMaskSize: CGSize {
+        .init(
+            width: vm.closedNotchSize.width + cornerRadiusInsets.closed.top,
+            height: vm.effectiveClosedNotchHeight + cornerRadiusInsets.closed.bottom
+        )
+    }
+
     private var powerNotificationTextWidth: CGFloat {
         let font = NSFont.preferredFont(forTextStyle: .subheadline)
         let textWidth = (batteryModel.statusText as NSString).size(withAttributes: [.font: font]).width
@@ -497,7 +504,7 @@ struct ContentView: View {
                             .frame(height: openNotchHeaderHeight)
                             .opacity(gestureProgress != 0 ? 1.0 - min(abs(gestureProgress) * 0.1, 0.3) : 1.0)
                     } else if let entry = clipboardHistory.hudEntry, vm.notchState == .closed {
-                        ClipboardHUD(entry: entry)
+                        ClipboardHUD(entry: entry, physicalNotchMaskSize: clipboardNotchMaskSize)
                             .transition(.opacity)
                     } else if coordinator.expandingView.type == .battery && coordinator.expandingView.show
                         && vm.notchState == .closed && Defaults[.showPowerStatusNotifications]

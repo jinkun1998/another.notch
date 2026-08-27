@@ -87,6 +87,9 @@ private struct ClipboardEntryRow: View {
     }
 
     private var detail: String {
+        if entry.kind == .image, let text = entry.extractedText, !text.isEmpty {
+            return text
+        }
         guard entry.kind == .image,
               let data = store.imageData(for: entry),
               let image = NSImage(data: data)
@@ -113,20 +116,33 @@ private struct ClipboardEntryRow: View {
 struct ClipboardHUD: View {
     @ObservedObject private var store = ClipboardHistoryStore.shared
     let entry: ClipboardEntry
+    let physicalNotchMaskSize: CGSize
 
     var body: some View {
         if entry.kind == .image {
-            HStack(spacing: 10) {
-                Image(systemName: "clipboard.fill")
-                    .foregroundStyle(.white)
-                Spacer(minLength: 0)
-                if let data = store.imageData(for: entry), let image = NSImage(data: data) {
-                    Image(nsImage: image)
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: 46, height: 34)
-                        .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+            ZStack {
+                HStack(spacing: 10) {
+                    Image(systemName: "clipboard.fill")
+                        .foregroundStyle(.white)
+                    Spacer(minLength: 0)
+                    if let data = store.imageData(for: entry), let image = NSImage(data: data) {
+                        Image(nsImage: image)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: 46, height: 34)
+                            .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                    }
                 }
+                VStack(spacing: 0) {
+                    Rectangle()
+                        .fill(.black)
+                        .frame(
+                            width: physicalNotchMaskSize.width,
+                            height: physicalNotchMaskSize.height
+                        )
+                    Spacer(minLength: 0)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             }
             .padding(.horizontal, 14)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -137,10 +153,18 @@ struct ClipboardHUD: View {
                     Spacer(minLength: 0)
                     Image(systemName: "checkmark")
                 }
-                Text(entry.preview)
-                    .lineLimit(1)
-                    .font(.system(size: 12))
-                    .foregroundStyle(.secondary)
+                GeometryReader { geometry in
+                    MarqueeText(
+                        .constant(entry.preview),
+                        font: .system(size: 12),
+                        nsFont: .caption1,
+                        textColor: .secondary,
+                        minDuration: 0.15,
+                        frameWidth: geometry.size.width,
+                        centerWhenFits: true
+                    )
+                }
+                .frame(height: 16)
             }
             .padding(.horizontal, 14)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
