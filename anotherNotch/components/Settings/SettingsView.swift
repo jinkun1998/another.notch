@@ -14,6 +14,7 @@ import LaunchAtLogin
 import Sparkle
 import SwiftUI
 import SwiftUIIntrospect
+import UniformTypeIdentifiers
 
 private struct SettingsWindowBackground: ViewModifier {
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
@@ -40,6 +41,7 @@ private extension View {
 private enum SettingsPage: String, CaseIterable, Identifiable {
     case general = "General"
     case appearance = "Appearance"
+    case modules = "Modules"
     case media = "Media"
     case calendar = "Calendar"
     case hud = "HUD"
@@ -47,6 +49,7 @@ private enum SettingsPage: String, CaseIterable, Identifiable {
     case battery = "Battery"
     case bluetooth = "Bluetooth"
     case shelf = "Shelf"
+    case camera = "Camera"
     case shortcuts = "Shortcuts"
     case advanced = "Advanced"
     case about = "About"
@@ -57,6 +60,7 @@ private enum SettingsPage: String, CaseIterable, Identifiable {
         switch self {
         case .general: "gearshape"
         case .appearance: "paintbrush"
+        case .modules: "square.grid.2x2"
         case .media: "play.laptopcomputer"
         case .calendar: "calendar"
         case .hud: "slider.horizontal.3"
@@ -64,6 +68,7 @@ private enum SettingsPage: String, CaseIterable, Identifiable {
         case .battery: "battery.100percent"
         case .bluetooth: "airpodspro"
         case .shelf: "books.vertical"
+        case .camera: "web.camera"
         case .shortcuts: "keyboard"
         case .advanced: "gearshape.2"
         case .about: "info.circle"
@@ -74,6 +79,7 @@ private enum SettingsPage: String, CaseIterable, Identifiable {
         switch self {
         case .general: "Core app behavior, display, and interaction settings."
         case .appearance: "Personalize the notch, tabs, and visual style."
+        case .modules: "Install bundled notch modules and manage their availability."
         case .media: "Music controls, player sources, and visualizers."
         case .calendar: "Events, reminders, and calendar display."
         case .hud: "System volume, brightness, and status indicators."
@@ -81,6 +87,7 @@ private enum SettingsPage: String, CaseIterable, Identifiable {
         case .battery: "Battery status notifications and charging options."
         case .bluetooth: "Bluetooth output connection notifications."
         case .shelf: "Drag, drop, and saved Shelf items."
+        case .camera: "Camera mirror appearance and access."
         case .shortcuts: "Keyboard shortcuts for quick actions."
         case .advanced: "Accent color, window behavior, and privacy."
         case .about: "Version, updates, and project information."
@@ -91,6 +98,7 @@ private enum SettingsPage: String, CaseIterable, Identifiable {
 struct SettingsView: View {
     @State private var selectedTab: SettingsPage = .general
     @State private var accentColorUpdateTrigger = UUID()
+    @ObservedObject private var modules = FeatureModuleRegistry.shared
 
     let updaterController: SPUStandardUpdaterController?
 
@@ -127,12 +135,25 @@ struct SettingsView: View {
 
                 Section("Features") {
                     sidebarRow(.media)
-                    sidebarRow(.calendar)
                     sidebarRow(.hud)
-                    sidebarRow(.clipboard)
                     sidebarRow(.battery)
                     sidebarRow(.bluetooth)
-                    sidebarRow(.shelf)
+                }
+
+                Section("Modules") {
+                    sidebarRow(.modules)
+                    if modules.isInstalled(.clipboard) {
+                        sidebarRow(.clipboard)
+                    }
+                    if modules.isInstalled(.shelf) {
+                        sidebarRow(.shelf)
+                    }
+                    if modules.isInstalled(.calendar) {
+                        sidebarRow(.calendar)
+                    }
+                    if modules.isInstalled(.camera) {
+                        sidebarRow(.camera)
+                    }
                 }
 
                 Section("System") {
@@ -171,20 +192,32 @@ struct SettingsView: View {
                     GeneralSettings()
                     case .appearance:
                     Appearance()
+                    case .modules:
+                    ModulesSettings()
                     case .media:
                     Media()
                     case .calendar:
-                    CalendarSettings()
+                    ModuleSettings(moduleID: .calendar) {
+                        CalendarSettings()
+                    }
                     case .hud:
                     HUD()
                     case .clipboard:
-                    ClipboardSettings()
+                    ModuleSettings(moduleID: .clipboard) {
+                        ClipboardSettings()
+                    }
                     case .battery:
                     Charge()
                     case .bluetooth:
                     BluetoothDeviceNotifications()
                     case .shelf:
-                    Shelf()
+                    ModuleSettings(moduleID: .shelf) {
+                        Shelf()
+                    }
+                    case .camera:
+                    ModuleSettings(moduleID: .camera) {
+                        CameraSettings()
+                    }
                     case .shortcuts:
                     Shortcuts()
                     case .advanced:
@@ -260,6 +293,152 @@ private struct SettingsSidebarRow: View {
         .onHover { isHovering = $0 }
         .animation(.easeOut(duration: 0.12), value: isHovering)
         .animation(.easeOut(duration: 0.15), value: isSelected)
+    }
+}
+
+private struct ModulesSettings: View {
+    @ObservedObject private var modules = FeatureModuleRegistry.shared
+    @State private var draggedModuleID: FeatureModuleID?
+    @State private var dropTargetID: FeatureModuleID?
+
+    var body: some View {
+        Form {
+            Section("Bundled modules") {
+                ForEach(modules.orderedModules) { module in
+                    HStack(spacing: 12) {
+                        Image(systemName: "line.3.horizontal")
+                            .foregroundStyle(.white)
+                            .opacity(module.id == .home ? 0 : 1)
+                        Image(systemName: module.icon)
+                            .frame(width: 20)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(module.title)
+                            Text(modules.isInstalled(module.id) ? "Installed" : "Not installed")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                        if module.id != .home {
+                            Button {
+                                modules.isInstalled(module.id)
+                                    ? modules.remove(module.id)
+                                    : modules.install(module.id)
+                            } label: {
+                                Text(modules.isInstalled(module.id) ? "Remove" : "Install")
+                                    .foregroundStyle(modules.isInstalled(module.id) ? .red : .white)
+                            }
+                            .buttonStyle(.plain)
+                        } else {
+                            Text("Built in")
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .contentShape(Rectangle())
+                    .opacity(draggedModuleID == module.id ? 0.55 : 1)
+                    .background {
+                        RoundedRectangle(cornerRadius: 7, style: .continuous)
+                            .fill(dropTargetID == module.id ? Color.effectiveAccent.opacity(0.2) : .clear)
+                    }
+                    .onDrag {
+                        draggedModuleID = module.id
+                        return NSItemProvider(object: module.id.rawValue as NSString)
+                    } preview: {
+                        Image(systemName: module.icon)
+                            .font(.title3)
+                            .foregroundStyle(.white)
+                            .frame(width: 32, height: 32)
+                            .background(.black.opacity(0.8), in: Circle())
+                    }
+                    .onDrop(
+                        of: [.plainText],
+                        delegate: ModuleSettingsDropDelegate(
+                            destination: module.id,
+                            draggedModuleID: $draggedModuleID,
+                            dropTargetID: $dropTargetID,
+                            modules: modules
+                        )
+                    )
+                }
+            }
+            .animation(.spring(response: 0.3, dampingFraction: 0.82), value: modules.tabOrder)
+            Text("Drag modules to arrange left-wing tabs. Removing a module keeps its data and settings.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+    }
+}
+
+private struct ModuleSettingsDropDelegate: DropDelegate {
+    let destination: FeatureModuleID
+    @Binding var draggedModuleID: FeatureModuleID?
+    @Binding var dropTargetID: FeatureModuleID?
+    let modules: FeatureModuleRegistry
+
+    func dropEntered(info _: DropInfo) {
+        guard let draggedModuleID else { return }
+        dropTargetID = destination
+        modules.moveTab(draggedModuleID, before: destination)
+    }
+
+    func dropExited(info _: DropInfo) {
+        if dropTargetID == destination {
+            dropTargetID = nil
+        }
+    }
+
+    func dropUpdated(info _: DropInfo) -> DropProposal? {
+        DropProposal(operation: .move)
+    }
+
+    func performDrop(info _: DropInfo) -> Bool {
+        draggedModuleID = nil
+        dropTargetID = nil
+        return true
+    }
+}
+
+private struct ModuleSettings<Content: View>: View {
+    let moduleID: FeatureModuleID
+    @ViewBuilder let content: () -> Content
+    @ObservedObject private var modules = FeatureModuleRegistry.shared
+
+    var body: some View {
+        if modules.isInstalled(moduleID) {
+            content()
+        } else if let module = FeatureModuleRegistry.modules.first(where: { $0.id == moduleID }) {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("\(module.title) is not installed.")
+                    .font(.headline)
+                Text("Install it to use these settings. Existing data and settings remain available after reinstalling.")
+                    .foregroundStyle(.secondary)
+                Button("Install \(module.title)") {
+                    modules.install(moduleID)
+                }
+            }
+            .padding(30)
+        }
+    }
+}
+
+private struct CameraSettings: View {
+    @ObservedObject private var webcamManager = WebcamManager.shared
+    @Default(.mirrorShape) private var mirrorShape
+
+    var body: some View {
+        Form {
+            Section("Camera") {
+                Text(webcamManager.authorizationStatus == .authorized ? "Camera access allowed" : "Camera access needed")
+                    .foregroundStyle(webcamManager.authorizationStatus == .authorized ? .green : .secondary)
+                Button(webcamManager.authorizationStatus == .authorized ? "Check camera" : "Grant camera access") {
+                    FeatureModuleRegistry.shared.activate(.camera)
+                }
+                Picker("Mirror shape", selection: $mirrorShape) {
+                    Text("Circle").tag(MirrorShapeEnum.circle)
+                    Text("Square").tag(MirrorShapeEnum.rectangle)
+                }
+                .readableSettingsPicker()
+            }
+        }
     }
 }
 
@@ -891,16 +1070,12 @@ struct Media: View {
 
 struct CalendarSettings: View {
     @ObservedObject private var calendarManager = CalendarManager.shared
-    @Default(.showCalendar) var showCalendar: Bool
     @Default(.hideCompletedReminders) var hideCompletedReminders
     @Default(.hideAllDayEvents) var hideAllDayEvents
     @Default(.autoScrollToNextEvent) var autoScrollToNextEvent
 
     var body: some View {
         Form {
-            Defaults.Toggle(key: .showCalendar) {
-                Text("Show calendar")
-            }
             Defaults.Toggle(key: .hideCompletedReminders) {
                 Text("Hide completed reminders")
             }
@@ -943,7 +1118,6 @@ struct CalendarSettings: View {
                                 Text(calendar.title)
                             }
                             .accentColor(lighterColor(from: calendar.color))
-                            .disabled(!showCalendar)
                         }
                     }
                 }
@@ -978,7 +1152,6 @@ struct CalendarSettings: View {
                                 Text(calendar.title)
                             }
                             .accentColor(lighterColor(from: calendar.color))
-                            .disabled(!showCalendar)
                         }
                     }
                 }
@@ -1420,7 +1593,6 @@ struct Appearance: View {
     @State private var name: String = ""
     @State private var url: String = ""
     @State private var speed: CGFloat = 1.0
-    @State private var cameraAuthorization = AVCaptureDevice.authorizationStatus(for: .video)
     var body: some View {
         Form {
             Section {
@@ -1659,25 +1831,6 @@ struct Appearance: View {
             }
 
             Section {
-                Defaults.Toggle(key: .showMirror) {
-                    Text("Enable camera mirror")
-                }
-                    .disabled(!checkVideoInput())
-                HStack {
-                    Text(cameraAuthorization == .authorized ? "Camera access allowed" : "Camera access needed")
-                        .foregroundStyle(cameraAuthorization == .authorized ? .green : .secondary)
-                    Spacer()
-                    Button(cameraAuthorization == .authorized ? "Manage" : "Grant") {
-                        requestCameraAccess()
-                    }
-                }
-                Picker("Mirror shape", selection: $mirrorShape) {
-                    Text("Circle")
-                        .tag(MirrorShapeEnum.circle)
-                    Text("Square")
-                        .tag(MirrorShapeEnum.rectangle)
-                }
-                .readableSettingsPicker()
                 Defaults.Toggle(key: .showNotHumanFace) {
                     Text("Show cool face animation while inactive")
                 }
@@ -1688,30 +1841,6 @@ struct Appearance: View {
             }
         }
         .accentColor(.effectiveAccent)
-        .onAppear {
-            cameraAuthorization = AVCaptureDevice.authorizationStatus(for: .video)
-        }
-    }
-
-    func checkVideoInput() -> Bool {
-        if AVCaptureDevice.default(for: .video) != nil {
-            return true
-        }
-
-        return false
-    }
-
-    private func requestCameraAccess() {
-        guard cameraAuthorization == .notDetermined else {
-            guard let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Camera") else { return }
-            NSWorkspace.shared.open(url)
-            return
-        }
-
-        Task {
-            _ = await AVCaptureDevice.requestAccess(for: .video)
-            cameraAuthorization = AVCaptureDevice.authorizationStatus(for: .video)
-        }
     }
 }
 

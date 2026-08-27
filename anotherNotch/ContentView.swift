@@ -24,12 +24,14 @@ struct ContentView: View {
     @ObservedObject var batteryModel = BatteryStatusViewModel.shared
     @ObservedObject var brightnessManager = BrightnessManager.shared
     @ObservedObject private var clipboardHistory = ClipboardHistoryStore.shared
+    @ObservedObject private var modules = FeatureModuleRegistry.shared
     @State private var hoverTask: Task<Void, Never>?
     @State private var closingShellTask: Task<Void, Never>?
     @State private var musicHeroTransitionTask: Task<Void, Never>?
     @State private var isHovering: Bool = false
     @State private var isClosingShell: Bool = false
     @State private var shellExpansion: CGFloat = .zero
+    @State private var contentIdentity = UUID()
     @State private var anyDropDebounceTask: Task<Void, Never>?
 
     @State private var gestureProgress: CGFloat = .zero
@@ -67,6 +69,23 @@ struct ContentView: View {
 
     private var physicalNotchWidth: CGFloat {
         max(0, vm.closedNotchSize.width - cornerRadiusInsets.closed.top)
+    }
+
+    private var physicalNotchReservation: some View {
+        Rectangle()
+            .fill(physicalNotchDebugColor)
+            .frame(
+                width: vm.closedNotchSize.width,
+                height: vm.effectiveClosedNotchHeight
+            )
+    }
+
+    private var physicalNotchDebugColor: Color {
+        #if DEBUG
+        .red.opacity(0.75)
+        #else
+        .clear
+        #endif
     }
 
     private var clipboardNotchMaskSize: CGSize {
@@ -122,6 +141,10 @@ struct ContentView: View {
 
     private var expandedContentScale: CGFloat {
         reduceMotion ? 1 : 0.92 + shellExpansion * 0.08
+    }
+
+    private var closingShellScale: CGFloat {
+        isClosingShell && !reduceMotion ? 0.94 + shellExpansion * 0.06 : 1
     }
 
     private var expandedContentHeight: CGFloat {
@@ -187,12 +210,7 @@ struct ContentView: View {
     }
 
     private var isScrollableTab: Bool {
-        switch coordinator.currentView {
-        case .clipboard, .calendar, .shelf:
-            true
-        case .home, .camera:
-            false
-        }
+        modules.supportsScrolling(coordinator.currentView)
     }
 
     private var closedNotchContentSize: CGSize {
@@ -204,7 +222,7 @@ struct ContentView: View {
         }
 
         if showsMusicSneakPeek {
-            return .init(width: max(baseSize.width, 260), height: baseSize.height + 34)
+            return .init(width: max(baseSize.width, 260), height: baseSize.height + 40)
         }
 
         if let entry = clipboardHistory.hudEntry {
@@ -241,7 +259,9 @@ struct ContentView: View {
 
         if showsClosedSystemHUD {
             if Defaults[.closedHUDRows] == .two {
-                return .init(width: max(baseSize.width + 120, 280), height: max(baseSize.height, 58))
+                let currentExpandedHeight = max(baseSize.height, 58)
+                let reducedExpandedHeight = baseSize.height + (currentExpandedHeight - baseSize.height) / 2
+                return .init(width: max(baseSize.width + 120, 280), height: reducedExpandedHeight)
             } else {
                 let wingWidth = max(0, baseSize.height - 12) * 1.5
                 return .init(
@@ -300,6 +320,7 @@ struct ContentView: View {
                         color: ((shellExpansion > 0 || isHovering) && Defaults[.enableShadow])
                             ? .black.opacity(0.7) : .clear, radius: Defaults[.cornerRadiusScaling] ? 6 : 4
                     )
+                    .scaleEffect(closingShellScale, anchor: .top)
                     .padding(
                         .bottom,
                         vm.effectiveClosedNotchHeight == 0 ? 10 : 0
@@ -362,6 +383,8 @@ struct ContentView: View {
                         }
                     }
                     .onChange(of: coordinator.currentView) { _, view in
+                        contentIdentity = UUID()
+
                         if vm.notchState == .open {
                             musicHeroTransitionTask?.cancel()
                             isMusicHeroTransitionActive = false
@@ -369,6 +392,18 @@ struct ContentView: View {
 
                         guard vm.notchState == .open else { return }
                         vm.notchSize = openNotchSize(for: view, screenUUID: vm.screenUUID)
+                    }
+                    .onChange(of: modules.installedIDs) { _, _ in
+                        if vm.notchState == .open {
+                            vm.notchSize = openNotchSize(
+                                for: coordinator.currentView,
+                                screenUUID: vm.screenUUID
+                            )
+                        } else {
+                            let closedSize = getClosedNotchSize(screenUUID: vm.screenUUID)
+                            vm.closedNotchSize = closedSize
+                            vm.notchSize = closedSize
+                        }
                     }
                     .onReceive(clipboardHistory.$entries) { _ in
                         guard vm.notchState == .open, coordinator.currentView == .clipboard else { return }
@@ -409,8 +444,8 @@ struct ContentView: View {
         }
         .padding(.bottom, 8)
         .frame(
-            maxWidth: windowSize.width,
-            maxHeight: max(windowSize.height, vm.notchSize.height + shadowPadding),
+            maxWidth: notchWindowSize(screenUUID: vm.screenUUID).width,
+            maxHeight: max(notchWindowSize(screenUUID: vm.screenUUID).height, vm.notchSize.height + shadowPadding),
             alignment: .top
         )
         .compositingGroup()
@@ -458,6 +493,7 @@ struct ContentView: View {
             anyDropDebounceTask?.cancel()
 
             if isTargeted {
+                guard modules.isAvailable(.shelf) else { return }
                 if vm.notchState == .closed {
                     coordinator.currentView = .shelf
                     doOpen()
@@ -561,7 +597,12 @@ struct ContentView: View {
                           .transition(.opacity)
                       } else if (!coordinator.expandingView.show || coordinator.expandingView.type == .music) && vm.notchState == .closed && (musicManager.isPlaying || !musicManager.isPlayerIdle) && coordinator.musicLiveActivityEnabled && !vm.hideOnClosed {
                           musicLiveActivity()
-                              .frame(alignment: .center)
+                              .frame(height: vm.effectiveClosedNotchHeight, alignment: .center)
+                              .background {
+                                  if showsMusicSneakPeek {
+                                      physicalNotchReservation
+                                  }
+                              }
                       } else if !coordinator.expandingView.show && vm.notchState == .closed && (!musicManager.isPlaying && musicManager.isPlayerIdle) && Defaults[.showNotHumanFace] && !vm.hideOnClosed  {
                           anotherNotchFaceAnimation()
                     } else {
@@ -580,7 +621,7 @@ struct ContentView: View {
                                   }
                                   .frame(width: max(vm.closedNotchSize.width, 260))
                                   .foregroundStyle(.gray)
-                                  .padding(.bottom, 10)
+                                  .padding(.vertical, 10)
                               }
                           }
                       }
@@ -599,7 +640,8 @@ struct ContentView: View {
                             albumArtNamespace: albumArtNamespace,
                             isHeroTransitionActive: isMusicHeroTransitionActive
                         )
-                            .frame(width: musicContentSize.width, height: musicContentSize.height)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: musicContentSize.height)
                     case .clipboard:
                         ClipboardHistoryView()
                             .frame(maxWidth: .infinity)
@@ -609,7 +651,8 @@ struct ContentView: View {
                             .padding(.vertical, 8)
                     case .calendar:
                         CalendarView()
-                            .frame(width: calendarContentSize.width, height: calendarContentSize.height)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: calendarContentSize.height)
                             .onHover { vm.isHoveringCalendar = $0 }
                             .onDisappear { vm.isHoveringCalendar = false }
                             .environmentObject(vm)
@@ -620,6 +663,7 @@ struct ContentView: View {
                     }
                 }
                 .animation(nil, value: coordinator.currentView)
+                .id(contentIdentity)
                 .frame(
                     maxWidth: .infinity,
                     maxHeight: expandedContentHeight,
@@ -634,7 +678,12 @@ struct ContentView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .onDrop(of: [.fileURL, .url, .utf8PlainText, .plainText, .data], delegate: GeneralDropTargetDelegate(isTargeted: $vm.generalDropTargeting))
+        .conditionalModifier(modules.isAvailable(.shelf)) { view in
+            view.onDrop(
+                of: [.fileURL, .url, .utf8PlainText, .plainText, .data],
+                delegate: GeneralDropTargetDelegate(isTargeted: $vm.generalDropTargeting)
+            )
+        }
     }
 
     private var playbackSneakPeekText: String {
@@ -804,7 +853,7 @@ struct ContentView: View {
 
     @ViewBuilder
     var dragDetector: some View {
-        if Defaults[.boringShelf] && vm.notchState == .closed {
+        if modules.isAvailable(.shelf), Defaults[.boringShelf], vm.notchState == .closed {
             Color.clear
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .contentShape(Rectangle())

@@ -83,6 +83,11 @@ enum OptionKeyAction: String, CaseIterable, Identifiable, Defaults.Serializable 
 }
 
 extension Defaults.Keys {
+    // MARK: Modules
+    static let installedFeatureModuleIDs = Key<[String]>("installedFeatureModuleIDs", default: [])
+    static let featureModuleTabOrder = Key<[String]>("featureModuleTabOrder", default: [])
+    static let featureModuleStateMigrated = Key<Bool>("featureModuleStateMigrated", default: false)
+
     // MARK: General
     static let menubarIcon = Key<Bool>("menubarIcon", default: true)
     static let showOnAllDisplays = Key<Bool>("showOnAllDisplays", default: false)

@@ -5,84 +5,53 @@
 //  Created by Hugo Persson on 2024-08-25.
 //
 
-import Defaults
 import SwiftUI
 
-struct TabModel: Identifiable {
-    let id: NotchViews
-    let label: String
-    let icon: String
-    let view: NotchViews
-}
-
 struct TabSelectionView: View {
-    @ObservedObject var coordinator = AnotherNotchViewCoordinator.shared
-    @ObservedObject private var webcamManager = WebcamManager.shared
-    @StateObject private var shelfState = ShelfStateViewModel.shared
-    @Default(.boringShelf) private var boringShelf
-    @Default(.showCalendar) private var showCalendar
-    @Default(.showMirror) private var showMirror
-    @Namespace var animation
+    let tabWidth: CGFloat
+    @ObservedObject private var coordinator = AnotherNotchViewCoordinator.shared
+    @ObservedObject private var modules = FeatureModuleRegistry.shared
 
-    private var tabs: [TabModel] {
-        var result = [TabModel(id: .home, label: "Home", icon: "house.fill", view: .home)]
-        result.append(TabModel(id: .clipboard, label: "Clipboard", icon: "clipboard.fill", view: .clipboard))
-
-        if boringShelf && (!shelfState.isEmpty || coordinator.alwaysShowTabs) {
-            result.append(TabModel(id: .shelf, label: "Shelf", icon: "tray.fill", view: .shelf))
-        }
-        if showCalendar {
-            result.append(TabModel(id: .calendar, label: "Calendar", icon: "calendar", view: .calendar))
-        }
-        if showMirror && webcamManager.cameraAvailable {
-            result.append(TabModel(id: .camera, label: "Camera", icon: "web.camera", view: .camera))
-        }
-
-        return result
+    init(tabWidth: CGFloat = moduleTabWidth) {
+        self.tabWidth = tabWidth
     }
 
     var body: some View {
-        HStack(spacing: 0) {
-            ForEach(tabs) { tab in
-                    TabButton(label: tab.label, icon: tab.icon, selected: coordinator.currentView == tab.view) {
-                        coordinator.currentView = tab.view
+        let installedModules = modules.installedModules
+        let selectedIndex = installedModules.firstIndex {
+            $0.tabDestination == coordinator.currentView
+        } ?? 0
+
+        ZStack(alignment: .leading) {
+            Capsule()
+                .fill(Color(nsColor: .secondarySystemFill))
+                .frame(width: tabWidth, height: 26)
+                .offset(x: CGFloat(selectedIndex) * tabWidth)
+
+            HStack(spacing: 0) {
+                ForEach(installedModules) { module in
+                    TabButton(
+                        label: module.title,
+                        icon: module.icon,
+                        selected: coordinator.currentView == module.tabDestination
+                    ) {
+                        coordinator.currentView = module.tabDestination
                     }
-                    .frame(height: 26)
-                    .foregroundStyle(tab.view == coordinator.currentView ? .white : .gray)
-                    .background {
-                        if tab.view == coordinator.currentView {
-                            Capsule()
-                                .fill(coordinator.currentView == tab.view ? Color(nsColor: .secondarySystemFill) : Color.clear)
-                                .matchedGeometryEffect(id: "capsule", in: animation)
-                        } else {
-                            Capsule()
-                                .fill(coordinator.currentView == tab.view ? Color(nsColor: .secondarySystemFill) : Color.clear)
-                                .matchedGeometryEffect(id: "capsule", in: animation)
-                                .hidden()
-                        }
-                    }
+                    .frame(width: tabWidth, height: 26)
+                    .foregroundStyle(module.tabDestination == coordinator.currentView ? .white : .gray)
+                }
             }
         }
+        .frame(width: CGFloat(installedModules.count) * tabWidth, height: 26, alignment: .leading)
         .clipShape(Capsule())
         .animation(.smooth, value: coordinator.currentView)
         .onAppear(perform: ensureSelectionIsAvailable)
-        .onChange(of: coordinator.currentView) { oldValue, newValue in
-            if oldValue == .camera && newValue != .camera {
-                webcamManager.stopSession()
-            }
-        }
-        .onChange(of: showCalendar) { _, _ in ensureSelectionIsAvailable() }
-        .onChange(of: showMirror) { _, _ in ensureSelectionIsAvailable() }
-        .onChange(of: boringShelf) { _, _ in ensureSelectionIsAvailable() }
-        .onChange(of: webcamManager.cameraAvailable) { _, _ in ensureSelectionIsAvailable() }
-        .onChange(of: shelfState.isEmpty) { _, _ in ensureSelectionIsAvailable() }
-        .onChange(of: coordinator.alwaysShowTabs) { _, _ in ensureSelectionIsAvailable() }
+        .onChange(of: modules.installedIDs) { _, _ in ensureSelectionIsAvailable() }
     }
 
     private func ensureSelectionIsAvailable() {
-        guard !tabs.contains(where: { $0.view == coordinator.currentView }) else { return }
-        if coordinator.currentView == .camera {
-            webcamManager.stopSession()
+        guard !modules.isAvailable(coordinator.currentView) else {
+            return
         }
         coordinator.currentView = .home
     }
