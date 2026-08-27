@@ -74,6 +74,15 @@ enum BluetoothDeviceIndicatorRows: String, CaseIterable, Identifiable, Defaults.
     var id: String { rawValue }
 }
 
+enum ClipboardSearchMode: String, CaseIterable, Identifiable, Defaults.Serializable {
+    case exact = "Exact"
+    case mixed = "Mixed"
+    case regex = "Regex"
+    case fuzzy = "Fuzzy"
+
+    var id: String { rawValue }
+}
+
 // Action to perform when Option (⌥) is held while pressing media keys
 enum OptionKeyAction: String, CaseIterable, Identifiable, Defaults.Serializable {
     case openSettings = "Open System Settings"
@@ -113,6 +122,7 @@ extension Defaults.Keys {
     static let clipboardHistoryLimit = Key<Int>("clipboardHistoryLimit", default: 100)
     static let clipboardImageLimitMB = Key<Int>("clipboardImageLimitMB", default: 10)
     static let clipboardOCREnabled = Key<Bool>("clipboardOCREnabled", default: true)
+    static let clipboardSearchMode = Key<ClipboardSearchMode>("clipboardSearchMode", default: .exact)
 
     // MARK: Appearance
     static let showEmojis = Key<Bool>("showEmojis", default: false)

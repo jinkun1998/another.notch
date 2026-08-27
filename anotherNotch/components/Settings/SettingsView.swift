@@ -1118,6 +1118,7 @@ struct ClipboardSettings: View {
     @Default(.clipboardHistoryLimit) private var historyLimit
     @Default(.clipboardImageLimitMB) private var imageLimitMB
     @Default(.clipboardOCREnabled) private var ocrEnabled
+    @Default(.clipboardSearchMode) private var searchMode
 
     var body: some View {
         Form {
@@ -1132,6 +1133,14 @@ struct ClipboardSettings: View {
                 Text("Uses on-device Vision to recognize text in copied images.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
+            }
+            Section("Search") {
+                Picker("Mode", selection: $searchMode) {
+                    ForEach(ClipboardSearchMode.allCases) { mode in
+                        Text(mode.rawValue).tag(mode)
+                    }
+                }
+                .foregroundStyle(.white)
             }
             Section {
                 Button("Clear History", role: .destructive) {
