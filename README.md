@@ -16,8 +16,8 @@
 > **Upstream attribution:** Another Notch is a modified version of [TheBoredTeam’s original Boring Notch](https://github.com/TheBoredTeam/boring.notch). Original copyright and GPL-3.0 notices are retained. Last materially modified on August 23, 2026.
 
 <p align="center">
-  <a href="assets/another-notch-intro.mp4">
-    <img src="assets/another-notch-intro.gif" alt="Another Notch introduction video" />
+  <a href="assets/another-notch-demo.mp4">
+    <img src="assets/another-notch-demo.gif" alt="Another Notch feature demo" />
   </a>
 </p>
 
