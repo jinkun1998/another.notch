@@ -5,8 +5,17 @@
 //  Created by Richard Kunkli on 09/08/2024.
 //
 
+import Defaults
 import SwiftUI
 import Sparkle
+
+final class SoftwareUpdateDelegate: NSObject, SPUUpdaterDelegate {
+    static let shared = SoftwareUpdateDelegate()
+
+    func allowedChannels(for updater: SPUUpdater) -> Set<String> {
+        Defaults[.softwareUpdateChannel] == .beta ? ["beta"] : []
+    }
+}
 
 final class CheckForUpdatesViewModel: ObservableObject {
     @Published var canCheckForUpdates = false
@@ -61,6 +70,18 @@ struct UpdaterSettingsView: View {
         } header: {
             HStack {
                 Text("Software updates")
+            }
+        }
+    }
+}
+
+struct SoftwareUpdateChannelPicker: View {
+    @Default(.softwareUpdateChannel) private var updateChannel
+
+    var body: some View {
+        Picker("Release channel", selection: $updateChannel) {
+            ForEach(SoftwareUpdateChannel.allCases) { channel in
+                Text(channel.rawValue).tag(channel)
             }
         }
     }
