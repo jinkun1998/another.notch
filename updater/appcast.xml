@@ -5,6 +5,18 @@
         <link>https://github.com/jinkun1998/another.notch/releases</link>
         <description>anotherNotch updates</description>
         <item>
+            <title>1.0.0-beta.11</title>
+            <pubDate>Thu, 27 Aug 2026 14:36:05 +0000</pubDate>
+            <link>https://github.com/jinkun1998/another.notch/releases</link>
+            <sparkle:channel>beta</sparkle:channel>
+            <sparkle:version>20</sparkle:version>
+            <sparkle:shortVersionString>1.0.0-beta.11</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <description><![CDATA[**Full Changelog**: https://github.com/jinkun1998/another.notch/compare/v1.0.0-beta.10...v1.0.0-beta.11
+]]></description>
+            <enclosure url="https://github.com/jinkun1998/another.notch/releases/download/v1.0.0-beta.11/anotherNotch.dmg" length="8680695" type="application/octet-stream" sparkle:edSignature="9tb9jNCf8MhNzCI+Pz1+pcUEhxHoWm/64QojdOy39gQCPgWsvl2emTkfDnfCZDAr+Kzfw1Va+oHirbJES/GuAQ=="/>
+        </item>
+        <item>
             <title>1.0.0-beta.10</title>
             <pubDate>Thu, 27 Aug 2026 13:48:22 +0000</pubDate>
             <link>https://github.com/jinkun1998/another.notch/releases</link>
@@ -34,37 +46,6 @@
   Full Changelog: https://github.com/jinkun1998/another.notch/compare/v1.0.0-beta.7...v1.0.0-beta.8
 ]]></description>
             <enclosure url="https://github.com/jinkun1998/another.notch/releases/download/v1.0.0-beta8/anotherNotch.dmg" length="8594517" type="application/octet-stream" sparkle:edSignature="V0BjIEC8E+adwhR4oVJCGOa6LcwtXZGq/y+HPvnYLiJFMtZYVCtQBwmM7HKYXxF4AzFtfuRibz9XPnAa+vCsAw=="/>
-        </item>
-        <item>
-            <title>1.0.0-beta.7</title>
-            <pubDate>Thu, 27 Aug 2026 09:53:57 +0000</pubDate>
-            <link>https://github.com/jinkun1998/another.notch/releases</link>
-            <sparkle:channel>beta</sparkle:channel>
-            <sparkle:version>14</sparkle:version>
-            <sparkle:shortVersionString>1.0.0-beta.7</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-            <description><![CDATA[## What’s New in anotherNotch 1.0.0-beta.6
-
-  ### 🚀 Release Channels
-  - **Stable & Beta Updates**: Choose your update track directly in **Settings → About**.
-  - **Instant Channel Switching**: Opt in to beta releases or stay on stable builds anytime.
-
-  ### 📐 Notch Geometry & Layout
-  - **Physical Notch Alignment**: Closed state stays flush with hardware notch height during expand/collapse transitions.
-  - **Adaptive Spacing**: Dynamic left, right, and bottom insets automatically match Center Black coverage.
-
-  ### 📋 Clipboard Experience
-  - **Searchable History**: Keyboard focus and typing in the search bar.
-  - **Polished Visuals**: Rounded, layered search styling matching macOS design language.
-
-  ### ⚡ Performance & Polish
-  - Background module services only initialize when installed.
-  - Smoother shell resize and close animations.
-
-  ---
-  **Full Changelog**: https://github.com/jinkun1998/another.notch/compare/v1.0.0-beta.5...v1.0.0-beta.6
-]]></description>
-            <enclosure url="https://github.com/jinkun1998/another.notch/releases/download/v1.0.0-beta.7/anotherNotch.dmg" length="8595018" type="application/octet-stream" sparkle:edSignature="jdbwyVcjpdKwsuPEccmzx7z0gegPSMrBGeiMAUS5zv9A9gdJscdaaDwluYhla9+3sC2lQPbUB7cMs23FntP0BA=="/>
         </item>
     </channel>
 </rss>
