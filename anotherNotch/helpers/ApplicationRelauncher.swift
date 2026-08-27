@@ -19,8 +19,9 @@ enum ApplicationRelauncher {
         let configuration = NSWorkspace.OpenConfiguration()
         configuration.createsNewApplicationInstance = true
 
-        workspace.openApplication(at: appURL, configuration: configuration, completionHandler: nil)
-
-        NSApplication.shared.terminate(nil)
+        workspace.openApplication(at: appURL, configuration: configuration) { _, error in
+            guard error == nil else { return }
+            NSApplication.shared.terminate(nil)
+        }
     }
 }
