@@ -31,9 +31,7 @@ struct DynamicNotchApp: App {
     var body: some Scene {
         MenuBarExtra(isInserted: $showMenuBarIcon) {
             Button("Settings") {
-                DispatchQueue.main.async {
-                    SettingsWindowController.shared.showWindow()
-                }
+                SettingsWindowController.present()
             }
             .keyboardShortcut(KeyEquivalent(","), modifiers: .command)
             Divider()
@@ -640,7 +638,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     },
                     onOpenSettings: {
                         window.close()
-                        SettingsWindowController.shared.showWindow()
+                        SettingsWindowController.present()
                     }
                 ))
             window.isRestorable = false

@@ -33,6 +33,7 @@ private struct SettingsWindowBackground: ViewModifier {
 private extension View {
     func readableSettingsPicker() -> some View {
         tint(.primary)
+            .foregroundStyle(.white)
     }
 }
 
@@ -397,7 +398,7 @@ struct GeneralSettings: View {
                 Text("Notch sizing")
             }
 
-            NotchBehaviour()
+            notchBehavior()
 
             gestureControls()
         }
@@ -410,7 +411,7 @@ struct GeneralSettings: View {
     }
 
     @ViewBuilder
-    func gestureControls() -> some View {
+    private func gestureControls() -> some View {
         Section {
             Defaults.Toggle(key: .enableGestures) {
                 Text("Enable gestures")
@@ -437,7 +438,7 @@ struct GeneralSettings: View {
         } header: {
             HStack {
                 Text("Gesture control")
-                customBadge(text: "Beta")
+                settingsBadge(text: "Beta")
             }
         } footer: {
             Text(
@@ -450,7 +451,7 @@ struct GeneralSettings: View {
     }
 
     @ViewBuilder
-    func NotchBehaviour() -> some View {
+    private func notchBehavior() -> some View {
         Section {
             Defaults.Toggle(key: .openNotchOnHover) {
                 Text("Open notch on hover")
@@ -702,7 +703,7 @@ struct HUD: View {
             } header: {
                 HStack {
                     Text("Open Notch")
-                    customBadge(text: "Beta")
+                    settingsBadge(text: "Beta")
                 }
             }
             .disabled(!hudReplacement)
@@ -846,7 +847,7 @@ struct Media: View {
                     label:
                         HStack {
                             Text("Full screen behavior")
-                            customBadge(text: "Beta")
+                            settingsBadge(text: "Beta")
                         }
                 ) {
                     Text("Hide for all apps").tag(HideNotchOption.always)
@@ -864,7 +865,7 @@ struct Media: View {
                 Defaults.Toggle(key: .enableLyrics) {
                     HStack {
                         Text("Show lyrics below artist name")
-                        customBadge(text: "Beta")
+                        settingsBadge(text: "Beta")
                     }
                 }
             } header: {
@@ -1140,7 +1141,7 @@ struct ClipboardSettings: View {
                         Text(mode.rawValue).tag(mode)
                     }
                 }
-                .foregroundStyle(.white)
+                .readableSettingsPicker()
             }
             Section {
                 Button("Clear History", role: .destructive) {
@@ -1515,7 +1516,7 @@ struct Appearance: View {
             } header: {
                 HStack {
                     Text("Custom music live activity animation")
-                    customBadge(text: "Coming soon")
+                    settingsBadge(text: "Coming soon")
                 }
             }
 
@@ -1538,7 +1539,7 @@ struct Appearance: View {
                                     .padding(.trailing, 8)
                             }
                         }
-                        .buttonStyle(PlainButtonStyle())
+                        .buttonStyle(.plain)
                         .padding(.vertical, 2)
                         .background(
                             selectedListVisualizer != nil
@@ -1591,7 +1592,7 @@ struct Appearance: View {
                     }
                 }
                 .controlSize(.small)
-                .buttonStyle(PlainButtonStyle())
+                .buttonStyle(.plain)
                 .overlay {
                     if customVisualizers.isEmpty {
                         Text("No custom visualizer")
@@ -1913,7 +1914,7 @@ struct Advanced: View {
             } header: {
                 HStack {
                     Text("App icon")
-                    customBadge(text: "Coming soon")
+                    settingsBadge(text: "Coming soon")
                 }
             }
             
@@ -1957,7 +1958,7 @@ struct Advanced: View {
     
     private func loadCustomColor() {
         if let colorData = Defaults[.customAccentColorData],
-           let nsColor = try? NSKeyedUnarchiver.unarchivedObject(ofClass: NSColor.self, from: colorData) {
+           let nsColor = AccentColorResolver.decode(colorData) {
             customAccentColor = Color(nsColor: nsColor)
             
             // Check if loaded color matches a preset
@@ -2049,28 +2050,7 @@ struct Shortcuts: View {
     }
 }
 
-func proFeatureBadge() -> some View {
-    Text("Upgrade to Pro")
-        .foregroundStyle(Color(red: 0.545, green: 0.196, blue: 0.98))
-        .font(.footnote.bold())
-        .padding(.vertical, 3)
-        .padding(.horizontal, 6)
-        .background(
-            RoundedRectangle(cornerRadius: 4).stroke(
-                Color(red: 0.545, green: 0.196, blue: 0.98), lineWidth: 1))
-}
-
-func comingSoonTag() -> some View {
-    Text("Coming soon")
-        .foregroundStyle(.secondary)
-        .font(.footnote.bold())
-        .padding(.vertical, 3)
-        .padding(.horizontal, 6)
-        .background(Color(nsColor: .secondarySystemFill))
-        .clipShape(.capsule)
-}
-
-func customBadge(text: String) -> some View {
+private func settingsBadge(text: String) -> some View {
     Text(text)
         .foregroundStyle(.secondary)
         .font(.footnote.bold())
@@ -2078,23 +2058,6 @@ func customBadge(text: String) -> some View {
         .padding(.horizontal, 6)
         .background(Color(nsColor: .secondarySystemFill))
         .clipShape(.capsule)
-}
-
-func warningBadge(_ text: String, _ description: String) -> some View {
-    Section {
-        HStack(spacing: 12) {
-            Image(systemName: "exclamationmark.triangle.fill")
-                .font(.system(size: 22))
-                .foregroundStyle(.yellow)
-            VStack(alignment: .leading) {
-                Text(text)
-                    .font(.headline)
-                Text(description)
-                    .foregroundStyle(.secondary)
-            }
-            Spacer()
-        }
-    }
 }
 
 #Preview {

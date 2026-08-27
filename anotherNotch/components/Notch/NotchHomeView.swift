@@ -124,7 +124,7 @@ struct MusicControlsView: View {
             songInfoAndSlider
             slotToolbar
         }
-        .buttonStyle(PlainButtonStyle())
+        .buttonStyle(.plain)
     }
 
     private var songInfoAndSlider: some View {
@@ -476,7 +476,7 @@ struct VolumeControlView: View {
                     .frame(width: 30, height: 30)
                     .liquidGlassControl(in: Capsule(), fallback: .black.opacity(0.45))
             }
-            .buttonStyle(PlainButtonStyle())
+            .buttonStyle(.plain)
             .disabled(!musicManager.volumeControlSupported)
 
             if showVolumeSlider && musicManager.volumeControlSupported {

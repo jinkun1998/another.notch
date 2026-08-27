@@ -21,9 +21,7 @@ struct AnotherNotchHeader: View {
             TabSelectionView()
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.leading, 10)
-                .opacity(vm.notchState == .closed ? 0 : 1)
-                .blur(radius: vm.notchState == .closed ? 20 : 0)
-                .zIndex(2)
+                .notchHeaderVisibility(vm.notchState != .closed)
 
             Rectangle()
                 .fill(notchDebugColor)
@@ -48,35 +46,25 @@ struct AnotherNotchHeader: View {
                             .disabled(clipboardHistory.entries.isEmpty)
                         }
                         if showMirror && webcamManager.cameraAvailable {
-                            Button(action: {
+                            HoverButton(
+                                icon: "web.camera",
+                                iconColor: .white,
+                                showsHoverHighlight: false,
+                                accessibilityLabel: "Show camera"
+                            ) {
                                 withAnimation(.smooth) {
                                     coordinator.currentView = .camera
                                 }
-                            }) {
-                                Image(systemName: "web.camera")
-                                    .foregroundColor(.white)
-                                    .padding()
-                                    .imageScale(.medium)
-                                    .frame(width: 30, height: 30)
-                                    .liquidGlassControl(in: Capsule())
                             }
-                            .buttonStyle(PlainButtonStyle())
                         }
                         if Defaults[.settingsIconInNotch] {
-                            Button(action: {
-                                DispatchQueue.main.async {
-                                    SettingsWindowController.shared.showWindow()
-                                }
-                                
-                            }) {
-                                Image(systemName: "gear")
-                                    .foregroundColor(.white)
-                                    .padding()
-                                    .imageScale(.medium)
-                                    .frame(width: 30, height: 30)
-                                    .liquidGlassControl(in: Capsule())
-                            }
-                            .buttonStyle(PlainButtonStyle())
+                            HoverButton(
+                                icon: "gear",
+                                iconColor: .white,
+                                showsHoverHighlight: false,
+                                accessibilityLabel: "Open settings",
+                                action: SettingsWindowController.present
+                            )
                         }
                         if Defaults[.showBatteryIndicator] {
                             AnotherNotchBatteryView(
@@ -96,9 +84,7 @@ struct AnotherNotchHeader: View {
             .font(.system(.headline, design: .rounded))
             .frame(maxWidth: .infinity, alignment: .trailing)
             .padding(.trailing, 10)
-            .opacity(vm.notchState == .closed ? 0 : 1)
-            .blur(radius: vm.notchState == .closed ? 20 : 0)
-            .zIndex(2)
+            .notchHeaderVisibility(vm.notchState != .closed)
         }
         .foregroundColor(.gray)
         .environmentObject(vm)
@@ -120,6 +106,14 @@ struct AnotherNotchHeader: View {
         default:
             return false
         }
+    }
+}
+
+private extension View {
+    func notchHeaderVisibility(_ isVisible: Bool) -> some View {
+        opacity(isVisible ? 1 : 0)
+            .blur(radius: isVisible ? 0 : 20)
+            .zIndex(2)
     }
 }
 
