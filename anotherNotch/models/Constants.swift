@@ -73,6 +73,13 @@ enum ClipboardSearchMode: String, CaseIterable, Identifiable, Defaults.Serializa
     var id: String { rawValue }
 }
 
+enum SoftwareUpdateChannel: String, CaseIterable, Identifiable, Defaults.Serializable {
+    case stable = "Stable"
+    case beta = "Beta"
+
+    var id: String { rawValue }
+}
+
 // Action to perform when Option (⌥) is held while pressing media keys
 enum OptionKeyAction: String, CaseIterable, Identifiable, Defaults.Serializable {
     case openSettings = "Open System Settings"
@@ -87,6 +94,7 @@ extension Defaults.Keys {
     static let installedFeatureModuleIDs = Key<[String]>("installedFeatureModuleIDs", default: [])
     static let featureModuleTabOrder = Key<[String]>("featureModuleTabOrder", default: [])
     static let featureModuleStateMigrated = Key<Bool>("featureModuleStateMigrated", default: false)
+    static let softwareUpdateChannel = Key<SoftwareUpdateChannel>("softwareUpdateChannel", default: .stable)
 
     // MARK: General
     static let menubarIcon = Key<Bool>("menubarIcon", default: true)

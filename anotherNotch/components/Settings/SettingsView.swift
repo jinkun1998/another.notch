@@ -228,7 +228,7 @@ struct SettingsView: View {
                     } else {
                         About(
                             updaterController: SPUStandardUpdaterController(
-                                startingUpdater: false, updaterDelegate: nil,
+                                startingUpdater: false, updaterDelegate: SoftwareUpdateDelegate.shared,
                                 userDriverDelegate: nil))
                     }
                     }
@@ -1231,6 +1231,7 @@ struct About: View {
                     Label("View on GitHub", systemImage: "arrow.up.right.square")
                 }
 
+                SoftwareUpdateChannelPicker()
                 CheckForUpdatesView(updater: updaterController.updater)
             }
 
