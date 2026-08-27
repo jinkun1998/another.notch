@@ -1,6 +1,7 @@
 import AppKit
 import Combine
 import Defaults
+import Fuse
 import Foundation
 import SwiftUI
 import Vision
@@ -45,6 +46,60 @@ struct ClipboardEntry: Codable, Identifiable, Hashable {
 
     var extractedText: String? {
         ocrText
+    }
+}
+
+enum ClipboardEntrySearch {
+    private static let fuzzy = Fuse(threshold: 0.7)
+    private static let fuzzySearchLimit = 5_000
+
+    static func results(for query: String, in entries: [ClipboardEntry], mode: ClipboardSearchMode) -> [ClipboardEntry] {
+        guard !query.isEmpty else { return entries }
+
+        switch mode {
+        case .exact:
+            return exact(query, in: entries)
+        case .regex:
+            return regex(query, in: entries)
+        case .fuzzy:
+            return fuzzy(query, in: entries)
+        case .mixed:
+            let exactResults = exact(query, in: entries)
+            guard exactResults.isEmpty else { return exactResults }
+
+            let regexResults = regex(query, in: entries)
+            guard regexResults.isEmpty else { return regexResults }
+
+            return fuzzy(query, in: entries)
+        }
+    }
+
+    private static func exact(_ query: String, in entries: [ClipboardEntry]) -> [ClipboardEntry] {
+        entries.filter { $0.searchableText.range(of: query, options: .caseInsensitive) != nil }
+    }
+
+    private static func regex(_ query: String, in entries: [ClipboardEntry]) -> [ClipboardEntry] {
+        guard let expression = try? NSRegularExpression(pattern: query, options: .caseInsensitive) else { return [] }
+
+        return entries.filter {
+            let searchableText = $0.searchableText
+            let range = NSRange(searchableText.startIndex..., in: searchableText)
+            return expression.firstMatch(in: searchableText, range: range) != nil
+        }
+    }
+
+    private static func fuzzy(_ query: String, in entries: [ClipboardEntry]) -> [ClipboardEntry] {
+        let pattern = fuzzy.createPattern(from: query)
+        return entries.enumerated()
+            .compactMap { index, entry -> (entry: ClipboardEntry, score: Double, index: Int)? in
+                let searchableText = String(entry.searchableText.prefix(fuzzySearchLimit))
+                guard let result = fuzzy.search(pattern, in: searchableText) else { return nil }
+                return (entry, result.score, index)
+            }
+            .sorted { lhs, rhs in
+                lhs.score == rhs.score ? lhs.index < rhs.index : lhs.score < rhs.score
+            }
+            .map { $0.entry }
     }
 }
 

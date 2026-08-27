@@ -1,32 +1,76 @@
+import Defaults
 import SwiftUI
 
 struct ClipboardHistoryView: View {
     @ObservedObject private var store = ClipboardHistoryStore.shared
     @EnvironmentObject var vm: AnotherNotchViewModel
+    @Default(.clipboardSearchMode) private var searchMode
+    @State private var searchQuery = ""
+
+    private var filteredEntries: [ClipboardEntry] {
+        ClipboardEntrySearch.results(for: searchQuery, in: store.entries, mode: searchMode)
+    }
 
     var body: some View {
-        if store.entries.isEmpty {
-            ContentUnavailableView("Clipboard is empty", systemImage: "clipboard")
+        VStack(spacing: 0) {
+            searchField
+
+            if store.entries.isEmpty {
+                ContentUnavailableView("Clipboard is empty", systemImage: "clipboard")
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else if filteredEntries.isEmpty {
+                ContentUnavailableView(
+                    "No clipboard matches",
+                    systemImage: "magnifyingglass",
+                    description: Text("Try a different search.")
+                )
                 .foregroundStyle(.secondary)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-        } else {
-            ScrollView {
-                LazyVStack(spacing: 8) {
-                    ForEach(store.entries) { entry in
-                        ClipboardEntryRow(entry: entry) {
-                            store.copy(entry)
-                            vm.close()
+            } else {
+                ScrollView {
+                    LazyVStack(spacing: 8) {
+                        ForEach(filteredEntries) { entry in
+                            ClipboardEntryRow(entry: entry) {
+                                store.copy(entry)
+                                vm.close()
+                            }
                         }
                     }
+                    .padding(.horizontal, 20)
+                    .padding(.top, 4)
+                    .padding(.bottom, 14)
                 }
-                .padding(.horizontal, 20)
-                .padding(.top, 4)
-                .padding(.bottom, 14)
+                .contentMargins(.top, 0, for: .scrollContent)
+                .scrollIndicators(.automatic)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             }
-            .contentMargins(.top, 0, for: .scrollContent)
-            .scrollIndicators(.automatic)
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+    }
+
+    private var searchField: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "magnifyingglass")
+                .foregroundStyle(.secondary)
+
+            TextField("Search clipboard", text: $searchQuery)
+                .textFieldStyle(.plain)
+
+            if !searchQuery.isEmpty {
+                Button {
+                    searchQuery = ""
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Clear clipboard search")
+            }
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 10)
+        .background(Color.white.opacity(0.05))
     }
 }
 
