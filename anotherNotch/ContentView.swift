@@ -143,6 +143,18 @@ struct ContentView: View {
         reduceMotion ? 1 : 0.92 + shellExpansion * 0.08
     }
 
+    private var opaqueNotchCoverage: CGFloat {
+        notchGradientBlackCoverage
+    }
+
+    private var expandedContentHorizontalInset: CGFloat {
+        vm.notchSize.width * (1 - opaqueNotchCoverage) / 2
+    }
+
+    private var expandedContentBottomInset: CGFloat {
+        expandedContentHeight * (1 - opaqueNotchCoverage)
+    }
+
     private var closingShellScale: CGFloat {
         isClosingShell && !reduceMotion ? 0.94 + shellExpansion * 0.06 : 1
     }
@@ -163,17 +175,18 @@ struct ContentView: View {
     }
 
     private var notchBackground: some View {
-        let horizontalInset = (1 - notchGradientBlackCoverage) / 2
-        let bottomFadeStart = notchGradientBlackCoverage
+        let horizontalInset = (1 - opaqueNotchCoverage) / 2
+        let leadingEdgeOpacity = notchTransparency * 0.25
+        let trailingEdgeOpacity = notchTransparency * 0.18
 
         return ZStack {
             Color.black.opacity(1 - shellExpansion)
             LinearGradient(
                 stops: [
-                    .init(color: .black.opacity(0.25), location: 0),
+                    .init(color: .black.opacity(leadingEdgeOpacity), location: 0),
                     .init(color: .black.opacity(0.96), location: horizontalInset),
                     .init(color: .black.opacity(0.96), location: 1 - horizontalInset),
-                    .init(color: .black.opacity(0.18), location: 1)
+                    .init(color: .black.opacity(trailingEdgeOpacity), location: 1)
                 ],
                 startPoint: .leading,
                 endPoint: .trailing
@@ -182,8 +195,8 @@ struct ContentView: View {
                 LinearGradient(
                     stops: [
                         .init(color: .black, location: 0),
-                        .init(color: .black, location: bottomFadeStart),
-                        .init(color: .black.opacity(0.3), location: min(0.98, bottomFadeStart + 0.1)),
+                        .init(color: .black, location: opaqueNotchCoverage),
+                        .init(color: .black.opacity(0.3), location: min(0.98, opaqueNotchCoverage + 0.1)),
                         .init(color: .clear, location: 1)
                     ],
                     startPoint: .top,
@@ -631,6 +644,12 @@ struct ContentView: View {
                   view
                       .fixedSize()
               }
+              .overlay(alignment: .top) {
+                  if vm.notchState == .closed {
+                      physicalNotchReservation
+                          .allowsHitTesting(false)
+                  }
+              }
               .zIndex(2)
             if displaysExpandedContent {
                 VStack {
@@ -664,6 +683,8 @@ struct ContentView: View {
                 }
                 .animation(nil, value: coordinator.currentView)
                 .id(contentIdentity)
+                .padding(.horizontal, expandedContentHorizontalInset)
+                .padding(.bottom, expandedContentBottomInset)
                 .frame(
                     maxWidth: .infinity,
                     maxHeight: expandedContentHeight,
