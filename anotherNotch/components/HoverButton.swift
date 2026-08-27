@@ -8,10 +8,12 @@
 import SwiftUI
 
 struct HoverButton: View {
-    var icon: String
+    let icon: String
     var iconColor: Color = .primary
     var scale: Image.Scale = .medium
-    var action: () -> Void
+    var showsHoverHighlight = true
+    var accessibilityLabel: String?
+    let action: () -> Void
     var contentTransition: ContentTransition = .symbolEffect
     
     @State private var isHovering = false
@@ -26,7 +28,7 @@ struct HoverButton: View {
                 .frame(width: size, height: size)
                 .overlay {
                     Capsule()
-                        .fill(isHovering ? Color.gray.opacity(0.2) : .clear)
+                        .fill(showsHoverHighlight && isHovering ? Color.gray.opacity(0.2) : .clear)
                         .frame(width: size, height: size)
                         .overlay {
                             Image(systemName: icon)
@@ -37,7 +39,8 @@ struct HoverButton: View {
                 }
                 .liquidGlassControl(in: Capsule(), fallback: .black.opacity(0.45))
         }
-        .buttonStyle(PlainButtonStyle())
+        .buttonStyle(.plain)
+        .accessibilityLabel(accessibilityLabel ?? icon)
         .onHover { hovering in
             withAnimation(.smooth(duration: 0.3)) {
                 isHovering = hovering

@@ -19,7 +19,7 @@ struct TabButton: View {
                 .padding(.horizontal, 11)
                 .contentShape(Capsule())
         }
-        .buttonStyle(PlainButtonStyle())
+        .buttonStyle(.plain)
     }
 }
 

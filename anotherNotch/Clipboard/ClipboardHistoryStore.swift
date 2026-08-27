@@ -112,6 +112,7 @@ final class ClipboardHistoryStore: ObservableObject {
 
     private let pasteboard = NSPasteboard.general
     private let fileManager = FileManager.default
+    private let storageIdentifier = Bundle.main.bundleIdentifier ?? "anotherNotch"
     private var timer: Timer?
     private var lastChangeCount = NSPasteboard.general.changeCount
     private var hudTask: Task<Void, Never>?
@@ -119,7 +120,7 @@ final class ClipboardHistoryStore: ObservableObject {
 
     private var directory: URL {
         let appSupport = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-        return appSupport.appendingPathComponent(bundleIdentifier, isDirectory: true)
+        return appSupport.appendingPathComponent(storageIdentifier, isDirectory: true)
             .appendingPathComponent("ClipboardHistory", isDirectory: true)
     }
 
