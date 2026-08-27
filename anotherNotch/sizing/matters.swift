@@ -53,6 +53,11 @@ func clipboardOpenNotchSize(screenUUID: String? = nil) -> CGSize {
 let cornerRadiusInsets: (opened: (top: CGFloat, bottom: CGFloat), closed: (top: CGFloat, bottom: CGFloat)) = (opened: (top: 19, bottom: 24), closed: (top: 6, bottom: 14))
 
 @MainActor
+func expandedContentTopPadding(screenUUID: String? = nil) -> CGFloat {
+    max(0, getClosedNotchSize(screenUUID: screenUUID).height + 8 - openNotchHeaderHeight)
+}
+
+@MainActor
 func tabHeaderMinimumOpenWidth(screenUUID: String? = nil) -> CGFloat {
     let tabCount = CGFloat(FeatureModuleRegistry.shared.installedModules.count)
     let tabStripWidth = tabCount * moduleTabWidth
@@ -85,25 +90,26 @@ func notchWindowSize(screenUUID: String? = nil) -> CGSize {
 @MainActor
 func openNotchSize(for view: NotchViews, screenUUID: String? = nil) -> CGSize {
     let minWidth = tabHeaderMinimumOpenWidth(screenUUID: screenUUID)
+    let topPadding = expandedContentTopPadding(screenUUID: screenUUID)
     let contentWidth: CGFloat
     let contentHeight: CGFloat
 
     switch view {
     case .home:
         contentWidth = max(musicOpenNotchSize.width, minWidth)
-        contentHeight = musicOpenNotchSize.height
+        contentHeight = musicOpenNotchSize.height + topPadding
     case .clipboard:
         let size = clipboardOpenNotchSize(screenUUID: screenUUID)
-        return .init(width: max(size.width, minWidth), height: size.height)
+        return .init(width: max(size.width, minWidth), height: size.height + topPadding)
     case .shelf:
         contentWidth = max(shelfOpenNotchSize.width, minWidth)
-        contentHeight = shelfOpenNotchSize.height
+        contentHeight = shelfOpenNotchSize.height + topPadding
     case .calendar:
         contentWidth = max(calendarOpenNotchSize.width, minWidth)
-        contentHeight = calendarOpenNotchSize.height
+        contentHeight = calendarOpenNotchSize.height + topPadding
     case .camera:
         contentWidth = max(256, minWidth)
-        contentHeight = 190
+        contentHeight = 190 + topPadding
     }
 
     return .init(

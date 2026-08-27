@@ -147,10 +147,6 @@ struct ContentView: View {
         notchGradientBlackCoverage
     }
 
-    private var expandedContentHorizontalInset: CGFloat {
-        vm.notchSize.width * (1 - opaqueNotchCoverage) / 2
-    }
-
     private var expandedContentBottomInset: CGFloat {
         expandedContentHeight * (1 - opaqueNotchCoverage)
     }
@@ -163,7 +159,7 @@ struct ContentView: View {
         let notchHeight = isClosingShell
             ? openNotchSize(for: coordinator.currentView, screenUUID: vm.screenUUID).height
             : vm.notchSize.height
-        return max(0, notchHeight - openNotchHeaderHeight)
+        return max(0, notchHeight - openNotchHeaderHeight - expandedContentTopPadding(screenUUID: vm.screenUUID))
     }
 
     private var albumArtTransition: Animation {
@@ -683,12 +679,12 @@ struct ContentView: View {
                 }
                 .animation(nil, value: coordinator.currentView)
                 .id(contentIdentity)
-                .padding(.horizontal, expandedContentHorizontalInset)
+                .padding(.top, expandedContentTopPadding(screenUUID: vm.screenUUID))
                 .padding(.bottom, expandedContentBottomInset)
                 .frame(
                     maxWidth: .infinity,
                     maxHeight: expandedContentHeight,
-                    alignment: .center
+                    alignment: .top
                 )
                 .scaleEffect(expandedContentScale, anchor: .top)
                 .zIndex(1)
