@@ -19,6 +19,7 @@ let moduleTabLeadingPadding: CGFloat = 6
 let moduleTabNotchGap: CGFloat = 10
 let notchOuterHorizontalPadding: CGFloat = 19 + 12
 let openNotchHeaderHeight: CGFloat = 30
+let minimumExpandedContentInset: CGFloat = 16
 let calendarContentSize: CGSize = .init(width: 504, height: 160)
 let calendarOpenNotchSize: CGSize = .init(
     width: calendarContentSize.width + 72,
@@ -53,11 +54,6 @@ func clipboardOpenNotchSize(screenUUID: String? = nil) -> CGSize {
 let cornerRadiusInsets: (opened: (top: CGFloat, bottom: CGFloat), closed: (top: CGFloat, bottom: CGFloat)) = (opened: (top: 19, bottom: 24), closed: (top: 6, bottom: 14))
 
 @MainActor
-func expandedContentTopPadding(screenUUID: String? = nil) -> CGFloat {
-    max(0, getClosedNotchSize(screenUUID: screenUUID).height + 8 - openNotchHeaderHeight)
-}
-
-@MainActor
 func tabHeaderMinimumOpenWidth(screenUUID: String? = nil) -> CGFloat {
     let tabCount = CGFloat(FeatureModuleRegistry.shared.installedModules.count)
     let tabStripWidth = tabCount * moduleTabWidth
@@ -74,10 +70,47 @@ func moduleTabWingWidth() -> CGFloat {
 }
 
 @MainActor
+func expandedContentInset(screenUUID: String? = nil) -> CGFloat {
+    let coverage = min(max(Defaults[.notchGradientBlackCoverage], 0.01), 1)
+    let contentWidth = max(baseMaximumOpenNotchSize.width, tabHeaderMinimumOpenWidth(screenUUID: screenUUID))
+    let contentHeight = baseMaximumOpenNotchSize.height
+        + max(0, getClosedNotchSize(screenUUID: screenUUID).height - openNotchHeaderHeight)
+    let horizontalFadeDepth = contentWidth * (1 - coverage) / (2 * coverage)
+    let bottomFadeDepth = coverage > 0.5
+        ? contentHeight * (1 - coverage) / (2 * coverage - 1)
+        : contentHeight * (1 - coverage) / coverage
+
+    return max(minimumExpandedContentInset, max(horizontalFadeDepth, bottomFadeDepth) / 2)
+}
+
+@MainActor
+func expandedContentTopPadding(screenUUID: String? = nil) -> CGFloat {
+    max(0, getClosedNotchSize(screenUUID: screenUUID).height + 8 - openNotchHeaderHeight)
+}
+
+@MainActor
+func safeExpandedContentWidth(_ contentWidth: CGFloat, screenUUID: String? = nil) -> CGFloat {
+    max(
+        contentWidth,
+        tabHeaderMinimumOpenWidth(screenUUID: screenUUID)
+            - 2 * expandedContentInset(screenUUID: screenUUID)
+    )
+}
+
+@MainActor
+func safeExpandedContentHeight(_ contentHeight: CGFloat) -> CGFloat {
+    contentHeight
+}
+
+@MainActor
 func maximumOpenNotchSize(screenUUID: String? = nil) -> CGSize {
-    .init(
-        width: max(baseMaximumOpenNotchSize.width, tabHeaderMinimumOpenWidth(screenUUID: screenUUID)),
-        height: baseMaximumOpenNotchSize.height
+    let inset = expandedContentInset(screenUUID: screenUUID)
+    return .init(
+        width: safeExpandedContentWidth(baseMaximumOpenNotchSize.width, screenUUID: screenUUID) + 2 * inset,
+        height: openNotchHeaderHeight
+            + expandedContentTopPadding(screenUUID: screenUUID)
+            + safeExpandedContentHeight(baseMaximumOpenNotchSize.height)
+            + inset
     )
 }
 
@@ -89,32 +122,33 @@ func notchWindowSize(screenUUID: String? = nil) -> CGSize {
 
 @MainActor
 func openNotchSize(for view: NotchViews, screenUUID: String? = nil) -> CGSize {
-    let minWidth = tabHeaderMinimumOpenWidth(screenUUID: screenUUID)
+    let inset = expandedContentInset(screenUUID: screenUUID)
     let topPadding = expandedContentTopPadding(screenUUID: screenUUID)
     let contentWidth: CGFloat
     let contentHeight: CGFloat
 
     switch view {
     case .home:
-        contentWidth = max(musicOpenNotchSize.width, minWidth)
-        contentHeight = musicOpenNotchSize.height + topPadding
+        contentWidth = musicContentSize.width
+        contentHeight = musicContentSize.height
     case .clipboard:
         let size = clipboardOpenNotchSize(screenUUID: screenUUID)
-        return .init(width: max(size.width, minWidth), height: size.height + topPadding)
+        contentWidth = size.width
+        contentHeight = size.height
     case .shelf:
-        contentWidth = max(shelfOpenNotchSize.width, minWidth)
-        contentHeight = shelfOpenNotchSize.height + topPadding
+        contentWidth = shelfOpenNotchSize.width
+        contentHeight = shelfOpenNotchSize.height
     case .calendar:
-        contentWidth = max(calendarOpenNotchSize.width, minWidth)
-        contentHeight = calendarOpenNotchSize.height + topPadding
+        contentWidth = calendarContentSize.width
+        contentHeight = calendarContentSize.height
     case .camera:
-        contentWidth = max(256, minWidth)
-        contentHeight = 190 + topPadding
+        contentWidth = 160
+        contentHeight = 160
     }
 
     return .init(
-        width: contentWidth,
-        height: contentHeight
+        width: safeExpandedContentWidth(contentWidth, screenUUID: screenUUID) + 2 * inset,
+        height: openNotchHeaderHeight + topPadding + safeExpandedContentHeight(contentHeight) + inset
     )
 }
 
