@@ -96,7 +96,7 @@ Homebrew support is coming soon. Until then, install manually using the release 
 - [x] Modern macOS System Settings UI
 - [x] System HUD replacements (volume, brightness, backlight)
 - [x] Bluetooth device live activity
-- [ ] Clipboard manager
+- [x] Clipboard manager
 - [ ] Fan controls
 - [ ] Lock screen widgets
 - [ ] Extension system
