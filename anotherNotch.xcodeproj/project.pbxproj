@@ -7,8 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		C1A0B0013B00000100000001 /* ClipboardHistoryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A0B0023B00000100000001 /* ClipboardHistoryStore.swift */; };
-		C1A0B0033B00000100000001 /* ClipboardViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A0B0043B00000100000001 /* ClipboardViews.swift */; };
 		1100290C2E847E2800035A57 /* NSItemProvider+LoadHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1100290B2E847E2800035A57 /* NSItemProvider+LoadHelpers.swift */; };
 		110029272E84FD4C00035A57 /* TemporaryFileStorageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110029262E84FD4C00035A57 /* TemporaryFileStorageService.swift */; };
 		1100292A2E8691B400035A57 /* FileShareView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110029292E8691B400035A57 /* FileShareView.swift */; };
@@ -144,6 +142,8 @@
 		B1F0A0022E60000100000001 /* BrightnessManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1F0A0012E60000100000001 /* BrightnessManager.swift */; };
 		B1F747F92EC7E94000F841DB /* LottieView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1F747F82EC7E94000F841DB /* LottieView.swift */; };
 		B1FEB4992C7686630066EBBC /* PanGesture.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1FEB4982C7686630066EBBC /* PanGesture.swift */; };
+		C1A0B0013B00000100000001 /* ClipboardHistoryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A0B0023B00000100000001 /* ClipboardHistoryStore.swift */; };
+		C1A0B0033B00000100000001 /* ClipboardViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A0B0043B00000100000001 /* ClipboardViews.swift */; };
 		F38DE6482D8243E7008B5C6D /* BatteryActivityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F38DE6472D8243E2008B5C6D /* BatteryActivityManager.swift */; };
 /* End PBXBuildFile section */
 
@@ -183,8 +183,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		C1A0B0023B00000100000001 /* ClipboardHistoryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardHistoryStore.swift; sourceTree = "<group>"; };
-		C1A0B0043B00000100000001 /* ClipboardViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardViews.swift; sourceTree = "<group>"; };
 		1100290B2E847E2800035A57 /* NSItemProvider+LoadHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSItemProvider+LoadHelpers.swift"; sourceTree = "<group>"; };
 		110029262E84FD4C00035A57 /* TemporaryFileStorageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemporaryFileStorageService.swift; sourceTree = "<group>"; };
 		110029292E8691B400035A57 /* FileShareView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileShareView.swift; sourceTree = "<group>"; };
@@ -260,7 +258,7 @@
 		14C08BB52C8DE42D000F8AA0 /* CalendarManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarManager.swift; sourceTree = "<group>"; };
 		14C08BB82C8DE4B1000F8AA0 /* AnotherNotchCalendar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnotherNotchCalendar.swift; sourceTree = "<group>"; };
 		14C08BC02C8E03AD000F8AA0 /* NSImage+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NSImage+Extensions.swift"; sourceTree = "<group>"; };
-		14CEF4122C5CAED300855D72 /* anotherNotch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = anotherNotch.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		14CEF4122C5CAED300855D72 /* anotherNotch Debug.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "anotherNotch Debug.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		14CEF4152C5CAED300855D72 /* anotherNotchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = anotherNotchApp.swift; sourceTree = "<group>"; };
 		14CEF4172C5CAED300855D72 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		14CEF4192C5CAED400855D72 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -313,6 +311,8 @@
 		B1F0A0012E60000100000001 /* BrightnessManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrightnessManager.swift; sourceTree = "<group>"; };
 		B1F747F82EC7E94000F841DB /* LottieView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LottieView.swift; sourceTree = "<group>"; };
 		B1FEB4982C7686630066EBBC /* PanGesture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanGesture.swift; sourceTree = "<group>"; };
+		C1A0B0023B00000100000001 /* ClipboardHistoryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardHistoryStore.swift; sourceTree = "<group>"; };
+		C1A0B0043B00000100000001 /* ClipboardViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardViews.swift; sourceTree = "<group>"; };
 		F38DE6472D8243E2008B5C6D /* BatteryActivityManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryActivityManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -361,15 +361,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		C1A0B0053B00000100000001 /* Clipboard */ = {
-			isa = PBXGroup;
-			children = (
-				C1A0B0023B00000100000001 /* ClipboardHistoryStore.swift */,
-				C1A0B0043B00000100000001 /* ClipboardViews.swift */,
-			);
-			path = Clipboard;
-			sourceTree = "<group>";
-		};
 		1113ABB82E80E27000EC13B2 /* Models */ = {
 			isa = PBXGroup;
 			children = (
@@ -565,7 +556,7 @@
 		14CEF4132C5CAED300855D72 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				14CEF4122C5CAED300855D72 /* anotherNotch.app */,
+				14CEF4122C5CAED300855D72 /* anotherNotch Debug.app */,
 				11F7484F2EC9AABA00F841DB /* AnotherNotchXPCHelper.xpc */,
 			);
 			name = Products;
@@ -772,6 +763,15 @@
 			path = Tips;
 			sourceTree = "<group>";
 		};
+		C1A0B0053B00000100000001 /* Clipboard */ = {
+			isa = PBXGroup;
+			children = (
+				C1A0B0023B00000100000001 /* ClipboardHistoryStore.swift */,
+				C1A0B0043B00000100000001 /* ClipboardViews.swift */,
+			);
+			path = Clipboard;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -831,7 +831,7 @@
 				111BEA6E2ED166E20079DD4E /* MacroVisionKit */,
 			);
 			productName = dynamicNotch;
-			productReference = 14CEF4122C5CAED300855D72 /* anotherNotch.app */;
+			productReference = 14CEF4122C5CAED300855D72 /* anotherNotch Debug.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -1061,7 +1061,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = XW87KZT6AP;
+				DEVELOPMENT_TEAM = C366DWS54X;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = AnotherNotchXPCHelper/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = AnotherNotchXPCHelper;
@@ -1086,7 +1086,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = XW87KZT6AP;
+				DEVELOPMENT_TEAM = C366DWS54X;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = AnotherNotchXPCHelper/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = AnotherNotchXPCHelper;
@@ -1242,7 +1242,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"anotherNotch/Preview Content\"";
-				DEVELOPMENT_TEAM = XW87KZT6AP;
+				DEVELOPMENT_TEAM = C366DWS54X;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -1297,7 +1297,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"anotherNotch/Preview Content\"";
-				DEVELOPMENT_TEAM = XW87KZT6AP;
+				DEVELOPMENT_TEAM = C366DWS54X;
 				ENABLE_HARDENED_RUNTIME = NO;
 				ENABLE_PREVIEWS = YES;
 				FRAMEWORK_SEARCH_PATHS = (
