@@ -47,7 +47,11 @@ jobs:
           if git diff --quiet; then
             echo "No changes to commit."
           else
+            BRANCH="${{ github.event.repository.default_branch }}"
+            git stash
+            git pull --rebase origin "$BRANCH"
+            git stash pop || true
             git add .github/ISSUE_TEMPLATE/1-bug-report-form.yml
             git commit -m "Update issue form version dropdown with placeholder and latest tags"
-            git push
+            git push origin "HEAD:$BRANCH"
           fi
