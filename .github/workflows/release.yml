@@ -12,7 +12,7 @@ env:
   ARTIFACT_NAME: anotherNotch
   BETA_CHANNEL_NAME: beta
   RELEASE_COMMAND: /release
-  CODE_SIGN_IDENTITY: ${{ vars.CODE_SIGN_IDENTITY || 'Apple Development' }}
+  CODE_SIGN_IDENTITY: "Apple Development: DOAN  LE QUOC THAO (V632GK6J9A)"
   XCODE_VERSION: "default"
 
 permissions:

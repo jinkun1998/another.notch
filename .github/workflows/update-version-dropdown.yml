@@ -10,6 +10,11 @@ on:
   release:
     types:
       - published
+
+concurrency:
+  group: update-version-dropdown-${{ github.event.repository.default_branch }}
+  cancel-in-progress: false
+
 jobs:
   update-dropdown:
     runs-on: ubuntu-latest
@@ -53,5 +58,18 @@ jobs:
             git stash pop || true
             git add .github/ISSUE_TEMPLATE/1-bug-report-form.yml
             git commit -m "Update issue form version dropdown with placeholder and latest tags"
-            git push origin "HEAD:$BRANCH"
+
+            for attempt in 1 2 3; do
+              if git push origin "HEAD:$BRANCH"; then
+                exit 0
+              fi
+
+              if [ "$attempt" = 3 ]; then
+                echo "Failed to push after $attempt attempts."
+                exit 1
+              fi
+
+              git fetch origin "$BRANCH"
+              git rebase --empty=drop --strategy-option=theirs "origin/$BRANCH"
+            done
           fi
