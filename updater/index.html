@@ -29,7 +29,7 @@
     .github-link { display: flex; padding: 6px; border-radius: 50%; }
     .github-link svg { width: 20px; height: 20px; fill: currentColor; }
     .hero { position: relative; min-height: 100vh; display: grid; place-items: center; text-align: center; padding: 96px 0; }
-    .hero-video { position: fixed; top: max(76px, 10vh); bottom: 10vh; left: 50%; z-index: 0; width: min(80vw, 1440px); height: auto; transform: translateX(-50%); object-fit: cover; object-position: 50% 10%; opacity: .38; pointer-events: none; }
+    .hero-video { position: fixed; top: 50%; left: 50%; z-index: 0; width: max(100vw, 3004px); height: max(100vh, 930px); transform: translate(-50%, -50%); object-fit: cover; object-position: center; opacity: .38; pointer-events: none; }
     .hero-content { position: relative; z-index: 1; width: min(100%, 680px); padding: 24px; }
     .notch { width: min(88vw, 430px); height: 80px; border-radius: 0 0 34px 34px; background: linear-gradient(135deg, #000, #242426 56%, #050506); box-shadow: 0 22px 56px #0009, inset 0 -1px #ffffff1c; margin-bottom: 52px; }
     .eyebrow { margin: 0 0 14px; color: #8ab4ff; font-size: 14px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
@@ -41,8 +41,6 @@
     .button:hover { transform: translateY(-1px); filter: brightness(1.08); }
     .release-notes { display: inline-block; margin-top: 18px; color: #a1a1a6; font-size: 14px; }
     .demo-portrait { display: none; }
-    @media (max-height: 620px) and (orientation: landscape) { .hero { padding: 0 20px 20px; } .hero-video { top: 0; right: 20px; bottom: 20px; left: 20px; } }
-    @media (max-width: 620px) and (max-height: 620px) and (orientation: landscape) { .hero { padding: 0 14px 14px; } .hero-video { right: 14px; bottom: 14px; left: 14px; } }
     @media (orientation: portrait) { .hero { display: block; min-height: auto; padding: 92px 14px 32px; } .hero-video { display: none; } .demo-portrait { display: block; width: min(calc(100% - 28px), 360px); margin: 0 auto 32px; border: 1px solid #ffffff18; border-radius: 20px; box-shadow: 0 28px 70px #0008; } }
     @media (max-width: 620px) { main { width: 100%; } nav { inset: 16px 16px auto; } .github-link { min-width: 44px; min-height: 44px; align-items: center; justify-content: center; } .hero-content { padding: 16px; } h1 { font-size: clamp(42px, 14vw, 58px); } .lede { margin: 18px auto 26px; font-size: 17px; } .button { padding: 13px 20px; } .notch { height: 58px; border-radius: 0 0 26px 26px; margin-bottom: 42px; } }
   </style>
