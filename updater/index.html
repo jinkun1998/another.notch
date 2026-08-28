@@ -28,8 +28,8 @@
     .brand { color: #fff; font-weight: 700; letter-spacing: -.02em; }
     .github-link { display: flex; padding: 6px; border-radius: 50%; }
     .github-link svg { width: 20px; height: 20px; fill: currentColor; }
-    .hero { position: relative; min-height: 100vh; display: grid; place-items: center; overflow: hidden; text-align: center; padding: 96px 0; }
-    .hero-video { position: absolute; top: 50%; left: 50%; width: min(100vw, 1440px); height: auto; aspect-ratio: 1440 / 930; transform: translate(-50%, -50%); opacity: .38; pointer-events: none; }
+    .hero { position: relative; min-height: 100vh; display: grid; place-items: center; text-align: center; padding: 96px 0; }
+    .hero-video { position: fixed; top: max(76px, 10vh); right: 10vw; bottom: 10vh; left: 10vw; z-index: 0; width: auto; height: auto; object-fit: cover; object-position: 50% 10%; opacity: .38; pointer-events: none; }
     .hero-content { position: relative; z-index: 1; width: min(100%, 680px); padding: 24px; }
     .notch { width: min(88vw, 430px); height: 80px; border-radius: 0 0 34px 34px; background: linear-gradient(135deg, #000, #242426 56%, #050506); box-shadow: 0 22px 56px #0009, inset 0 -1px #ffffff1c; margin-bottom: 52px; }
     .eyebrow { margin: 0 0 14px; color: #8ab4ff; font-size: 14px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
@@ -40,7 +40,8 @@
     .button.primary { background: #fff; border-color: #fff; color: #111; }
     .button:hover { transform: translateY(-1px); filter: brightness(1.08); }
     .release-notes { display: inline-block; margin-top: 18px; color: #a1a1a6; font-size: 14px; }
-    @media (max-width: 620px) { main { width: 100%; } nav { inset: 16px 16px auto; } .github-link { min-width: 44px; min-height: 44px; align-items: center; justify-content: center; } .hero { min-height: 100svh; padding: 76px 14px 32px; } .hero-content { padding: 16px; } h1 { font-size: clamp(42px, 14vw, 58px); } .lede { margin: 18px auto 26px; font-size: 17px; } .button { padding: 13px 20px; } .notch { height: 58px; border-radius: 0 0 26px 26px; margin-bottom: 42px; } }
+    @media (orientation: portrait) { .hero { display: block; min-height: auto; padding: 92px 14px 32px; } .hero-video { position: static; display: block; width: 100%; height: auto; margin-top: 24px; border: 1px solid #ffffff18; border-radius: 20px; object-fit: contain; object-position: center; opacity: 1; transform: none; } }
+    @media (max-width: 620px) { main { width: 100%; } nav { inset: 16px 16px auto; } .github-link { min-width: 44px; min-height: 44px; align-items: center; justify-content: center; } .hero-content { padding: 16px; } h1 { font-size: clamp(42px, 14vw, 58px); } .lede { margin: 18px auto 26px; font-size: 17px; } .button { padding: 13px 20px; } .notch { height: 58px; border-radius: 0 0 26px 26px; margin-bottom: 42px; } }
   </style>
 </head>
 <body>
@@ -52,9 +53,6 @@
       </a>
     </nav>
     <section class="hero">
-      <video class="hero-video" autoplay muted loop playsinline aria-hidden="true" tabindex="-1">
-        <source src="assets/another-notch-demo.mp4" type="video/mp4">
-      </video>
       <div class="hero-content">
         <p class="eyebrow">Made for macOS</p>
         <h1>Your notch,<br>now useful.</h1>
@@ -64,6 +62,9 @@
         </div>
         <a class="text-link release-notes" href="https://github.com/jinkun1998/another.notch/releases">Release notes</a>
       </div>
+      <video class="hero-video" autoplay muted loop playsinline aria-hidden="true" tabindex="-1">
+        <source src="assets/another-notch-demo.mp4" type="video/mp4">
+      </video>
     </section>
   </main>
 </body>
