@@ -68,6 +68,7 @@ final class NowPlayingController: ObservableObject, MediaControllerProtocol {
     private var process: Process?
     private var pipeHandler: JSONLinesPipeHandler?
     private var streamTask: Task<Void, Never>?
+    private var isInvalidated = false
 
     // MARK: - Initialization
     init?() {
@@ -100,6 +101,7 @@ final class NowPlayingController: ObservableObject, MediaControllerProtocol {
     }
 
     deinit {
+        isInvalidated = true
         streamTask?.cancel()
         
         if let pipeHandler = self.pipeHandler {
@@ -205,6 +207,20 @@ final class NowPlayingController: ObservableObject, MediaControllerProtocol {
         
         self.process = process
         self.pipeHandler = pipeHandler
+        process.terminationHandler = { [weak self] completedProcess in
+            DispatchQueue.main.async {
+                guard let self,
+                      !self.isInvalidated,
+                      self.process === completedProcess
+                else { return }
+
+                self.process = nil
+                self.pipeHandler = nil
+                Task { [weak self] in
+                    await self?.setupNowPlayingObserver()
+                }
+            }
+        }
 
         do {
             try process.run()

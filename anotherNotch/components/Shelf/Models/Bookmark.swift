@@ -20,38 +20,31 @@ struct Bookmark: Sendable, Equatable, Codable {
             throw NSError(domain: "Bookmark", code: 1, userInfo: [NSLocalizedDescriptionKey: "Not a valid file URL or file does not exist at \(url.path)"])
         }
         do {
-            let bookmark = try url.bookmarkData(
+            self.data = try url.bookmarkData(
                 options: .withSecurityScope,
                 includingResourceValuesForKeys: nil,
                 relativeTo: nil
             )
-            NSLog("✅ Successfully created bookmark for \(url.path)")
-            self.data = bookmark
         } catch {
-            NSLog("❌ Failed to create bookmark for \(url.path): \(error.localizedDescription)")
-            throw error
+            self.data = try url.bookmarkData(
+                options: [],
+                includingResourceValuesForKeys: nil,
+                relativeTo: nil
+            )
+            NSLog("⚠️ Created a standard bookmark for \(url.path)")
         }
     }
 
     func resolve() -> (url: URL?, refreshedData: Data?) {
         guard !data.isEmpty else { return (nil, nil) }
-        var isStale = false
-        do {
-            let url = try URL(
-                resolvingBookmarkData: data,
-                options: [.withSecurityScope],
-                relativeTo: nil,
-                bookmarkDataIsStale: &isStale
-            )
-            if isStale, let newData = try? url.bookmarkData(options: [.withSecurityScope]) {
-                NSLog("⚠️ Bookmark was stale for \(url.path), refreshed")
-                return (url, newData)
-            }
-            return (url, nil)
-        } catch {
-            NSLog("❌ Failed to resolve bookmark: \(error.localizedDescription)")
-            return (nil, nil)
+        if let resolved = resolve(options: [.withSecurityScope], refreshOptions: [.withSecurityScope]) {
+            return resolved
         }
+        if let resolved = resolve(options: [], refreshOptions: []) {
+            return resolved
+        }
+        NSLog("❌ Failed to resolve bookmark")
+        return (nil, nil)
     }
 
     func resolveURL() -> URL? {
@@ -60,6 +53,23 @@ struct Bookmark: Sendable, Equatable, Codable {
 
     var refreshedData: Data? {
         return resolve().refreshedData
+    }
+
+    private func resolve(
+        options: URL.BookmarkResolutionOptions,
+        refreshOptions: URL.BookmarkCreationOptions
+    ) -> (url: URL?, refreshedData: Data?)? {
+        var isStale = false
+        guard let url = try? URL(
+            resolvingBookmarkData: data,
+            options: options,
+            relativeTo: nil,
+            bookmarkDataIsStale: &isStale
+        ) else {
+            return nil
+        }
+        let refreshedData = isStale ? try? url.bookmarkData(options: refreshOptions) : nil
+        return (url, refreshedData)
     }
     
     static func update(in items: inout [ShelfItem], for item: ShelfItem, newBookmark: Data) {

@@ -31,7 +31,7 @@ struct ShelfView: View {
         }
         .quickLookPresenter(using: quickLookService)
     }
-    
+
     private func handleDrop(providers: [NSItemProvider]) -> Bool {
         guard !selection.isDragging else { return false }
         vm.dropEvent = true
@@ -71,7 +71,7 @@ struct ShelfView: View {
                     .padding()
             }
             .transaction { transaction in
-                transaction.animation = vm.animation
+                transaction.animation = nil
             }
             .contentShape(Rectangle())
             .onTapGesture { selection.clear() }

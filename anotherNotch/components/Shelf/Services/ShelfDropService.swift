@@ -27,6 +27,12 @@ struct ShelfDropService {
             if let bookmark = createBookmark(for: actualFileURL) {
                 return await ShelfItem(kind: .file(bookmark: bookmark), isTemporary: false)
             }
+        }
+
+        if let temporaryFileURL = await provider.extractFileRepresentation() {
+            if let bookmark = createBookmark(for: temporaryFileURL) {
+                return await ShelfItem(kind: .file(bookmark: bookmark), isTemporary: false)
+            }
             return nil
         }
         
@@ -38,7 +44,6 @@ struct ShelfDropService {
             } else {
                 return await ShelfItem(kind: .link(url: url), isTemporary: false)
             }
-            return nil
         }
         
         if let text = await provider.extractText() {

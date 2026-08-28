@@ -89,6 +89,14 @@ final class ShelfStateViewModel: ObservableObject {
         }
     }
 
+    func load(fileURLs: [URL]) {
+        let dropped = fileURLs.compactMap { url -> ShelfItem? in
+            guard let bookmark = try? Bookmark(url: url).data else { return nil }
+            return ShelfItem(kind: .file(bookmark: bookmark))
+        }
+        add(dropped)
+    }
+
     func cleanupInvalidItems() {
         Task { [weak self] in
             guard let self else { return }

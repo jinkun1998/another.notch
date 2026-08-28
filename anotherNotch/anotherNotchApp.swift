@@ -249,6 +249,23 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let styleMask: NSWindow.StyleMask = [.borderless, .nonactivatingPanel, .utilityWindow, .hudWindow]
         
         let window = AnotherNotchSkyLightWindow(contentRect: rect, styleMask: styleMask, backing: .buffered, defer: false)
+        let containerView = AnotherNotchFileDropContainerView(frame: rect)
+        containerView.acceptsFileDrop = { [weak self, weak viewModel] in
+            guard let self, let viewModel,
+                  viewModel.notchState == .closed,
+                  FeatureModuleRegistry.shared.isAvailable(.shelf) else { return false }
+            self.coordinator.currentView = .shelf
+            viewModel.open()
+            return true
+        }
+        containerView.onFileDrop = { [weak self, weak viewModel] fileURLs in
+            guard let self, let viewModel, !fileURLs.isEmpty,
+                  FeatureModuleRegistry.shared.isAvailable(.shelf) else { return false }
+            self.coordinator.currentView = .shelf
+            viewModel.dropEvent = true
+            ShelfStateViewModel.shared.load(fileURLs: fileURLs)
+            return true
+        }
         
         // Enable SkyLight only when screen is locked
         if isScreenLocked {
@@ -257,10 +274,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             window.disableSkyLight()
         }
 
-        window.contentView = NSHostingView(
+        let hostingView = NSHostingView(
             rootView: ContentView()
                 .environmentObject(viewModel)
         )
+        hostingView.frame = containerView.bounds
+        hostingView.autoresizingMask = [.width, .height]
+        containerView.addSubview(hostingView)
+        window.contentView = containerView
 
         window.orderFrontRegardless()
         NotchSpaceManager.shared.notchSpace.windows.insert(window)

@@ -143,9 +143,15 @@ jobs:
             "${{ env.PROJECT_NAME }}.xcarchive/Products/Applications/${{ env.PROJECT_NAME }}.app" \
             "Release/${{ env.PROJECT_NAME }}.app"
           SIGN_IDENTITY="${{ env.CODE_SIGN_IDENTITY }}"
+          APP_PATH="Release/${{ env.PROJECT_NAME }}.app"
+          APP_ENTITLEMENTS="$RUNNER_TEMP/anotherNotch.entitlements"
+          BUNDLE_ID="$(plutil -extract CFBundleIdentifier raw "$APP_PATH/Contents/Info.plist")"
+          BUNDLE_ID="$BUNDLE_ID" perl -pe 's/\$\(PRODUCT_BUNDLE_IDENTIFIER\)/$ENV{BUNDLE_ID}/g' \
+            anotherNotch/anotherNotch.entitlements > "$APP_ENTITLEMENTS"
           echo "Signing app with identity: $SIGN_IDENTITY"
-          codesign --force --deep --sign "$SIGN_IDENTITY" --timestamp --options runtime "Release/${{ env.PROJECT_NAME }}.app"
-          codesign --verify --deep --strict --verbose=2 "Release/${{ env.PROJECT_NAME }}.app"
+          codesign --force --deep --sign "$SIGN_IDENTITY" --timestamp --options runtime \
+            --entitlements "$APP_ENTITLEMENTS" "$APP_PATH"
+          codesign --verify --deep --strict --verbose=2 "$APP_PATH"
 
       - name: Create DMG
         run: |

@@ -54,6 +54,38 @@ class TemporaryFileStorageService {
             print("Error: \(error.localizedDescription)")
         }
     }
+
+    func copyToTemporaryFile(from source: URL) -> URL? {
+        let directory = URL(fileURLWithPath: NSTemporaryDirectory())
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        let destination = directory.appendingPathComponent(source.lastPathComponent)
+
+        do {
+            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+            try FileManager.default.copyItem(at: source, to: destination)
+            return destination
+        } catch {
+            print("Error copying temporary file: \(error)")
+            return nil
+        }
+    }
+
+    func copyToShelfStorage(from source: URL) -> URL? {
+        let directory = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent(Bundle.main.bundleIdentifier ?? "anotherNotch", isDirectory: true)
+            .appendingPathComponent("Shelf", isDirectory: true)
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        let destination = directory.appendingPathComponent(source.lastPathComponent)
+
+        do {
+            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+            try FileManager.default.copyItem(at: source, to: destination)
+            return destination
+        } catch {
+            print("Error copying shelf file: \(error)")
+            return nil
+        }
+    }
     
     // MARK: - Private Implementation
     
