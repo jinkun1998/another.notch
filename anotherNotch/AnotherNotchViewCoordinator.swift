@@ -93,6 +93,8 @@ class AnotherNotchViewCoordinator: ObservableObject {
         didSet {
             if openLastTabByDefault {
                 alwaysShowTabs = true
+            } else {
+                currentView = .home
             }
         }
     }

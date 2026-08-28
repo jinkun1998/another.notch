@@ -209,6 +209,6 @@ enum MusicPlayerImageSizes {
         }
     }
 
-    return .init(width: notchWidth, height: notchHeight + 0.5)
+    return .init(width: notchWidth, height: notchHeight - 0.3)
 }
 let musicContentSize: CGSize = .init(width: 504, height: 120)

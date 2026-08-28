@@ -31,7 +31,7 @@ struct ContentView: View {
     @State private var isHovering: Bool = false
     @State private var isClosingShell: Bool = false
     @State private var shellExpansion: CGFloat = .zero
-    @State private var contentIdentity = UUID()
+    @State private var expandedContentTransitionID = 0
     @State private var anyDropDebounceTask: Task<Void, Never>?
 
     @State private var gestureProgress: CGFloat = .zero
@@ -61,6 +61,10 @@ struct ContentView: View {
         reduceMotion ? .linear(duration: 0.1) : .easeOut(duration: 0.16)
     }
 
+    private var resizeAnimation: Animation {
+        reduceMotion ? .linear(duration: 0.12) : .easeInOut(duration: 0.24)
+    }
+
     private let extendedHoverPadding: CGFloat = 30
     private let zeroHeightHoverPadding: CGFloat = 10
     private let powerNotificationIconWidth: CGFloat = 44
@@ -78,6 +82,7 @@ struct ContentView: View {
                 width: vm.closedNotchSize.width,
                 height: vm.effectiveClosedNotchHeight
             )
+            .offset(y: 1)
     }
 
     private var physicalNotchDebugColor: Color {
@@ -337,7 +342,7 @@ struct ContentView: View {
                     .conditionalModifier(true) { view in
                         return view
                             .animation(vm.notchState == .open ? openAnimation : closeAnimation, value: vm.notchState)
-                            .animation(vm.notchState == .open ? openAnimation : closeAnimation, value: vm.notchSize)
+                            .animation(vm.notchState == .open ? resizeAnimation : closeAnimation, value: vm.notchSize)
                             .animation(.smooth(duration: 0.28), value: closedNotchContentSize)
                             .animation(interactionAnimation, value: gestureProgress)
                     }
@@ -392,11 +397,10 @@ struct ContentView: View {
                         }
                     }
                     .onChange(of: coordinator.currentView) { _, view in
-                        contentIdentity = UUID()
-
                         if vm.notchState == .open {
                             musicHeroTransitionTask?.cancel()
                             isMusicHeroTransitionActive = false
+                            expandedContentTransitionID &+= 1
                         }
 
                         guard vm.notchState == .open else { return }
@@ -682,16 +686,20 @@ struct ContentView: View {
                     }
                 }
                 .animation(nil, value: coordinator.currentView)
-                .id(contentIdentity)
                 .padding(.top, expandedContentTopPadding(screenUUID: vm.screenUUID))
                 .padding(.horizontal, sharedExpandedContentInset)
                 .padding(.bottom, sharedExpandedContentInset)
                 .frame(
                     maxWidth: .infinity,
-                    maxHeight: max(0, openNotchSize(for: coordinator.currentView, screenUUID: vm.screenUUID).height - openNotchHeaderHeight),
+                    maxHeight: expandedContentHeight,
                     alignment: .top
                 )
                 .scaleEffect(expandedContentScale, anchor: .top)
+                .phaseAnimator([false, true], trigger: expandedContentTransitionID) { content, phase in
+                    content.scaleEffect(phase ? 1 : 0.96, anchor: .top)
+                } animation: { _ in
+                    interactionAnimation
+                }
                 .opacity(shellExpansion)
                 .zIndex(1)
                 .allowsHitTesting(vm.notchState == .open)
