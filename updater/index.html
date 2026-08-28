@@ -6,13 +6,13 @@
   <meta name="description" content="Another Notch is a free, open-source macOS app that turns your MacBook notch into a Dynamic Island-style utility with music, calendar, camera, battery, file shelf, and system controls.">
   <link rel="canonical" href="https://jinkun1998.github.io/another.notch/">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="Another Notch — MacBook Notch Utility for macOS">
+  <meta property="og:title" content="anotherNotch - Another Notch app for macOS">
   <meta property="og:description" content="Make your MacBook notch useful with music, calendar, camera, battery, file shelf, and system controls.">
   <meta property="og:url" content="https://jinkun1998.github.io/another.notch/">
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Another Notch — MacBook Notch Utility for macOS">
+  <meta name="twitter:title" content="anotherNotch - Another Notch app for macOS">
   <meta name="twitter:description" content="Make your MacBook notch useful with music, calendar, camera, battery, file shelf, and system controls.">
-  <title>Another Notch — MacBook Notch Utility for macOS</title>
+  <title>anotherNotch - Another Notch app for macOS</title>
   <script type="application/ld+json">
     {"@context":"https://schema.org","@type":"SoftwareApplication","name":"Another Notch","applicationCategory":"UtilitiesApplication","operatingSystem":"macOS 14 Sonoma or later","description":"A free, open-source macOS menu bar app that turns the MacBook notch into a Dynamic Island-style utility.","downloadUrl":"https://github.com/jinkun1998/another.notch/releases/latest","codeRepository":"https://github.com/jinkun1998/another.notch","license":"https://www.gnu.org/licenses/gpl-3.0.html"}
   </script>
@@ -27,7 +27,9 @@
     .brand { color: #fff; font-weight: 700; letter-spacing: -.02em; }
     .github-link { display: flex; padding: 6px; border-radius: 50%; }
     .github-link svg { width: 20px; height: 20px; fill: currentColor; }
-    .hero { min-height: 100vh; display: grid; place-items: center; text-align: center; padding: 96px 0; }
+    .hero { position: relative; min-height: 100vh; display: grid; place-items: center; overflow: hidden; text-align: center; padding: 96px 0; }
+    .hero-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .38; pointer-events: none; }
+    .hero-content { position: relative; z-index: 1; }
     .notch { width: min(88vw, 430px); height: 80px; border-radius: 0 0 34px 34px; background: linear-gradient(135deg, #000, #242426 56%, #050506); box-shadow: 0 22px 56px #0009, inset 0 -1px #ffffff1c; margin-bottom: 52px; }
     .eyebrow { margin: 0 0 14px; color: #8ab4ff; font-size: 14px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
     h1 { max-width: 760px; margin: 0; font-size: clamp(48px, 9vw, 92px); line-height: .98; letter-spacing: -.07em; }
@@ -37,9 +39,7 @@
     .button.primary { background: #fff; border-color: #fff; color: #111; }
     .button:hover { transform: translateY(-1px); filter: brightness(1.08); }
     .release-notes { display: inline-block; margin-top: 18px; color: #a1a1a6; font-size: 14px; }
-    .demo { padding: 0 0 96px; }
-    .demo video { display: block; width: 100%; border: 1px solid #ffffff18; border-radius: 24px; box-shadow: 0 28px 70px #0008; }
-    @media (max-width: 620px) { main { width: min(100% - 28px, 920px); } nav { inset: 20px 20px auto; } .hero { min-height: 100vh; padding: 80px 0; } .notch { height: 58px; border-radius: 0 0 26px 26px; margin-bottom: 42px; } .demo { padding-bottom: 48px; } .demo video { border-radius: 16px; } }
+    @media (max-width: 620px) { main { width: min(100% - 28px, 920px); } nav { inset: 20px 20px auto; } .hero { min-height: 100vh; padding: 80px 0; } .notch { height: 58px; border-radius: 0 0 26px 26px; margin-bottom: 42px; } }
   </style>
 </head>
 <body>
@@ -51,7 +51,10 @@
       </a>
     </nav>
     <section class="hero">
-      <div>
+      <video class="hero-video" autoplay muted loop playsinline aria-hidden="true" tabindex="-1">
+        <source src="assets/another-notch-demo.mp4" type="video/mp4">
+      </video>
+      <div class="hero-content">
         <p class="eyebrow">Made for macOS</p>
         <h1>Your notch,<br>now useful.</h1>
         <p class="lede">Music, calendar, camera, battery, and system controls—one hover away.</p>
@@ -60,11 +63,6 @@
         </div>
         <a class="text-link release-notes" href="https://github.com/jinkun1998/another.notch/releases">Release notes</a>
       </div>
-    </section>
-    <section class="demo" aria-label="Another Notch preview">
-      <video controls autoplay muted loop playsinline>
-        <source src="assets/another-notch-demo.mp4" type="video/mp4">
-      </video>
     </section>
   </main>
 </body>
