@@ -29,7 +29,7 @@
     .github-link { display: flex; padding: 6px; border-radius: 50%; }
     .github-link svg { width: 20px; height: 20px; fill: currentColor; }
     .hero { position: relative; min-height: 100vh; display: grid; place-items: center; text-align: center; padding: 96px 0; }
-    .hero-video { position: fixed; top: max(76px, 10vh); right: 10vw; bottom: 10vh; left: 10vw; z-index: 0; width: auto; height: auto; object-fit: cover; object-position: 50% 10%; opacity: .38; pointer-events: none; }
+    .hero-video { position: fixed; top: max(76px, 10vh); bottom: 10vh; left: 50%; z-index: 0; width: min(80vw, 1440px); height: auto; transform: translateX(-50%); object-fit: cover; object-position: 50% 10%; opacity: .38; pointer-events: none; }
     .hero-content { position: relative; z-index: 1; width: min(100%, 680px); padding: 24px; }
     .notch { width: min(88vw, 430px); height: 80px; border-radius: 0 0 34px 34px; background: linear-gradient(135deg, #000, #242426 56%, #050506); box-shadow: 0 22px 56px #0009, inset 0 -1px #ffffff1c; margin-bottom: 52px; }
     .eyebrow { margin: 0 0 14px; color: #8ab4ff; font-size: 14px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
