@@ -17,7 +17,7 @@
 
 <p align="center">
   <a href="assets/another-notch-demo.mp4">
-    <img src="assets/another-notch-demo.gif" alt="Another Notch feature demo" />
+    <img src="assets/another-notch-demo.gif" alt="Another Notch cropped feature demo" />
   </a>
 </p>
 
