@@ -24,6 +24,19 @@ extension NSItemProvider {
         }
         return nil
     }
+
+    func extractFileRepresentation() async -> URL? {
+        var typeIdentifiers = [UTType.fileURL.identifier, UTType.item.identifier]
+        typeIdentifiers.append(contentsOf: registeredTypeIdentifiers)
+
+        for typeIdentifier in Set(typeIdentifiers) {
+            if let fileURL = await loadFileRepresentation(typeIdentifier: typeIdentifier) {
+                return fileURL
+            }
+        }
+
+        return nil
+    }
     
     /// Loads raw data for the given type identifier
     func loadData() async -> Data? {
@@ -139,6 +152,21 @@ extension NSItemProvider {
                     }
                 }
                 cont.resume(returning: resolvedURL)
+            }
+        }
+    }
+
+    private func loadFileRepresentation(typeIdentifier: String) async -> URL? {
+        await withCheckedContinuation { (continuation: CheckedContinuation<URL?, Never>) in
+            self.loadFileRepresentation(forTypeIdentifier: typeIdentifier) { fileURL, error in
+                guard error == nil, let fileURL else {
+                    continuation.resume(returning: nil)
+                    return
+                }
+
+                continuation.resume(
+                    returning: TemporaryFileStorageService.shared.copyToShelfStorage(from: fileURL)
+                )
             }
         }
     }

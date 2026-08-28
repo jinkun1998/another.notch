@@ -25,7 +25,7 @@ let calendarOpenNotchSize: CGSize = .init(
     width: calendarContentSize.width + 72,
     height: max(190, calendarContentSize.height + 12)
 )
-let shelfOpenNotchSize: CGSize = .init(width: 640, height: 190)
+let shelfOpenNotchSize: CGSize = .init(width: 640, height: 160)
 let clipboardOpenNotchWidth: CGFloat = calendarOpenNotchSize.width
 let musicOpenNotchSize: CGSize = calendarOpenNotchSize
 let baseMaximumOpenNotchSize: CGSize = .init(
@@ -209,6 +209,6 @@ enum MusicPlayerImageSizes {
         }
     }
 
-    return .init(width: notchWidth, height: notchHeight)
+    return .init(width: notchWidth, height: notchHeight + 0.5)
 }
 let musicContentSize: CGSize = .init(width: 504, height: 120)
