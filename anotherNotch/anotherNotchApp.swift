@@ -308,7 +308,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         window.setFrameOrigin(
             NSPoint(
                 x: screenFrame.origin.x + (screenFrame.width / 2) - window.frame.width / 2,
-                y: screenFrame.maxY - window.frame.height + 1
+                y: screenFrame.maxY - window.frame.height
             ))
         window.alphaValue = 1
     }
@@ -333,7 +333,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         )
         let frame = NSRect(
             x: screen.frame.midX - size.width / 2,
-            y: screen.frame.maxY - size.height + 1,
+            y: screen.frame.maxY - size.height,
             width: size.width,
             height: size.height
         )

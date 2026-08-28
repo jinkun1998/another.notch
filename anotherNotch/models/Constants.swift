@@ -183,7 +183,7 @@ extension Defaults.Keys {
     static let showBatteryPercentage = Key<Bool>("showBatteryPercentage", default: true)
     static let showPowerStatusIcons = Key<Bool>("showPowerStatusIcons", default: true)
     static let showBluetoothDeviceConnectionIndicator = Key<Bool>("showBluetoothDeviceConnectionIndicator", default: false)
-    static let bluetoothDeviceIndicatorRows = Key<BluetoothDeviceIndicatorRows>("bluetoothDeviceIndicatorRows", default: .one)
+    static let bluetoothDeviceIndicatorRows = Key<BluetoothDeviceIndicatorRows>("bluetoothDeviceIndicatorRows", default: .two)
     static let showBluetoothDeviceName = Key<Bool>("showBluetoothDeviceName", default: true)
     
     // MARK: Downloads
