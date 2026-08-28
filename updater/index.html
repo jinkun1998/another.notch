@@ -22,11 +22,9 @@
     * { box-sizing: border-box; }
     body { margin: 0; min-width: 320px; background: radial-gradient(circle at 50% -18%, #3a4557 0, #121419 30%, #050506 62%); }
     main { width: min(100% - 40px, 920px); margin: auto; }
-    nav { position: fixed; inset: 28px 28px auto; z-index: 1; display: flex; justify-content: space-between; align-items: center; font-size: 14px; color: #a1a1a6; }
-    nav a, .text-link { color: inherit; text-decoration: none; }
-    nav a:hover, .text-link:hover { color: #fff; }
-    .brand { color: #fff; font-weight: 700; letter-spacing: -.02em; }
-    .github-link { display: flex; padding: 6px; border-radius: 50%; }
+    .text-link { color: inherit; text-decoration: none; }
+    .text-link:hover { color: #fff; }
+    .github-link { display: inline-flex; align-items: center; justify-content: center; min-width: 48px; min-height: 48px; border: 1px solid #ffffff20; border-radius: 999px; color: #fff; background: #ffffff12; }
     .github-link svg { width: 20px; height: 20px; fill: currentColor; }
     .hero { position: relative; min-height: 100vh; display: grid; place-items: center; text-align: center; padding: 96px 0; }
     .hero-video { position: fixed; top: 0; left: 50%; z-index: 0; width: 100vw; height: 100vh; transform: translateX(-50%); object-fit: cover; object-position: center top; opacity: .38; pointer-events: none; }
@@ -42,17 +40,11 @@
     .release-notes { display: inline-block; margin-top: 18px; color: #a1a1a6; font-size: 14px; }
     .demo-portrait { display: none; }
     @media (orientation: portrait) { .hero { display: block; min-height: auto; padding: 92px 14px 32px; } .hero-video { display: none; } .demo-portrait { display: block; width: min(calc(100% - 28px), 360px); margin: 0 auto 32px; border: 1px solid #ffffff18; border-radius: 20px; box-shadow: 0 28px 70px #0008; } }
-    @media (max-width: 620px) { main { width: 100%; } nav { inset: 16px 16px auto; } .github-link { min-width: 44px; min-height: 44px; align-items: center; justify-content: center; } .hero-content { padding: 16px; } h1 { font-size: clamp(42px, 14vw, 58px); } .lede { margin: 18px auto 26px; font-size: 17px; } .button { padding: 13px 20px; } .notch { height: 58px; border-radius: 0 0 26px 26px; margin-bottom: 42px; } }
+    @media (max-width: 620px) { main { width: 100%; } .github-link { min-width: 44px; min-height: 44px; } .hero-content { padding: 16px; } h1 { font-size: clamp(42px, 14vw, 58px); } .lede { margin: 18px auto 26px; font-size: 17px; } .button { padding: 13px 20px; } .notch { height: 58px; border-radius: 0 0 26px 26px; margin-bottom: 42px; } }
   </style>
 </head>
 <body>
   <main>
-    <nav>
-      <span class="brand">Another Notch</span>
-      <a class="github-link" href="https://github.com/jinkun1998/another.notch" aria-label="GitHub">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .7a11.3 11.3 0 0 0-3.6 22c.6.1.8-.3.8-.6v-2.2c-3.4.8-4.1-1.4-4.1-1.4-.6-1.4-1.3-1.8-1.3-1.8-1.1-.8.1-.8.1-.8 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.4 1 .1-.8.4-1.3.8-1.6-2.7-.3-5.6-1.4-5.6-6a4.7 4.7 0 0 1 1.2-3.2c-.1-.3-.5-1.6.1-3.2 0 0 1-.3 3.3 1.2a11.4 11.4 0 0 1 6 0c2.3-1.5 3.3-1.2 3.3-1.2.6 1.6.2 2.9.1 3.2a4.7 4.7 0 0 1 1.2 3.2c0 4.7-2.9 5.7-5.6 6 .4.4.8 1.1.8 2.2v3.2c0 .3.2.7.8.6A11.3 11.3 0 0 0 12 .7Z"/></svg>
-      </a>
-    </nav>
     <section class="hero">
       <div class="hero-content">
         <p class="eyebrow">Made for macOS</p>
@@ -60,6 +52,9 @@
         <p class="lede">Music, calendar, camera, battery, and system controls—one hover away.</p>
         <div class="actions">
           <a class="button primary" href="https://github.com/jinkun1998/another.notch/releases/latest">Download</a>
+          <a class="github-link" href="https://github.com/jinkun1998/another.notch" aria-label="GitHub">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .7a11.3 11.3 0 0 0-3.6 22c.6.1.8-.3.8-.6v-2.2c-3.4.8-4.1-1.4-4.1-1.4-.6-1.4-1.3-1.8-1.3-1.8-1.1-.8.1-.8.1-.8 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.4 1 .1-.8.4-1.3.8-1.6-2.7-.3-5.6-1.4-5.6-6a4.7 4.7 0 0 1 1.2-3.2c-.1-.3-.5-1.6.1-3.2 0 0 1-.3 3.3 1.2a11.4 11.4 0 0 1 6 0c2.3-1.5 3.3-1.2 3.3-1.2.6 1.6.2 2.9.1 3.2a4.7 4.7 0 0 1 1.2 3.2c0 4.7-2.9 5.7-5.6 6 .4.4.8 1.1.8 2.2v3.2c0 .3.2.7.8.6A11.3 11.3 0 0 0 12 .7Z"/></svg>
+          </a>
         </div>
         <a class="text-link release-notes" href="https://github.com/jinkun1998/another.notch/releases">Release notes</a>
       </div>
