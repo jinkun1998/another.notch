@@ -41,6 +41,7 @@
     .button:hover { transform: translateY(-1px); filter: brightness(1.08); }
     .release-notes { display: inline-block; margin-top: 18px; color: #a1a1a6; font-size: 14px; }
     .demo-portrait { display: none; }
+    @media (min-width: 621px) { .hero { justify-items: start; text-align: left; } .hero-content { margin-left: clamp(40px, 6vw, 120px); } .lede { margin-left: 0; margin-right: 0; } .actions { justify-content: flex-start; } }
     @media (max-height: 620px) and (orientation: landscape) { .hero { padding: 0 20px 20px; } .hero-video { top: 0; right: 20px; bottom: 20px; left: 20px; } }
     @media (max-width: 620px) and (max-height: 620px) and (orientation: landscape) { .hero { padding: 0 14px 14px; } .hero-video { right: 14px; bottom: 14px; left: 14px; } }
     @media (orientation: portrait) { .hero { display: block; min-height: auto; padding: 92px 14px 32px; } .hero-video { display: none; } .demo-portrait { display: block; width: min(calc(100% - 28px), 360px); margin: 0 auto 32px; border: 1px solid #ffffff18; border-radius: 20px; box-shadow: 0 28px 70px #0008; } }
@@ -70,7 +71,7 @@
       </video>
     </section>
     <video class="demo-portrait" controls autoplay muted loop playsinline aria-label="Another Notch preview">
-      <source src="assets/another-notch-demo-portrait.mp4" type="video/mp4">
+      <source src="assets/another-notch-demo.mp4" type="video/mp4">
     </video>
   </main>
 </body>
