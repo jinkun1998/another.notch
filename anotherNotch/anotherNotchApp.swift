@@ -312,7 +312,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         window.alphaValue = 1
     }
 
-    @MainActor
     private func resizeNotchWindow(for viewModel: AnotherNotchViewModel) {
         let targetWindow: NSWindow?
         if Defaults[.showOnAllDisplays], let screenUUID = viewModel.screenUUID {
@@ -325,31 +324,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
               let screen = targetWindow.screen ?? viewModel.screenUUID.flatMap({ NSScreen.screen(withUUID: $0) }) ?? NSScreen.main
         else { return }
 
-        let size = viewModel.notchState == .open || viewModel.isClosingTransition
-            ? notchWindowSize(screenUUID: viewModel.screenUUID)
-            : pixelAlignedNotchSize(
-                CGSize(
-                    width: viewModel.notchSize.width,
-                    height: viewModel.notchSize.height + shadowPadding
-                ),
-                screenUUID: viewModel.screenUUID
-            )
+        let windowSize = notchWindowSize(screenUUID: viewModel.screenUUID)
+        let size = CGSize(
+            width: windowSize.width,
+            height: max(windowSize.height, viewModel.notchSize.height + shadowPadding)
+        )
         let frame = NSRect(
             x: screen.frame.midX - size.width / 2,
             y: screen.frame.maxY - size.height,
             width: size.width,
             height: size.height
         )
-        let currentFrame = targetWindow.frame
-        let mountedCurrentFrame = NSRect(
-            x: currentFrame.origin.x,
-            y: screen.frame.maxY - currentFrame.height,
-            width: currentFrame.width,
-            height: currentFrame.height
-        )
-        if currentFrame != mountedCurrentFrame {
-            targetWindow.setFrame(mountedCurrentFrame, display: true)
-        }
         if targetWindow.frame != frame {
             targetWindow.setFrame(frame, display: true)
         }
@@ -377,9 +362,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             queue: .main
         ) { [weak self] notification in
             guard let viewModel = notification.object as? AnotherNotchViewModel else { return }
-            Task { @MainActor in
-                self?.resizeNotchWindow(for: viewModel)
-            }
+            self?.resizeNotchWindow(for: viewModel)
         }
 
         NotificationCenter.default.addObserver(

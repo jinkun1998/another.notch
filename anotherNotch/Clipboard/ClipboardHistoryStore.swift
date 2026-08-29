@@ -113,6 +113,8 @@ final class ClipboardHistoryStore: ObservableObject {
     private let pasteboard = NSPasteboard.general
     private let fileManager = FileManager.default
     private let storageIdentifier = Bundle.main.bundleIdentifier ?? "anotherNotch"
+    private let copySound = Bundle.main.url(forResource: "Knock", withExtension: "caf")
+        .flatMap { NSSound(contentsOf: $0, byReference: true) }
     private var timer: Timer?
     private var lastChangeCount = NSPasteboard.general.changeCount
     private var hudTask: Task<Void, Never>?
@@ -163,12 +165,13 @@ final class ClipboardHistoryStore: ObservableObject {
             pasteboard.clearContents()
             pasteboard.writeObjects([url as NSURL])
         case .image:
-            guard let data = imageData(for: entry), let image = NSImage(data: data) else { return }
+            guard let data = imageData(for: entry) else { return }
             pasteboard.clearContents()
-            pasteboard.writeObjects([image])
+            pasteboard.setData(data, forType: .png)
         }
 
         lastChangeCount = pasteboard.changeCount
+        copySound?.play()
     }
 
     func delete(_ entry: ClipboardEntry) {

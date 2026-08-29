@@ -6,6 +6,7 @@ struct ClipboardHistoryView: View {
     @EnvironmentObject var vm: AnotherNotchViewModel
     @Default(.clipboardSearchMode) private var searchMode
     @State private var searchQuery = ""
+    @State private var selectedEntryID: ClipboardEntry.ID?
 
     private var filteredEntries: [ClipboardEntry] {
         ClipboardEntrySearch.results(for: searchQuery, in: store.entries, mode: searchMode)
@@ -31,9 +32,17 @@ struct ClipboardHistoryView: View {
                 ScrollView {
                     LazyVStack(spacing: 8) {
                         ForEach(filteredEntries) { entry in
-                            ClipboardEntryRow(entry: entry) {
+                            ClipboardEntryRow(entry: entry, isSelected: selectedEntryID == entry.id) {
+                                guard selectedEntryID == nil else { return }
+                                withAnimation(.easeOut(duration: 0.12)) {
+                                    selectedEntryID = entry.id
+                                }
                                 store.copy(entry)
-                                vm.close()
+                                Task { @MainActor in
+                                    try? await Task.sleep(for: .milliseconds(160))
+                                    guard selectedEntryID == entry.id else { return }
+                                    vm.close()
+                                }
                             }
                         }
                     }
@@ -84,6 +93,7 @@ struct ClipboardHistoryView: View {
 private struct ClipboardEntryRow: View {
     @ObservedObject private var store = ClipboardHistoryStore.shared
     let entry: ClipboardEntry
+    let isSelected: Bool
     let onSelect: () -> Void
     @State private var isHovering = false
 
@@ -113,6 +123,13 @@ private struct ClipboardEntryRow: View {
                             .multilineTextAlignment(.leading)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
+
+                    if isSelected {
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundStyle(.green)
+                            .transition(.scale.combined(with: .opacity))
+                    }
                 }
                 .contentShape(Rectangle())
             }
@@ -132,7 +149,7 @@ private struct ClipboardEntryRow: View {
         .padding(.vertical, 8)
         .background(
             RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .fill(isHovering ? Color.white.opacity(0.12) : Color.white.opacity(0.05))
+                .fill(isSelected ? Color.white.opacity(0.18) : isHovering ? Color.white.opacity(0.12) : Color.white.opacity(0.05))
         )
         .onHover { isHovering = $0 }
     }

@@ -158,6 +158,7 @@ class AnotherNotchViewCoordinator: ObservableObject {
         XPCHelperClient.shared.startMonitoringAccessibilityAuthorization()
 
         hudReplacementCancellable = Defaults.publisher(.hudReplacement)
+            .dropFirst()
             .sink { [weak self] change in
                 Task { @MainActor in
                     guard let self = self else { return }
@@ -229,18 +230,12 @@ class AnotherNotchViewCoordinator: ObservableObject {
     ) {
         sneakPeekDuration = type == .music ? Defaults[.sneakPeekDuration] : duration
         if type != .music {
-            // close()
             if !Defaults[.hudReplacement] {
                 return
             }
         }
-        Task { @MainActor in
-            withAnimation(.smooth) {
-                self.sneakPeek.show = status
-                self.sneakPeek.type = type
-                self.sneakPeek.value = value
-                self.sneakPeek.icon = icon
-            }
+        withAnimation(.smooth) {
+            sneakPeek = .init(show: status, type: type, value: value, icon: icon)
         }
 
         if type == .mic {
@@ -251,18 +246,13 @@ class AnotherNotchViewCoordinator: ObservableObject {
     private var sneakPeekDuration: TimeInterval = 1.5
     private var sneakPeekTask: Task<Void, Never>?
 
-    // Helper function to manage sneakPeek timer using Swift Concurrency
     private func scheduleSneakPeekHide(after duration: TimeInterval) {
         sneakPeekTask?.cancel()
 
-        sneakPeekTask = Task { [weak self] in
+        sneakPeekTask = Task { @MainActor [weak self] in
             try? await Task.sleep(for: .seconds(duration))
             guard let self = self, !Task.isCancelled else { return }
-            await MainActor.run {
-                withAnimation {
-                    self.toggleSneakPeek(status: false, type: .music)
-                }
-            }
+            self.toggleSneakPeek(status: false, type: .music)
         }
     }
 
