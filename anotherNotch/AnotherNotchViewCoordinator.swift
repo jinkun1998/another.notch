@@ -176,6 +176,7 @@ class AnotherNotchViewCoordinator: ObservableObject {
                             if granted {
                                 await MediaKeyInterceptor.shared.start()
                             } else {
+                                Defaults[.hudReplacement] = false
                                 MediaKeyInterceptor.shared.stop()
                             }
                         }
@@ -189,6 +190,7 @@ class AnotherNotchViewCoordinator: ObservableObject {
             if Defaults[.hudReplacement] {
                 let authorized = await XPCHelperClient.shared.isAccessibilityAuthorized()
                 if !authorized {
+                    Defaults[.hudReplacement] = false
                     MediaKeyInterceptor.shared.stop()
                 } else {
                     await MediaKeyInterceptor.shared.start(promptIfNeeded: false)
