@@ -58,6 +58,7 @@ class AnotherNotchSkyLightWindow: NSPanel {
         titlebarAppearsTransparent = true
         backgroundColor = .clear
         isMovable = false
+        animationBehavior = .none
         level = .mainMenu + 3
         hasShadow = false
         isReleasedWhenClosed = false
@@ -116,6 +117,7 @@ class AnotherNotchSkyLightWindow: NSPanel {
 }
 
 final class AnotherNotchFileDropContainerView: NSView {
+    override var isFlipped: Bool { true }
     var acceptsFileDrop: () -> Bool = { false }
     var onFileDrop: ([URL]) -> Bool = { _ in false }
     private var acceptsCurrentDrag = false

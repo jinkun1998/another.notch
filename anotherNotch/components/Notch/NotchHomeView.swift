@@ -15,32 +15,13 @@ import SwiftUI
 
 struct MusicPlayerView: View {
     @EnvironmentObject var vm: AnotherNotchViewModel
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    let albumArtNamespace: Namespace.ID
-    let isHeroTransitionActive: Bool
 
     var body: some View {
         HStack(alignment: .top, spacing: 18) {
-            AlbumArtView(albumArtNamespace: albumArtNamespace)
+            AlbumArtView()
                 .frame(width: 100, height: 100)
-                .conditionalModifier(isHeroTransitionActive) { view in
-                    view
-                        .matchedGeometryEffect(
-                            id: "albumArt",
-                            in: albumArtNamespace,
-                            properties: .frame,
-                            anchor: .center
-                        )
-                        .animation(
-                            reduceMotion ? .easeInOut(duration: 0.18) : .spring(response: 0.42, dampingFraction: 0.82),
-                            value: vm.notchState
-                        )
-                }
                 .zIndex(3)
-            MusicControlsView(
-                albumArtNamespace: albumArtNamespace,
-                isHeroTransitionActive: isHeroTransitionActive
-            )
+            MusicControlsView()
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
@@ -50,8 +31,6 @@ struct AlbumArtView: View {
     @ObservedObject var musicManager = MusicManager.shared
     @Default(.rotateAlbumArt) private var rotateAlbumArt
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    let albumArtNamespace: Namespace.ID
-
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
             if Defaults[.lightingEffect] {
@@ -111,13 +90,11 @@ struct MusicControlsView: View {
     @EnvironmentObject var vm: AnotherNotchViewModel
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @ObservedObject var musicManager = MusicManager.shared
-    let albumArtNamespace: Namespace.ID
     @State private var sliderValue: Double = 0
     @State private var dragging: Bool = false
     @State private var lastDragged: Date = .distantPast
     @Default(.musicControlSlots) private var slotConfig
     @Default(.useMusicVisualizer) private var useMusicVisualizer
-    let isHeroTransitionActive: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -162,19 +139,6 @@ struct MusicControlsView: View {
                 if useMusicVisualizer {
                     DynamicIslandWaveform(isPlaying: musicManager.isPlaying)
                         .frame(width: 28, height: 18)
-                        .conditionalModifier(isHeroTransitionActive) { view in
-                            view
-                                .matchedGeometryEffect(
-                                    id: "spectrum",
-                                    in: albumArtNamespace,
-                                    properties: .frame,
-                                    anchor: .center
-                                )
-                                .animation(
-                                    reduceMotion ? .easeInOut(duration: 0.18) : .spring(response: 0.42, dampingFraction: 0.82),
-                                    value: vm.notchState
-                                )
-                        }
                         .padding(.leading, 10)
                 }
             }
@@ -548,8 +512,6 @@ struct VolumeControlView: View {
 
 struct NotchHomeView: View {
     @ObservedObject var coordinator = AnotherNotchViewCoordinator.shared
-    let albumArtNamespace: Namespace.ID
-    let isHeroTransitionActive: Bool
 
     var body: some View {
         Group {
@@ -560,10 +522,7 @@ struct NotchHomeView: View {
     }
 
     private var mainContent: some View {
-        MusicPlayerView(
-            albumArtNamespace: albumArtNamespace,
-            isHeroTransitionActive: isHeroTransitionActive
-        )
+        MusicPlayerView()
     }
 }
 

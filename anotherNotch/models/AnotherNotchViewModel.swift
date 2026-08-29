@@ -17,7 +17,11 @@ class AnotherNotchViewModel: NSObject, ObservableObject {
     let animation: Animation?
 
     @Published var contentType: ContentType = .normal
-    @Published private(set) var notchState: NotchState = .closed
+    @Published private(set) var notchState: NotchState = .closed {
+        didSet {
+            NotificationCenter.default.post(name: .notchContentSizeChanged, object: self)
+        }
+    }
 
     @Published var dragDetectorTargeting: Bool = false
     @Published var generalDropTargeting: Bool = false
@@ -26,7 +30,7 @@ class AnotherNotchViewModel: NSObject, ObservableObject {
     @Published var anyDropZoneTargeting: Bool = false
     var cancellables: Set<AnyCancellable> = []
     
-    @Published var hideOnClosed: Bool = true
+    @Published var hideOnClosed: Bool = false
 
     @Published var edgeAutoOpenActive: Bool = false
     @Published var isHoveringCalendar: Bool = false
@@ -39,11 +43,17 @@ class AnotherNotchViewModel: NSObject, ObservableObject {
             NotificationCenter.default.post(name: .notchContentSizeChanged, object: self)
         }
     }
+    @Published var closedViewportSize: CGSize = getClosedNotchSize() {
+        didSet {
+            NotificationCenter.default.post(name: .notchContentSizeChanged, object: self)
+        }
+    }
     @Published var isClosingTransition = false {
         didSet {
             NotificationCenter.default.post(name: .notchContentSizeChanged, object: self)
         }
     }
+    @Published var openingNotchSize: CGSize?
     @Published var closedNotchSize: CGSize = getClosedNotchSize()
     
     deinit {
@@ -63,6 +73,7 @@ class AnotherNotchViewModel: NSObject, ObservableObject {
         self.screenUUID = screenUUID
         notchSize = getClosedNotchSize(screenUUID: screenUUID)
         closedNotchSize = notchSize
+        closedViewportSize = notchSize
 
         Publishers.CombineLatest3($dropZoneTargeting, $dragDetectorTargeting, $generalDropTargeting)
             .map { shelf, drag, general in
@@ -136,20 +147,21 @@ class AnotherNotchViewModel: NSObject, ObservableObject {
     func isMouseHovering(position: NSPoint = NSEvent.mouseLocation) -> Bool {
         let screenFrame = getScreenFrame(screenUUID)
         if let frame = screenFrame {
-            
-            let baseY = frame.maxY - notchSize.height
-            let baseX = frame.midX - notchSize.width / 2
-            
-            return position.y >= baseY && position.x >= baseX && position.x <= baseX + notchSize.width
+            let interactionSize = notchState == .closed ? closedViewportSize : notchSize
+            let baseY = frame.maxY - interactionSize.height
+            let baseX = frame.midX - interactionSize.width / 2
+
+            return position.y >= baseY && position.x >= baseX && position.x <= baseX + interactionSize.width
         }
         
         return false
     }
 
     func open() {
+        openingNotchSize = closedViewportSize
         isClosingTransition = false
-        self.notchSize = openNotchSize(for: coordinator.currentView, screenUUID: self.screenUUID)
         self.notchState = .open
+        self.notchSize = openNotchSize(for: coordinator.currentView, screenUUID: self.screenUUID)
         
         // Force music information update when notch is opened
         MusicManager.shared.forceUpdate()
@@ -160,12 +172,15 @@ class AnotherNotchViewModel: NSObject, ObservableObject {
         if SharingStateManager.shared.preventNotchClose {
             return
         }
+        guard notchState == .open else {
+            return
+        }
+        let closedSize = getClosedNotchSize(screenUUID: self.screenUUID)
         isClosingTransition = true
-        self.notchSize = getClosedNotchSize(screenUUID: self.screenUUID)
-        self.closedNotchSize = self.notchSize
+        self.closedNotchSize = closedSize
         self.notchState = .closed
+        self.notchSize = closedSize
         self.isBatteryPopoverActive = false
-        self.coordinator.sneakPeek.show = false
         self.edgeAutoOpenActive = false
 
         if !coordinator.openLastTabByDefault {
@@ -182,7 +197,6 @@ class AnotherNotchViewModel: NSObject, ObservableObject {
         Task { @MainActor in
             withAnimation(animationLibrary.animation) {
                 coordinator.helloAnimationRunning = false
-                close()
             }
             NotificationCenter.default.post(name: .welcomeAnimationDidFinish, object: nil)
         }

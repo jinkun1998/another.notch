@@ -77,7 +77,6 @@ class MusicManager: ObservableObject {
             }
             .store(in: &cancellables)
 
-        // Initialize deprecation check asynchronously
         Task { @MainActor in
             do {
                 self.isNowPlayingDeprecated = try await self.mediaChecker.checkDeprecationStatus()
@@ -86,8 +85,7 @@ class MusicManager: ObservableObject {
                 print("Failed to check deprecation status: \(error). Defaulting to false.")
                 self.isNowPlayingDeprecated = false
             }
-            
-            // Initialize the active controller after deprecation check
+
             self.setActiveControllerBasedOnPreference()
         }
     }
@@ -195,13 +193,18 @@ class MusicManager: ObservableObject {
         // Check for artwork changes
         let artworkChanged = state.artwork != nil && state.artwork != self.artworkData
         let hasContentChange = titleChanged || artistChanged || albumChanged || artworkChanged || bundleChanged
+        let shouldShowSneakPeek = state.isPlaying && (playbackStarted || playbackMetadataChanged)
+        var waitsForArtwork = false
 
         // Handle artwork and visual transitions for changed content
         if hasContentChange {
             self.triggerFlipAnimation()
 
             if artworkChanged, let artwork = state.artwork {
-                self.updateArtwork(artwork)
+                waitsForArtwork = true
+                self.updateArtwork(artwork) { [weak self] in
+                    self?.updateSneakPeek()
+                }
             } else if state.artwork == nil {
                 // Try to use app icon if no artwork but track changed
                 if let appIconImage = AppIconAsNSImage(for: state.bundleIdentifier) {
@@ -275,7 +278,7 @@ class MusicManager: ObservableObject {
             self.volume = state.volume
         }
 
-        if state.isPlaying && (playbackStarted || playbackMetadataChanged) {
+        if shouldShowSneakPeek && !waitsForArtwork {
             self.updateSneakPeek()
         }
         
@@ -513,15 +516,17 @@ class MusicManager: ObservableObject {
         DispatchQueue.main.async(execute: workItem)
     }
 
-    private func updateArtwork(_ artworkData: Data) {
+    private func updateArtwork(_ artworkData: Data, completion: @escaping () -> Void = {}) {
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             guard let self = self else { return }
 
-            if let artworkImage = NSImage(data: artworkData) {
-                DispatchQueue.main.async { [weak self] in
+            let artworkImage = NSImage(data: artworkData)
+            DispatchQueue.main.async { [weak self] in
+                if let artworkImage {
                     self?.usingAppIconForArtwork = false
                     self?.updateAlbumArt(newAlbumArt: artworkImage)
                 }
+                completion()
             }
         }
     }
