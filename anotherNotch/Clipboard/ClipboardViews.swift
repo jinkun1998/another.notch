@@ -76,7 +76,8 @@ struct ClipboardHistoryView: View {
                 .strokeBorder(Color.white.opacity(0.08), lineWidth: 1)
         }
         .padding(.horizontal, 12)
-        .padding(.vertical, 8)
+        .padding(.top, 0)
+        .padding(.bottom, 8)
     }
 }
 

@@ -338,6 +338,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             height: size.height
         )
         targetWindow.setFrame(frame, display: true)
+        targetWindow.setFrameOrigin(
+            NSPoint(
+                x: targetWindow.frame.minX,
+                y: screen.frame.maxY - targetWindow.frame.height
+            )
+        )
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -657,6 +663,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 rootView: OnboardingView(
                     step: step,
                     onFinish: {
+                        self.coordinator.firstLaunch = false
                         UserDefaults.standard.set(true, forKey: Self.onboardingCompletedKey)
                         window.orderOut(nil)
 //                        NSApp.setActivationPolicy(.accessory)
