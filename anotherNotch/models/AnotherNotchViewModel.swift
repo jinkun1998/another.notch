@@ -39,6 +39,11 @@ class AnotherNotchViewModel: NSObject, ObservableObject {
             NotificationCenter.default.post(name: .notchContentSizeChanged, object: self)
         }
     }
+    @Published var isClosingTransition = false {
+        didSet {
+            NotificationCenter.default.post(name: .notchContentSizeChanged, object: self)
+        }
+    }
     @Published var closedNotchSize: CGSize = getClosedNotchSize()
     
     deinit {
@@ -142,6 +147,7 @@ class AnotherNotchViewModel: NSObject, ObservableObject {
     }
 
     func open() {
+        isClosingTransition = false
         self.notchSize = openNotchSize(for: coordinator.currentView, screenUUID: self.screenUUID)
         self.notchState = .open
         
@@ -154,6 +160,7 @@ class AnotherNotchViewModel: NSObject, ObservableObject {
         if SharingStateManager.shared.preventNotchClose {
             return
         }
+        isClosingTransition = true
         self.notchSize = getClosedNotchSize(screenUUID: self.screenUUID)
         self.closedNotchSize = self.notchSize
         self.notchState = .closed

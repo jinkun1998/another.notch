@@ -118,11 +118,15 @@ func safeExpandedContentHeight(_ contentHeight: CGFloat) -> CGFloat {
 @MainActor
 func maximumOpenNotchSize(screenUUID: String? = nil) -> CGSize {
     let inset = expandedContentInset(screenUUID: screenUUID)
+    let maximumContentHeight = max(
+        baseMaximumOpenNotchSize.height,
+        maxClipboardOpenNotchHeight(screenUUID: screenUUID) - openNotchHeaderHeight
+    )
     return .init(
         width: safeExpandedContentWidth(baseMaximumOpenNotchSize.width, screenUUID: screenUUID) + 2 * inset,
         height: openNotchHeaderHeight
             + expandedContentTopInset(screenUUID: screenUUID)
-            + safeExpandedContentHeight(baseMaximumOpenNotchSize.height)
+            + safeExpandedContentHeight(maximumContentHeight)
             + inset
     )
 }
