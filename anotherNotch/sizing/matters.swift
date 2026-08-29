@@ -34,6 +34,19 @@ let baseMaximumOpenNotchSize: CGSize = .init(
 )
 
 @MainActor
+func pixelAlignedNotchSize(_ size: CGSize, screenUUID: String? = nil) -> CGSize {
+    guard let screen = screenUUID.flatMap({ NSScreen.screen(withUUID: $0) }) ?? NSScreen.main else {
+        return size
+    }
+
+    let scale = screen.backingScaleFactor
+    return .init(
+        width: (size.width * scale).rounded(.up) / scale,
+        height: (size.height * scale).rounded(.up) / scale
+    )
+}
+
+@MainActor
 func maxClipboardOpenNotchHeight(screenUUID: String? = nil) -> CGFloat {
     let screen = screenUUID.flatMap { NSScreen.screen(withUUID: $0) } ?? NSScreen.main
     return max(190, (screen?.frame.height ?? 900) / 2)
@@ -84,7 +97,7 @@ func expandedContentInset(screenUUID: String? = nil) -> CGFloat {
 }
 
 @MainActor
-func expandedContentTopPadding(screenUUID: String? = nil) -> CGFloat {
+func expandedContentTopInset(screenUUID: String? = nil) -> CGFloat {
     max(0, getClosedNotchSize(screenUUID: screenUUID).height + 8 - openNotchHeaderHeight)
 }
 
@@ -108,7 +121,7 @@ func maximumOpenNotchSize(screenUUID: String? = nil) -> CGSize {
     return .init(
         width: safeExpandedContentWidth(baseMaximumOpenNotchSize.width, screenUUID: screenUUID) + 2 * inset,
         height: openNotchHeaderHeight
-            + expandedContentTopPadding(screenUUID: screenUUID)
+            + expandedContentTopInset(screenUUID: screenUUID)
             + safeExpandedContentHeight(baseMaximumOpenNotchSize.height)
             + inset
     )
@@ -117,13 +130,16 @@ func maximumOpenNotchSize(screenUUID: String? = nil) -> CGSize {
 @MainActor
 func notchWindowSize(screenUUID: String? = nil) -> CGSize {
     let maximumSize = maximumOpenNotchSize(screenUUID: screenUUID)
-    return .init(width: maximumSize.width, height: maximumSize.height + shadowPadding)
+    return pixelAlignedNotchSize(
+        .init(width: maximumSize.width, height: maximumSize.height + shadowPadding),
+        screenUUID: screenUUID
+    )
 }
 
 @MainActor
 func openNotchSize(for view: NotchViews, screenUUID: String? = nil) -> CGSize {
     let inset = expandedContentInset(screenUUID: screenUUID)
-    let topPadding = expandedContentTopPadding(screenUUID: screenUUID)
+    let topInset = expandedContentTopInset(screenUUID: screenUUID)
     let contentWidth: CGFloat
     let contentHeight: CGFloat
 
@@ -134,7 +150,7 @@ func openNotchSize(for view: NotchViews, screenUUID: String? = nil) -> CGSize {
     case .clipboard:
         let size = clipboardOpenNotchSize(screenUUID: screenUUID)
         contentWidth = size.width
-        contentHeight = size.height
+        contentHeight = max(0, size.height - openNotchHeaderHeight)
     case .shelf:
         contentWidth = shelfOpenNotchSize.width
         contentHeight = shelfOpenNotchSize.height
@@ -146,9 +162,12 @@ func openNotchSize(for view: NotchViews, screenUUID: String? = nil) -> CGSize {
         contentHeight = 160
     }
 
-    return .init(
-        width: safeExpandedContentWidth(contentWidth, screenUUID: screenUUID) + 2 * inset,
-        height: openNotchHeaderHeight + topPadding + safeExpandedContentHeight(contentHeight) + inset
+    return pixelAlignedNotchSize(
+        .init(
+            width: safeExpandedContentWidth(contentWidth, screenUUID: screenUUID) + 2 * inset,
+            height: openNotchHeaderHeight + topInset + safeExpandedContentHeight(contentHeight) + inset
+        ),
+        screenUUID: screenUUID
     )
 }
 
@@ -209,6 +228,6 @@ enum MusicPlayerImageSizes {
         }
     }
 
-    return .init(width: notchWidth, height: notchHeight - 0.3)
+    return .init(width: notchWidth, height: notchHeight)
 }
 let musicContentSize: CGSize = .init(width: 504, height: 120)

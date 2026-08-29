@@ -31,7 +31,6 @@ struct ContentView: View {
     @State private var isHovering: Bool = false
     @State private var isClosingShell: Bool = false
     @State private var shellExpansion: CGFloat = .zero
-    @State private var expandedContentTransitionID = 0
     @State private var anyDropDebounceTask: Task<Void, Never>?
 
     @State private var gestureProgress: CGFloat = .zero
@@ -70,6 +69,7 @@ struct ContentView: View {
     private let powerNotificationIconWidth: CGFloat = 44
     private let powerNotificationTextOuterMargin: CGFloat = 20
     private let powerNotificationNotchMargin: CGFloat = 40
+    private let notchVisualTopOffset: CGFloat = -0.4
 
     private var physicalNotchWidth: CGFloat {
         max(0, vm.closedNotchSize.width - cornerRadiusInsets.closed.top)
@@ -82,7 +82,6 @@ struct ContentView: View {
                 width: vm.closedNotchSize.width,
                 height: vm.effectiveClosedNotchHeight
             )
-            .offset(y: 1)
     }
 
     private var physicalNotchDebugColor: Color {
@@ -327,7 +326,7 @@ struct ContentView: View {
                         alignment: .top
                     )
                     .background {
-                        notchBackground.clipShape(currentNotchShape)
+                        notchBackground
                     }
                     .clipShape(currentNotchShape)
                     .shadow(
@@ -342,7 +341,6 @@ struct ContentView: View {
                     .conditionalModifier(true) { view in
                         return view
                             .animation(vm.notchState == .open ? openAnimation : closeAnimation, value: vm.notchState)
-                            .animation(vm.notchState == .open ? resizeAnimation : closeAnimation, value: vm.notchSize)
                             .animation(.smooth(duration: 0.28), value: closedNotchContentSize)
                             .animation(interactionAnimation, value: gestureProgress)
                     }
@@ -379,7 +377,10 @@ struct ContentView: View {
                             }
                         }
                     }
-                    .onReceive(NSWorkspace.shared.notificationCenter.publisher(for: NSWorkspace.didActivateApplicationNotification)) { _ in
+                    .onReceive(NSWorkspace.shared.notificationCenter.publisher(for: NSWorkspace.didActivateApplicationNotification)) { notification in
+                        guard let application = notification.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication,
+                              application.processIdentifier != ProcessInfo.processInfo.processIdentifier else { return }
+
                         if vm.notchState == .open && !SharingStateManager.shared.preventNotchClose {
                             vm.close()
                         }
@@ -400,11 +401,11 @@ struct ContentView: View {
                         if vm.notchState == .open {
                             musicHeroTransitionTask?.cancel()
                             isMusicHeroTransitionActive = false
-                            expandedContentTransitionID &+= 1
+                            hoverTask?.cancel()
+                            vm.notchSize = openNotchSize(for: view, screenUUID: vm.screenUUID)
+                        } else {
+                            hoverTask?.cancel()
                         }
-
-                        guard vm.notchState == .open else { return }
-                        vm.notchSize = openNotchSize(for: view, screenUUID: vm.screenUUID)
                     }
                     .onChange(of: modules.installedIDs) { _, _ in
                         if vm.notchState == .open {
@@ -462,6 +463,7 @@ struct ContentView: View {
                 }
             }
         }
+        .offset(y: notchVisualTopOffset)
         .padding(.bottom, 8)
         .frame(
             maxWidth: notchWindowSize(screenUUID: vm.screenUUID).width,
@@ -659,34 +661,10 @@ struct ContentView: View {
               }
               .zIndex(2)
             if displaysExpandedContent {
-                VStack {
-                    switch coordinator.currentView {
-                    case .home:
-                        NotchHomeView(
-                            albumArtNamespace: albumArtNamespace,
-                            isHeroTransitionActive: isMusicHeroTransitionActive
-                        )
-                            .frame(maxWidth: .infinity)
-                            .frame(height: musicContentSize.height)
-                    case .clipboard:
-                        ClipboardHistoryView()
-                            .frame(maxWidth: .infinity)
-                    case .shelf:
-                        ShelfView()
-                    case .calendar:
-                        CalendarView()
-                            .frame(maxWidth: .infinity)
-                            .frame(height: calendarContentSize.height)
-                            .onHover { vm.isHoveringCalendar = $0 }
-                            .onDisappear { vm.isHoveringCalendar = false }
-                            .environmentObject(vm)
-                    case .camera:
-                        CameraPreviewView(webcamManager: webcamManager)
-                            .frame(width: 160, height: 160)
-                    }
-                }
-                .animation(nil, value: coordinator.currentView)
-                .padding(.top, expandedContentTopPadding(screenUUID: vm.screenUUID))
+                expandedModuleView(coordinator.currentView)
+                    .animation(nil, value: coordinator.currentView)
+                    .transaction { $0.animation = nil }
+                .padding(.top, expandedContentTopInset(screenUUID: vm.screenUUID))
                 .padding(.horizontal, sharedExpandedContentInset)
                 .padding(.bottom, sharedExpandedContentInset)
                 .frame(
@@ -695,11 +673,6 @@ struct ContentView: View {
                     alignment: .top
                 )
                 .scaleEffect(expandedContentScale, anchor: .top)
-                .phaseAnimator([false, true], trigger: expandedContentTransitionID) { content, phase in
-                    content.scaleEffect(phase ? 1 : 0.96, anchor: .top)
-                } animation: { _ in
-                    interactionAnimation
-                }
                 .opacity(shellExpansion)
                 .zIndex(1)
                 .allowsHitTesting(vm.notchState == .open)
@@ -709,6 +682,34 @@ struct ContentView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+    }
+
+    @ViewBuilder
+    private func expandedModuleView(_ view: FeatureModuleID) -> some View {
+        switch view {
+        case .home:
+            NotchHomeView(
+                albumArtNamespace: albumArtNamespace,
+                isHeroTransitionActive: isMusicHeroTransitionActive
+            )
+                .frame(maxWidth: .infinity)
+                .frame(height: musicContentSize.height)
+        case .clipboard:
+            ClipboardHistoryView()
+                .frame(maxWidth: .infinity)
+        case .shelf:
+            ShelfView()
+        case .calendar:
+            CalendarView()
+                .frame(maxWidth: .infinity)
+                .frame(height: calendarContentSize.height)
+                .onHover { vm.isHoveringCalendar = $0 }
+                .onDisappear { vm.isHoveringCalendar = false }
+                .environmentObject(vm)
+        case .camera:
+            CameraPreviewView(webcamManager: webcamManager)
+                .frame(width: 160, height: 160)
+        }
     }
 
     private var playbackSneakPeekText: String {
@@ -922,6 +923,8 @@ struct ContentView: View {
                 guard !Task.isCancelled else { return }
                 
                 await MainActor.run {
+                    guard !self.vm.isMouseHovering() else { return }
+
                     withAnimation(interactionAnimation) {
                         self.isHovering = false
                     }
