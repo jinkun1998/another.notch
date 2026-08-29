@@ -15,6 +15,7 @@ import Sparkle
 import SwiftUI
 import SwiftUIIntrospect
 import UniformTypeIdentifiers
+import CoreBluetooth
 
 private struct SettingsWindowBackground: ViewModifier {
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
@@ -424,21 +425,48 @@ private struct CameraSettings: View {
     @ObservedObject private var webcamManager = WebcamManager.shared
     @Default(.mirrorShape) private var mirrorShape
 
+    private var isAuthorized: Bool {
+        webcamManager.authorizationStatus == .authorized
+    }
+
     var body: some View {
         Form {
+            Section("Camera permission") {
+                HStack {
+                    Text(isAuthorized ? "Allowed" : "Not allowed")
+                        .foregroundStyle(isAuthorized ? .green : .secondary)
+                    Spacer()
+                    Button(isAuthorized ? "Manage" : "Grant") {
+                        if isAuthorized {
+                            if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Camera") {
+                                NSWorkspace.shared.open(url)
+                            }
+                        } else {
+                            if webcamManager.authorizationStatus == .notDetermined {
+                                webcamManager.checkAndRequestVideoAuthorization()
+                            } else if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Camera") {
+                                NSWorkspace.shared.open(url)
+                            }
+                        }
+                    }
+                }
+            }
+
             Section("Camera") {
-                Text(webcamManager.authorizationStatus == .authorized ? "Camera access allowed" : "Camera access needed")
-                    .foregroundStyle(webcamManager.authorizationStatus == .authorized ? .green : .secondary)
-                Button(webcamManager.authorizationStatus == .authorized ? "Check camera" : "Grant camera access") {
+                Button("Check camera") {
                     FeatureModuleRegistry.shared.activate(.camera)
                 }
+                .disabled(!isAuthorized)
+
                 Picker("Mirror shape", selection: $mirrorShape) {
                     Text("Circle").tag(MirrorShapeEnum.circle)
                     Text("Square").tag(MirrorShapeEnum.rectangle)
                 }
                 .readableSettingsPicker()
+                .disabled(!isAuthorized)
             }
         }
+        .accentColor(.effectiveAccent)
     }
 }
 
@@ -694,13 +722,33 @@ struct Charge: View {
 
 struct BluetoothDeviceNotifications: View {
     @Default(.bluetoothDeviceIndicatorRows) private var indicatorRows
+    @Default(.showBluetoothDeviceConnectionIndicator) private var showConnectionIndicator
+    @State private var bluetoothAuthorized = CBManager.authorization == .allowedAlways
+    @State private var centralManager: CBCentralManager?
 
     var body: some View {
         Form {
+            Section("Bluetooth permission") {
+                HStack {
+                    Text(bluetoothAuthorized ? "Allowed" : "Not allowed")
+                        .foregroundStyle(bluetoothAuthorized ? .green : .secondary)
+                    Spacer()
+                    Button(bluetoothAuthorized ? "Manage" : "Grant") {
+                        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Bluetooth") {
+                            NSWorkspace.shared.open(url)
+                        }
+                        if CBManager.authorization == .notDetermined {
+                            centralManager = CBCentralManager(delegate: nil, queue: .main)
+                        }
+                    }
+                }
+            }
+
             Section("Bluetooth Device Notifications") {
                 Defaults.Toggle(key: .showBluetoothDeviceConnectionIndicator) {
                     Text("Show Bluetooth device connection indicator")
                 }
+                .disabled(!bluetoothAuthorized)
             }
             Section("Indicator Layout") {
                 Picker("Rows", selection: $indicatorRows) {
@@ -713,8 +761,12 @@ struct BluetoothDeviceNotifications: View {
                     Text("Show device name")
                 }
             }
+            .disabled(!bluetoothAuthorized || !showConnectionIndicator)
         }
         .accentColor(.effectiveAccent)
+        .onAppear {
+            bluetoothAuthorized = CBManager.authorization == .allowedAlways
+        }
     }
 }
 
@@ -836,12 +888,9 @@ struct HUD: View {
                         .foregroundStyle(accessibilityAuthorized ? .green : .secondary)
                     Spacer()
                     Button(accessibilityAuthorized ? "Manage" : "Grant") {
-                    if accessibilityAuthorized {
                         openPrivacySettings("Privacy_Accessibility")
-                    } else {
                         XPCHelperClient.shared.requestAccessibilityAuthorization()
                     }
-                }
                 }
             }
             
@@ -915,8 +964,9 @@ struct HUD: View {
     }
 
     private func openPrivacySettings(_ pane: String) {
-        guard let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?\(pane)") else { return }
-        NSWorkspace.shared.open(url)
+        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?\(pane)") {
+            NSWorkspace.shared.open(url)
+        }
     }
 
     private func setHUDReplacement(_ enabled: Bool) {
@@ -929,13 +979,14 @@ struct HUD: View {
         Task { @MainActor in
             let granted = await XPCHelperClient.shared.isAccessibilityAuthorized()
             accessibilityAuthorized = granted
-            hudReplacement = true
 
             guard granted else {
+                hudReplacement = false
                 XPCHelperClient.shared.requestAccessibilityAuthorization()
                 return
             }
 
+            hudReplacement = true
             await MediaKeyInterceptor.shared.start(promptIfNeeded: false)
         }
     }
@@ -1074,20 +1125,27 @@ struct CalendarSettings: View {
     @Default(.hideAllDayEvents) var hideAllDayEvents
     @Default(.autoScrollToNextEvent) var autoScrollToNextEvent
 
+    private var hasAnyAccess: Bool {
+        calendarManager.calendarAuthorizationStatus == .fullAccess || calendarManager.reminderAuthorizationStatus == .fullAccess
+    }
+
     var body: some View {
         Form {
-            Defaults.Toggle(key: .hideCompletedReminders) {
-                Text("Hide completed reminders")
+            Section("General") {
+                Defaults.Toggle(key: .hideCompletedReminders) {
+                    Text("Hide completed reminders")
+                }
+                Defaults.Toggle(key: .hideAllDayEvents) {
+                    Text("Hide all-day events")
+                }
+                Defaults.Toggle(key: .autoScrollToNextEvent) {
+                    Text("Auto-scroll to next event")
+                }
+                Defaults.Toggle(key: .showFullEventTitles) {
+                    Text("Always show full event titles")
+                }
             }
-            Defaults.Toggle(key: .hideAllDayEvents) {
-                Text("Hide all-day events")
-            }
-            Defaults.Toggle(key: .autoScrollToNextEvent) {
-                Text("Auto-scroll to next event")
-            }
-            Defaults.Toggle(key: .showFullEventTitles) {
-                Text("Always show full event titles")
-            }
+            .disabled(!hasAnyAccess)
             Section(header: Text("Calendars")) {
                 if calendarManager.calendarAuthorizationStatus != .fullAccess {
                     Text("Calendar access is required to show events.")

@@ -503,7 +503,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             || !UserDefaults.standard.bool(forKey: Self.onboardingCompletedKey)
 
         if shouldShowOnboarding {
-            showOnboardingAfterWelcomeAnimation()
+            showOnboardingWindow()
             coordinator.helloAnimationRunning = true
             playWelcomeSound()
         } else if MusicManager.shared.isNowPlayingDeprecated

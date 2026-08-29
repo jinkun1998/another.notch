@@ -1,3 +1,4 @@
+import CoreBluetooth
 //
 //  VolumeManager.swift
 //  anotherNotch
@@ -216,7 +217,7 @@ final class VolumeManager: NSObject, ObservableObject {
 
         DispatchQueue.main.async {
             self.currentOutputDevice = devices.first { $0.id == defaultDeviceID }
-            if let device = newlyConnected, Defaults[.showBluetoothDeviceConnectionIndicator] {
+            if let device = newlyConnected, Defaults[.showBluetoothDeviceConnectionIndicator], CBManager.authorization == .allowedAlways {
                 AnotherNotchViewCoordinator.shared.toggleExpandingView(
                     status: true,
                     type: .bluetoothDevice,
