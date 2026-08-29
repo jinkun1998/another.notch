@@ -14,6 +14,11 @@ import KeyboardShortcuts
 import SwiftUI
 import SwiftUIIntrospect
 
+enum NotchTabTransition {
+    static let standardDuration: TimeInterval = 0.24
+    static let reducedMotionDuration: TimeInterval = 0.12
+}
+
 @MainActor
 struct ContentView: View {
     @EnvironmentObject var vm: AnotherNotchViewModel
@@ -28,9 +33,13 @@ struct ContentView: View {
     @State private var hoverTask: Task<Void, Never>?
     @State private var closingShellTask: Task<Void, Never>?
     @State private var musicHeroTransitionTask: Task<Void, Never>?
+    @State private var tabTransitionTask: Task<Void, Never>?
     @State private var isHovering: Bool = false
     @State private var isClosingShell: Bool = false
+    @State private var isTabTransitioning: Bool = false
     @State private var shellExpansion: CGFloat = .zero
+    @State private var outgoingExpandedModule: FeatureModuleID?
+    @State private var closingNotchSize: CGSize?
     @State private var anyDropDebounceTask: Task<Void, Never>?
 
     @State private var gestureProgress: CGFloat = .zero
@@ -61,7 +70,15 @@ struct ContentView: View {
     }
 
     private var resizeAnimation: Animation {
-        reduceMotion ? .linear(duration: 0.12) : .easeInOut(duration: 0.24)
+        reduceMotion
+            ? .linear(duration: NotchTabTransition.reducedMotionDuration)
+            : .easeInOut(duration: NotchTabTransition.standardDuration)
+    }
+
+    private var tabTransitionDuration: TimeInterval {
+        reduceMotion
+            ? NotchTabTransition.reducedMotionDuration
+            : NotchTabTransition.standardDuration
     }
 
     private let extendedHoverPadding: CGFloat = 30
@@ -160,10 +177,17 @@ struct ContentView: View {
     }
 
     private var expandedContentHeight: CGFloat {
-        let notchHeight = isClosingShell
-            ? openNotchSize(for: coordinator.currentView, screenUUID: vm.screenUUID).height
-            : vm.notchSize.height
-        return max(0, notchHeight - openNotchHeaderHeight)
+        max(0, shellFrameSize.height - openNotchHeaderHeight)
+    }
+
+    private var shellFrameSize: CGSize {
+        if vm.notchState == .open {
+            return vm.notchSize
+        }
+        if isClosingShell, let closingNotchSize {
+            return closingNotchSize
+        }
+        return closedNotchContentSize
     }
 
     private var albumArtTransition: Animation {
@@ -321,8 +345,8 @@ struct ContentView: View {
                     )
                     .padding([.horizontal, .bottom], 12 * shellExpansion)
                     .frame(
-                        width: vm.notchState == .open ? vm.notchSize.width : closedNotchContentSize.width,
-                        height: vm.notchState == .open ? vm.notchSize.height : closedNotchContentSize.height,
+                        width: shellFrameSize.width,
+                        height: shellFrameSize.height,
                         alignment: .top
                     )
                     .background {
@@ -396,13 +420,18 @@ struct ContentView: View {
                                 isHovering = false
                             }
                         }
+
+                        guard newState != .open else { return }
+                        tabTransitionTask?.cancel()
+                        outgoingExpandedModule = nil
+                        isTabTransitioning = false
                     }
-                    .onChange(of: coordinator.currentView) { _, view in
+                    .onChange(of: coordinator.currentView) { oldView, view in
                         if vm.notchState == .open {
                             musicHeroTransitionTask?.cancel()
                             isMusicHeroTransitionActive = false
                             hoverTask?.cancel()
-                            vm.notchSize = openNotchSize(for: view, screenUUID: vm.screenUUID)
+                            beginTabTransition(from: oldView, to: view)
                         } else {
                             hoverTask?.cancel()
                         }
@@ -487,11 +516,13 @@ struct ContentView: View {
             closingShellTask?.cancel()
             updateMusicHeroTransition(for: state)
 
-            guard state == .open else {
+                        guard state == .open else {
+                closingNotchSize = closingNotchSize ?? vm.notchSize
                 isClosingShell = !reduceMotion
 
                 guard !reduceMotion else {
                     shellExpansion = 0
+                    vm.isClosingTransition = false
                     return
                 }
 
@@ -502,13 +533,21 @@ struct ContentView: View {
                     try? await Task.sleep(for: .milliseconds(320))
                     guard !Task.isCancelled, vm.notchState == .closed else { return }
                     isClosingShell = false
+                    closingNotchSize = nil
+                    vm.isClosingTransition = false
                 }
                 return
             }
 
             isClosingShell = false
+            closingNotchSize = vm.notchSize
             withAnimation(openAnimation) {
                 shellExpansion = 1
+            }
+        }
+        .onChange(of: vm.notchSize) { _, size in
+            if vm.notchState == .open {
+                closingNotchSize = size
             }
         }
         .onChange(of: vm.anyDropZoneTargeting) { _, isTargeted in
@@ -654,16 +693,27 @@ struct ContentView: View {
                       .fixedSize()
               }
               .overlay(alignment: .top) {
-                  if vm.notchState == .closed {
+                  if vm.notchState == .closed && !isClosingShell {
                       physicalNotchReservation
                           .allowsHitTesting(false)
                   }
               }
               .zIndex(2)
             if displaysExpandedContent {
-                expandedModuleView(coordinator.currentView)
-                    .animation(nil, value: coordinator.currentView)
-                    .transaction { $0.animation = nil }
+                ZStack(alignment: .top) {
+                    if let outgoingExpandedModule {
+                        expandedModuleView(outgoingExpandedModule)
+                            .id(outgoingExpandedModule)
+                            .opacity(isTabTransitioning ? 0 : 1)
+                            .transition(.opacity)
+                            .allowsHitTesting(false)
+                    }
+
+                    expandedModuleView(coordinator.currentView)
+                        .id(coordinator.currentView)
+                        .opacity(outgoingExpandedModule == nil || isTabTransitioning ? 1 : 0)
+                        .transition(.opacity)
+                }
                 .padding(.top, expandedContentTopInset(screenUUID: vm.screenUUID))
                 .padding(.horizontal, sharedExpandedContentInset)
                 .padding(.bottom, sharedExpandedContentInset)
@@ -709,6 +759,31 @@ struct ContentView: View {
         case .camera:
             CameraPreviewView(webcamManager: webcamManager)
                 .frame(width: 160, height: 160)
+        }
+    }
+
+    private func beginTabTransition(from oldView: FeatureModuleID, to newView: FeatureModuleID) {
+        tabTransitionTask?.cancel()
+        outgoingExpandedModule = oldView
+        isTabTransitioning = false
+
+        withAnimation(resizeAnimation) {
+            vm.notchSize = openNotchSize(for: newView, screenUUID: vm.screenUUID)
+        }
+
+        tabTransitionTask = Task { @MainActor in
+            await Task.yield()
+            guard !Task.isCancelled else { return }
+
+            withAnimation(resizeAnimation) {
+                isTabTransitioning = true
+            }
+
+            try? await Task.sleep(for: .milliseconds(Int(tabTransitionDuration * 1_000)))
+            guard !Task.isCancelled else { return }
+
+            outgoingExpandedModule = nil
+            isTabTransitioning = false
         }
     }
 

@@ -73,7 +73,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var isScreenLocked: Bool = false
     private var windowScreenDidChangeObserver: Any?
     private var dragDetectors: [String: DragDetector] = [:] // UUID -> DragDetector
-
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
         return false
     }
@@ -326,24 +325,34 @@ class AppDelegate: NSObject, NSApplicationDelegate {
               let screen = targetWindow.screen ?? viewModel.screenUUID.flatMap({ NSScreen.screen(withUUID: $0) }) ?? NSScreen.main
         else { return }
 
-        let windowSize = notchWindowSize(screenUUID: viewModel.screenUUID)
-        let size = CGSize(
-            width: windowSize.width,
-            height: max(windowSize.height, viewModel.notchSize.height + shadowPadding)
-        )
+        let size = viewModel.notchState == .open || viewModel.isClosingTransition
+            ? notchWindowSize(screenUUID: viewModel.screenUUID)
+            : pixelAlignedNotchSize(
+                CGSize(
+                    width: viewModel.notchSize.width,
+                    height: viewModel.notchSize.height + shadowPadding
+                ),
+                screenUUID: viewModel.screenUUID
+            )
         let frame = NSRect(
             x: screen.frame.midX - size.width / 2,
             y: screen.frame.maxY - size.height,
             width: size.width,
             height: size.height
         )
-        targetWindow.setFrame(frame, display: true)
-        targetWindow.setFrameOrigin(
-            NSPoint(
-                x: targetWindow.frame.minX,
-                y: screen.frame.maxY - targetWindow.frame.height
-            )
+        let currentFrame = targetWindow.frame
+        let mountedCurrentFrame = NSRect(
+            x: currentFrame.origin.x,
+            y: screen.frame.maxY - currentFrame.height,
+            width: currentFrame.width,
+            height: currentFrame.height
         )
+        if currentFrame != mountedCurrentFrame {
+            targetWindow.setFrame(mountedCurrentFrame, display: true)
+        }
+        if targetWindow.frame != frame {
+            targetWindow.setFrame(frame, display: true)
+        }
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
