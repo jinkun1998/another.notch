@@ -745,22 +745,22 @@ struct GeneralSettings: View {
 }
 
 struct Charge: View {
-    @Default(.showBatteryIndicator) private var showBatteryIndicator
+    @Default(.batteryFeatureEnabled) private var batteryFeatureEnabled
 
     var body: some View {
         Form {
             Section {
                 HStack {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("Show battery indicator")
+                        Text("Enable battery status")
                             .font(.headline)
-                        Text("Display battery status and charging progress indicator in the notch.")
+                        Text("Enable battery status notifications and display controls.")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                             .fixedSize(horizontal: false, vertical: true)
                     }
                     Spacer(minLength: 40)
-                    Defaults.Toggle(key: .showBatteryIndicator) {
+                    Defaults.Toggle(key: .batteryFeatureEnabled) {
                         EmptyView()
                     }
                     .labelsHidden()
@@ -769,6 +769,13 @@ struct Charge: View {
                 }
             }
 
+            Section("Display") {
+                Defaults.Toggle(key: .showBatteryIndicator) {
+                    Text("Show battery indicator")
+                }
+            }
+            .disabled(!batteryFeatureEnabled)
+
             Section {
                 Defaults.Toggle(key: .showPowerStatusNotifications) {
                     Text("Show power status notifications")
@@ -776,7 +783,7 @@ struct Charge: View {
             } header: {
                 Text("Notifications")
             }
-            .disabled(!showBatteryIndicator)
+            .disabled(!batteryFeatureEnabled)
 
             Section {
                 Defaults.Toggle(key: .showBatteryPercentage) {
@@ -788,7 +795,7 @@ struct Charge: View {
             } header: {
                 Text("Battery Information")
             }
-            .disabled(!showBatteryIndicator)
+            .disabled(!batteryFeatureEnabled)
         }
         .onAppear {
             Task { @MainActor in
