@@ -326,15 +326,17 @@ private struct ModulesSettings: View {
                         }
                         Spacer()
                         if module.id != .home {
-                            Button {
-                                modules.isInstalled(module.id)
-                                    ? modules.remove(module.id)
-                                    : modules.install(module.id)
-                            } label: {
-                                Text(modules.isInstalled(module.id) ? "Remove" : "Install")
-                                    .foregroundStyle(modules.isInstalled(module.id) ? .red : .white)
+                            if modules.isInstalled(module.id) {
+                                Button("Remove") {
+                                    modules.remove(module.id)
+                                }
+                                .foregroundStyle(.red)
+                                .buttonStyle(.plain)
+                            } else {
+                                ModuleInstallButton(moduleID: module.id)
+                                    .foregroundStyle(.white)
+                                    .buttonStyle(.plain)
                             }
-                            .buttonStyle(.plain)
                         } else {
                             Text("Built in")
                                 .foregroundStyle(.secondary)
@@ -418,12 +420,42 @@ private struct ModuleSettings<Content: View>: View {
                     .font(.headline)
                 Text("Install it to use these settings. Existing data and settings remain available after reinstalling.")
                     .foregroundStyle(.secondary)
-                Button("Install \(module.title)") {
-                    modules.install(moduleID)
-                }
+                ModuleInstallButton(moduleID: moduleID)
             }
             .padding(30)
         }
+    }
+}
+
+private struct ModuleInstallButton: View {
+    let moduleID: FeatureModuleID
+    @ObservedObject private var modules = FeatureModuleRegistry.shared
+    @State private var isInstalling = false
+
+    var body: some View {
+        Button {
+            isInstalling = true
+            let delay = Double.random(in: 0.1...0.9)
+            Task { @MainActor in
+                try? await Task.sleep(for: .seconds(delay))
+                guard !Task.isCancelled else {
+                    isInstalling = false
+                    return
+                }
+                modules.install(moduleID)
+            }
+        } label: {
+            if isInstalling {
+                HStack(spacing: 6) {
+                    ProgressView()
+                        .controlSize(.small)
+                    Text("Install")
+                }
+            } else {
+                Text("Install")
+            }
+        }
+        .disabled(isInstalling)
     }
 }
 
@@ -438,6 +470,27 @@ private struct CameraSettings: View {
 
     var body: some View {
         Form {
+            Section {
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Enable camera mirror")
+                            .font(.headline)
+                        Text("Show a live camera mirror dropdown view under the notch.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    Spacer(minLength: 40)
+                    Defaults.Toggle(key: .showMirror) {
+                        EmptyView()
+                    }
+                    .labelsHidden()
+                    .toggleStyle(.switch)
+                    .controlSize(.large)
+                    .disabled(!isAuthorized)
+                }
+            }
+
             Section("Camera permission") {
                 HStack {
                     Text(isAuthorized ? "Allowed" : "Not allowed")
@@ -460,45 +513,6 @@ private struct CameraSettings: View {
             }
 
             Section {
-                HStack {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Enable camera mirror")
-                            .font(.headline)
-                        Text("Show a live camera mirror dropdown view under the notch.")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                    Spacer(minLength: 40)
-                    Defaults.Toggle(key: .showMirror) {
-                        EmptyView()
-                    }
-                    .labelsHidden()
-                    .toggleStyle(.switch)
-                    .controlSize(.large)
-                    .disabled(!isAuthorized)
-                }
-            }
-
-            Section {
-                HStack {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Preview in Notch")
-                        Text("Opens the notch directly to the live camera tab.")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                    Spacer()
-                    Button("Check camera") {
-                        AnotherNotchViewCoordinator.shared.currentView = .camera
-                        if let appDelegate = NSApp.delegate as? AppDelegate {
-                            appDelegate.vm.open()
-                        }
-                    }
-                    .buttonStyle(.borderedProminent)
-                }
-                .disabled(!isAuthorized || !showMirror)
-
                 Picker("Mirror shape", selection: $mirrorShape) {
                     Text("Circle").tag(MirrorShapeEnum.circle)
                     Text("Square").tag(MirrorShapeEnum.rectangle)
@@ -506,7 +520,7 @@ private struct CameraSettings: View {
                 .readableSettingsPicker()
                 .disabled(!isAuthorized || !showMirror)
             } header: {
-                Text("Appearance & Test")
+                Text("Appearance")
             }
         }
         .accentColor(.effectiveAccent)
@@ -1231,6 +1245,27 @@ struct CalendarSettings: View {
 
     var body: some View {
         Form {
+            Section {
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Show calendar & reminders")
+                            .font(.headline)
+                        Text("View upcoming schedule, events, and reminders in the notch.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    Spacer(minLength: 40)
+                    Defaults.Toggle(key: .showCalendar) {
+                        EmptyView()
+                    }
+                    .labelsHidden()
+                    .toggleStyle(.switch)
+                    .controlSize(.large)
+                    .disabled(!hasAnyAccess)
+                }
+            }
+
             Section("Calendar & Reminders permissions") {
                 HStack {
                     Text("Calendars")
@@ -1258,27 +1293,6 @@ struct CalendarSettings: View {
                             NSWorkspace.shared.open(settingsURL)
                         }
                     }
-                }
-            }
-
-            Section {
-                HStack {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Show calendar & reminders")
-                            .font(.headline)
-                        Text("View upcoming schedule, events, and reminders in the notch.")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                    Spacer(minLength: 40)
-                    Defaults.Toggle(key: .showCalendar) {
-                        EmptyView()
-                    }
-                    .labelsHidden()
-                    .toggleStyle(.switch)
-                    .controlSize(.large)
-                    .disabled(!hasAnyAccess)
                 }
             }
 
