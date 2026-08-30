@@ -6,7 +6,11 @@ import ApplicationServices
 final class XPCHelperClient: NSObject {
     nonisolated static let shared = XPCHelperClient()
     
+    #if DEBUG
+    private let serviceName = "com.jinkun1998.anothernotch.debug.AnotherNotchXPCHelper"
+#else
     private let serviceName = "com.jinkun1998.anothernotch.AnotherNotchXPCHelper"
+#endif
     
     private var remoteService: RemoteXPCService<AnotherNotchXPCHelperProtocol>?
     private var connection: NSXPCConnection?
