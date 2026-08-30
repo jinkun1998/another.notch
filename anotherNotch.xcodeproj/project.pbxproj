@@ -7,6 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A11E00110000000000000011 /* FeatureModuleID.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11E00010000000000000001 /* FeatureModuleID.swift */; };
+		A11E00120000000000000012 /* FeatureModuleAvailability.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11E00020000000000000002 /* FeatureModuleAvailability.swift */; };
+		A11E00130000000000000013 /* FeatureModuleAvailabilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11E00030000000000000003 /* FeatureModuleAvailabilityTests.swift */; };
+		A11E00140000000000000014 /* FeatureModuleID.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11E00010000000000000001 /* FeatureModuleID.swift */; };
+		A11E00150000000000000015 /* FeatureModuleAvailability.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11E00020000000000000002 /* FeatureModuleAvailability.swift */; };
 		1100290C2E847E2800035A57 /* NSItemProvider+LoadHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1100290B2E847E2800035A57 /* NSItemProvider+LoadHelpers.swift */; };
 		110029272E84FD4C00035A57 /* TemporaryFileStorageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110029262E84FD4C00035A57 /* TemporaryFileStorageService.swift */; };
 		1100292A2E8691B400035A57 /* FileShareView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110029292E8691B400035A57 /* FileShareView.swift */; };
@@ -183,6 +188,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		A11E00010000000000000001 /* FeatureModuleID.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureModuleID.swift; sourceTree = "<group>"; };
+		A11E00020000000000000002 /* FeatureModuleAvailability.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureModuleAvailability.swift; sourceTree = "<group>"; };
+		A11E00030000000000000003 /* FeatureModuleAvailabilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureModuleAvailabilityTests.swift; sourceTree = "<group>"; };
+		A11E00040000000000000004 /* anotherNotchTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = anotherNotchTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		1100290B2E847E2800035A57 /* NSItemProvider+LoadHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSItemProvider+LoadHelpers.swift"; sourceTree = "<group>"; };
 		110029262E84FD4C00035A57 /* TemporaryFileStorageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemporaryFileStorageService.swift; sourceTree = "<group>"; };
 		110029292E8691B400035A57 /* FileShareView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileShareView.swift; sourceTree = "<group>"; };
@@ -332,6 +341,13 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		A11E00220000000000000022 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		11F7484C2EC9AABA00F841DB /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -545,6 +561,7 @@
 			children = (
 				112B0EB62E30DD0F00562D6C /* mediaremote-adapter */,
 				14CEF4142C5CAED300855D72 /* anotherNotch */,
+				A11E00400000000000000040 /* anotherNotchTests */,
 				11F748502EC9AABA00F841DB /* AnotherNotchXPCHelper */,
 				14CEF4132C5CAED300855D72 /* Products */,
 				14D031EC2C689DB70096E6A1 /* Frameworks */,
@@ -556,6 +573,7 @@
 			children = (
 				14CEF4122C5CAED300855D72 /* anotherNotch.app */,
 				11F7484F2EC9AABA00F841DB /* AnotherNotchXPCHelper.xpc */,
+				A11E00040000000000000004 /* anotherNotchTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -638,8 +656,18 @@
 				14D570C82C5F38890011E668 /* AnotherNotchViewModel.swift */,
 				14D570CA2C5F4B2C0011E668 /* BatteryStatusViewModel.swift */,
 				1153BD902D986DB300979FB0 /* PlaybackState.swift */,
+				A11E00010000000000000001 /* FeatureModuleID.swift */,
+				A11E00020000000000000002 /* FeatureModuleAvailability.swift */,
 			);
 			path = models;
+			sourceTree = "<group>";
+		};
+		A11E00400000000000000040 /* anotherNotchTests */ = {
+			isa = PBXGroup;
+			children = (
+				A11E00030000000000000003 /* FeatureModuleAvailabilityTests.swift */,
+			);
+			path = anotherNotchTests;
 			sourceTree = "<group>";
 		};
 		9A0887332C7AFF7E00C160EA /* Tabs */ = {
@@ -775,6 +803,23 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		A11E00200000000000000020 /* anotherNotchTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A11E00330000000000000033 /* Build configuration list for PBXNativeTarget "anotherNotchTests" */;
+			buildPhases = (
+				A11E00210000000000000021 /* Sources */,
+				A11E00220000000000000022 /* Frameworks */,
+				A11E00230000000000000023 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = anotherNotchTests;
+			productName = anotherNotchTests;
+			productReference = A11E00040000000000000004 /* anotherNotchTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		11F7484E2EC9AABA00F841DB /* AnotherNotchXPCHelper */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 11F7485D2EC9AABA00F841DB /* Build configuration list for PBXNativeTarget "AnotherNotchXPCHelper" */;
@@ -883,11 +928,19 @@
 			targets = (
 				14CEF4112C5CAED300855D72 /* anotherNotch */,
 				11F7484E2EC9AABA00F841DB /* AnotherNotchXPCHelper */,
+				A11E00200000000000000020 /* anotherNotchTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		A11E00230000000000000023 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		11F7484D2EC9AABA00F841DB /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -912,6 +965,16 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		A11E00210000000000000021 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A11E00130000000000000013 /* FeatureModuleAvailabilityTests.swift in Sources */,
+				A11E00140000000000000014 /* FeatureModuleID.swift in Sources */,
+				A11E00150000000000000015 /* FeatureModuleAvailability.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		11F7484B2EC9AABA00F841DB /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -923,6 +986,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A11E00110000000000000011 /* FeatureModuleID.swift in Sources */,
+				A11E00120000000000000012 /* FeatureModuleAvailability.swift in Sources */,
 				A1B2C3D52F12345600A1B2C3 /* LiquidGlass.swift in Sources */,
 				115C12EC2ED3D003009754CA /* OpenNotchHUD.swift in Sources */,
 				14C08BB92C8DE4B1000F8AA0 /* AnotherNotchCalendar.swift in Sources */,
@@ -1054,6 +1119,32 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		A11E00310000000000000031 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGNING_ALLOWED = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.jinkun1998.anothernotch.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "";
+			};
+			name = Debug;
+		};
+		A11E00320000000000000032 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGNING_ALLOWED = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.jinkun1998.anothernotch.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "";
+			};
+			name = Release;
+		};
 		11F7485E2EC9AABA00F841DB /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1344,6 +1435,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		A11E00330000000000000033 /* Build configuration list for PBXNativeTarget "anotherNotchTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A11E00310000000000000031 /* Debug */,
+				A11E00320000000000000032 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		11F7485D2EC9AABA00F841DB /* Build configuration list for PBXNativeTarget "AnotherNotchXPCHelper" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
