@@ -109,18 +109,19 @@ struct SettingsView: View {
 
     var body: some View {
         NavigationSplitView {
-            List(selection: $selectedTab) {
+            List {
                 HStack(spacing: 10) {
                     Image("logo2")
                         .resizable()
                         .scaledToFit()
                         .frame(width: 28, height: 28)
-                    VStack(alignment: .leading, spacing: 1) {
-                        Text("anotherNotch")
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(Bundle.main.appName)
                             .font(.system(size: 14, weight: .semibold))
-                        Text("Settings")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                        if let badgeText = Bundle.main.buildBadgeText {
+                            buildBadge(text: badgeText)
+                        }
                     }
                 }
                     .padding(.horizontal, 6)
@@ -257,40 +258,45 @@ struct SettingsView: View {
 
     @ViewBuilder
     private func sidebarRow(_ page: SettingsPage) -> some View {
-        SettingsSidebarRow(page: page, isSelected: selectedTab == page)
-            .tag(page)
-            .listRowInsets(EdgeInsets(top: 1, leading: 8, bottom: 1, trailing: 8))
-            .listRowBackground(Color.clear)
-            .listRowSeparator(.hidden)
+        SettingsSidebarRow(page: page, isSelected: selectedTab == page) {
+            selectedTab = page
+        }
+        .listRowInsets(EdgeInsets(top: 1, leading: 8, bottom: 1, trailing: 8))
+        .listRowBackground(Color.clear)
+        .listRowSeparator(.hidden)
     }
 }
 
 private struct SettingsSidebarRow: View {
     let page: SettingsPage
     let isSelected: Bool
+    let onSelect: () -> Void
     @State private var isHovering = false
 
     var body: some View {
-        HStack(spacing: 9) {
-            Image(systemName: page.icon)
-                .font(.system(size: 16, weight: .medium))
-                .frame(width: 18, height: 18)
-            Text(page.rawValue)
-                .font(.system(size: 13, weight: isSelected ? .semibold : .regular))
-            Spacer(minLength: 0)
+        Button(action: onSelect) {
+            HStack(spacing: 9) {
+                Image(systemName: page.icon)
+                    .font(.system(size: 16, weight: .medium))
+                    .frame(width: 18, height: 18)
+                Text(page.rawValue)
+                    .font(.system(size: 13, weight: isSelected ? .semibold : .regular))
+                Spacer(minLength: 0)
+            }
+            .foregroundStyle(isSelected ? Color.primary : Color.primary.opacity(0.9))
+            .frame(height: 34)
+            .padding(.horizontal, 8)
+            .background {
+                RoundedRectangle(cornerRadius: 7, style: .continuous)
+                    .fill(
+                        isSelected
+                            ? Color.effectiveAccent.opacity(0.2)
+                            : isHovering ? Color.primary.opacity(0.05) : .clear
+                    )
+            }
+            .contentShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
         }
-        .foregroundStyle(isSelected ? Color.primary : Color.primary.opacity(0.9))
-        .frame(height: 34)
-        .padding(.horizontal, 8)
-        .background {
-            RoundedRectangle(cornerRadius: 7, style: .continuous)
-                .fill(
-                    isSelected
-                        ? Color.effectiveAccent.opacity(0.2)
-                        : isHovering ? Color.primary.opacity(0.05) : .clear
-                )
-        }
-        .contentShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
+        .buttonStyle(.plain)
         .onHover { isHovering = $0 }
         .animation(.easeOut(duration: 0.12), value: isHovering)
         .animation(.easeOut(duration: 0.15), value: isSelected)
@@ -431,6 +437,26 @@ private struct CameraSettings: View {
 
     var body: some View {
         Form {
+            Section {
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Camera mirror preview")
+                            .font(.headline)
+                        Text("Open a live camera mirror dropdown view under the notch.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    Spacer(minLength: 40)
+                    Button("Check camera") {
+                        FeatureModuleRegistry.shared.activate(.camera)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
+                    .disabled(!isAuthorized)
+                }
+            }
+
             Section("Camera permission") {
                 HStack {
                     Text(isAuthorized ? "Allowed" : "Not allowed")
@@ -452,18 +478,15 @@ private struct CameraSettings: View {
                 }
             }
 
-            Section("Camera") {
-                Button("Check camera") {
-                    FeatureModuleRegistry.shared.activate(.camera)
-                }
-                .disabled(!isAuthorized)
-
+            Section {
                 Picker("Mirror shape", selection: $mirrorShape) {
                     Text("Circle").tag(MirrorShapeEnum.circle)
                     Text("Square").tag(MirrorShapeEnum.rectangle)
                 }
                 .readableSettingsPicker()
                 .disabled(!isAuthorized)
+            } header: {
+                Text("Appearance")
             }
         }
         .accentColor(.effectiveAccent)
@@ -728,6 +751,27 @@ struct BluetoothDeviceNotifications: View {
 
     var body: some View {
         Form {
+            Section {
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Bluetooth connection indicator")
+                            .font(.headline)
+                        Text("Show connected accessory notifications and battery status in the notch.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    Spacer(minLength: 40)
+                    Defaults.Toggle(key: .showBluetoothDeviceConnectionIndicator) {
+                        EmptyView()
+                    }
+                    .labelsHidden()
+                    .toggleStyle(.switch)
+                    .controlSize(.large)
+                    .disabled(!bluetoothAuthorized)
+                }
+            }
+
             Section("Bluetooth permission") {
                 HStack {
                     Text(bluetoothAuthorized ? "Allowed" : "Not allowed")
@@ -742,13 +786,6 @@ struct BluetoothDeviceNotifications: View {
                         }
                     }
                 }
-            }
-
-            Section("Bluetooth Device Notifications") {
-                Defaults.Toggle(key: .showBluetoothDeviceConnectionIndicator) {
-                    Text("Show Bluetooth device connection indicator")
-                }
-                .disabled(!bluetoothAuthorized)
             }
             Section("Indicator Layout") {
                 Picker("Rows", selection: $indicatorRows) {
@@ -1043,10 +1080,27 @@ struct Media: View {
             }
             
             Section {
-                Toggle(
-                    "Show music live activity",
-                    isOn: $coordinator.musicLiveActivityEnabled.animation()
-                )
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Show music live activity")
+                            .font(.headline)
+                        Text("Display interactive player controls and album artwork in the notch.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    Spacer(minLength: 40)
+                    Toggle(
+                        "",
+                        isOn: $coordinator.musicLiveActivityEnabled.animation()
+                    )
+                    .labelsHidden()
+                    .toggleStyle(.switch)
+                    .controlSize(.large)
+                }
+            }
+
+            Section {
                 Toggle("Show sneak peek on playback changes", isOn: $enableSneakPeek)
                 Picker("Sneak Peek Style", selection: $sneakPeekStyles) {
                     ForEach(SneakPeekStyle.allCases) { style in
@@ -1089,6 +1143,7 @@ struct Media: View {
             } header: {
                 Text("Media playback live activity")
             }
+            .disabled(!coordinator.musicLiveActivityEnabled)
 
             Section {
                 MusicSlotConfigurationView()
@@ -1105,6 +1160,7 @@ struct Media: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
+            .disabled(!coordinator.musicLiveActivityEnabled)
         }
         .accentColor(.effectiveAccent)
     }
@@ -1131,6 +1187,36 @@ struct CalendarSettings: View {
 
     var body: some View {
         Form {
+            Section("Calendar permission") {
+                HStack {
+                    Text(calendarManager.calendarAuthorizationStatus == .fullAccess ? "Allowed" : "Not allowed")
+                        .foregroundStyle(calendarManager.calendarAuthorizationStatus == .fullAccess ? .green : .secondary)
+                    Spacer()
+                    Button(calendarManager.calendarAuthorizationStatus == .fullAccess ? "Manage" : "Grant") {
+                        if calendarManager.calendarAuthorizationStatus == .notDetermined {
+                            Task { await calendarManager.checkCalendarAuthorization() }
+                        } else if let settingsURL = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Calendars") {
+                            NSWorkspace.shared.open(settingsURL)
+                        }
+                    }
+                }
+            }
+
+            Section("Reminders permission") {
+                HStack {
+                    Text(calendarManager.reminderAuthorizationStatus == .fullAccess ? "Allowed" : "Not allowed")
+                        .foregroundStyle(calendarManager.reminderAuthorizationStatus == .fullAccess ? .green : .secondary)
+                    Spacer()
+                    Button(calendarManager.reminderAuthorizationStatus == .fullAccess ? "Manage" : "Grant") {
+                        if calendarManager.reminderAuthorizationStatus == .notDetermined {
+                            Task { await calendarManager.checkReminderAuthorization() }
+                        } else if let settingsURL = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Reminders") {
+                            NSWorkspace.shared.open(settingsURL)
+                        }
+                    }
+                }
+            }
+
             Section("General") {
                 Defaults.Toggle(key: .hideCompletedReminders) {
                     Text("Hide completed reminders")
@@ -1263,8 +1349,13 @@ struct About: View {
                         .clipShape(RoundedRectangle(cornerRadius: 11, style: .continuous))
 
                     VStack(alignment: .leading, spacing: 3) {
-                        Text("anotherNotch")
-                            .font(.title3.weight(.semibold))
+                        HStack(alignment: .firstTextBaseline, spacing: 6) {
+                            Text(Bundle.main.appName)
+                                .font(.title3.weight(.semibold))
+                            if let badgeText = Bundle.main.buildBadgeText {
+                                buildBadge(text: badgeText)
+                            }
+                        }
                         Text("Another Dynamic Island for macOS")
                             .foregroundStyle(.secondary)
                     }
@@ -1320,7 +1411,7 @@ struct About: View {
             }
 
             Section {
-                Button("Quit anotherNotch", role: .destructive) {
+                Button("Quit \(Bundle.main.appName)", role: .destructive) {
                     NSApp.terminate(nil)
                 }
             }
@@ -2242,6 +2333,16 @@ struct Shortcuts: View {
         }
         .accentColor(.effectiveAccent)
     }
+}
+
+private func buildBadge(text: String) -> some View {
+    Text(text)
+        .font(.system(size: 10, weight: .semibold))
+        .foregroundStyle(.orange)
+        .padding(.vertical, 2)
+        .padding(.horizontal, 6)
+        .background(Color.orange.opacity(0.18))
+        .clipShape(Capsule())
 }
 
 private func settingsBadge(text: String) -> some View {
