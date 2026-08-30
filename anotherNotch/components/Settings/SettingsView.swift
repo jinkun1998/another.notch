@@ -430,6 +430,7 @@ private struct ModuleSettings<Content: View>: View {
 private struct CameraSettings: View {
     @ObservedObject private var webcamManager = WebcamManager.shared
     @Default(.mirrorShape) private var mirrorShape
+    @Default(.showMirror) private var showMirror
 
     private var isAuthorized: Bool {
         webcamManager.authorizationStatus == .authorized
@@ -437,26 +438,6 @@ private struct CameraSettings: View {
 
     var body: some View {
         Form {
-            Section {
-                HStack {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Camera mirror preview")
-                            .font(.headline)
-                        Text("Open a live camera mirror dropdown view under the notch.")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                    Spacer(minLength: 40)
-                    Button("Check camera") {
-                        FeatureModuleRegistry.shared.activate(.camera)
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.large)
-                    .disabled(!isAuthorized)
-                }
-            }
-
             Section("Camera permission") {
                 HStack {
                     Text(isAuthorized ? "Allowed" : "Not allowed")
@@ -479,14 +460,53 @@ private struct CameraSettings: View {
             }
 
             Section {
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Enable camera mirror")
+                            .font(.headline)
+                        Text("Show a live camera mirror dropdown view under the notch.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    Spacer(minLength: 40)
+                    Defaults.Toggle(key: .showMirror) {
+                        EmptyView()
+                    }
+                    .labelsHidden()
+                    .toggleStyle(.switch)
+                    .controlSize(.large)
+                    .disabled(!isAuthorized)
+                }
+            }
+
+            Section {
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Preview in Notch")
+                        Text("Opens the notch directly to the live camera tab.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    Spacer()
+                    Button("Check camera") {
+                        AnotherNotchViewCoordinator.shared.currentView = .camera
+                        if let appDelegate = NSApp.delegate as? AppDelegate {
+                            appDelegate.vm.open()
+                        }
+                    }
+                    .buttonStyle(.borderedProminent)
+                }
+                .disabled(!isAuthorized || !showMirror)
+
                 Picker("Mirror shape", selection: $mirrorShape) {
                     Text("Circle").tag(MirrorShapeEnum.circle)
                     Text("Square").tag(MirrorShapeEnum.rectangle)
                 }
                 .readableSettingsPicker()
-                .disabled(!isAuthorized)
+                .disabled(!isAuthorized || !showMirror)
             } header: {
-                Text("Appearance")
+                Text("Appearance & Test")
             }
         }
         .accentColor(.effectiveAccent)
@@ -711,18 +731,39 @@ struct GeneralSettings: View {
 }
 
 struct Charge: View {
+    @Default(.showBatteryIndicator) private var showBatteryIndicator
+
     var body: some View {
         Form {
             Section {
-                Defaults.Toggle(key: .showBatteryIndicator) {
-                    Text("Show battery indicator")
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Show battery indicator")
+                            .font(.headline)
+                        Text("Display battery status and charging progress indicator in the notch.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    Spacer(minLength: 40)
+                    Defaults.Toggle(key: .showBatteryIndicator) {
+                        EmptyView()
+                    }
+                    .labelsHidden()
+                    .toggleStyle(.switch)
+                    .controlSize(.large)
                 }
+            }
+
+            Section {
                 Defaults.Toggle(key: .showPowerStatusNotifications) {
                     Text("Show power status notifications")
                 }
             } header: {
-                Text("General")
+                Text("Notifications")
             }
+            .disabled(!showBatteryIndicator)
+
             Section {
                 Defaults.Toggle(key: .showBatteryPercentage) {
                     Text("Show battery percentage")
@@ -733,6 +774,7 @@ struct Charge: View {
             } header: {
                 Text("Battery Information")
             }
+            .disabled(!showBatteryIndicator)
         }
         .onAppear {
             Task { @MainActor in
@@ -1043,6 +1085,27 @@ struct Media: View {
     var body: some View {
         Form {
             Section {
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Show music live activity")
+                            .font(.headline)
+                        Text("Display interactive player controls and album artwork in the notch.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    Spacer(minLength: 40)
+                    Toggle(
+                        "",
+                        isOn: $coordinator.musicLiveActivityEnabled.animation()
+                    )
+                    .labelsHidden()
+                    .toggleStyle(.switch)
+                    .controlSize(.large)
+                }
+            }
+
+            Section {
                 Picker("Music Source", selection: $mediaController) {
                     ForEach(availableMediaControllers) { controller in
                         Text(controller.rawValue).tag(controller)
@@ -1078,27 +1141,7 @@ struct Media: View {
                     .font(.caption)
                 }
             }
-            
-            Section {
-                HStack {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Show music live activity")
-                            .font(.headline)
-                        Text("Display interactive player controls and album artwork in the notch.")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                    Spacer(minLength: 40)
-                    Toggle(
-                        "",
-                        isOn: $coordinator.musicLiveActivityEnabled.animation()
-                    )
-                    .labelsHidden()
-                    .toggleStyle(.switch)
-                    .controlSize(.large)
-                }
-            }
+            .disabled(!coordinator.musicLiveActivityEnabled)
 
             Section {
                 Toggle("Show sneak peek on playback changes", isOn: $enableSneakPeek)
@@ -1177,6 +1220,7 @@ struct Media: View {
 
 struct CalendarSettings: View {
     @ObservedObject private var calendarManager = CalendarManager.shared
+    @Default(.showCalendar) var showCalendar
     @Default(.hideCompletedReminders) var hideCompletedReminders
     @Default(.hideAllDayEvents) var hideAllDayEvents
     @Default(.autoScrollToNextEvent) var autoScrollToNextEvent
@@ -1187,11 +1231,12 @@ struct CalendarSettings: View {
 
     var body: some View {
         Form {
-            Section("Calendar permission") {
+            Section("Calendar & Reminders permissions") {
                 HStack {
+                    Text("Calendars")
+                    Spacer()
                     Text(calendarManager.calendarAuthorizationStatus == .fullAccess ? "Allowed" : "Not allowed")
                         .foregroundStyle(calendarManager.calendarAuthorizationStatus == .fullAccess ? .green : .secondary)
-                    Spacer()
                     Button(calendarManager.calendarAuthorizationStatus == .fullAccess ? "Manage" : "Grant") {
                         if calendarManager.calendarAuthorizationStatus == .notDetermined {
                             Task { await calendarManager.checkCalendarAuthorization() }
@@ -1200,13 +1245,12 @@ struct CalendarSettings: View {
                         }
                     }
                 }
-            }
 
-            Section("Reminders permission") {
                 HStack {
+                    Text("Reminders")
+                    Spacer()
                     Text(calendarManager.reminderAuthorizationStatus == .fullAccess ? "Allowed" : "Not allowed")
                         .foregroundStyle(calendarManager.reminderAuthorizationStatus == .fullAccess ? .green : .secondary)
-                    Spacer()
                     Button(calendarManager.reminderAuthorizationStatus == .fullAccess ? "Manage" : "Grant") {
                         if calendarManager.reminderAuthorizationStatus == .notDetermined {
                             Task { await calendarManager.checkReminderAuthorization() }
@@ -1214,6 +1258,27 @@ struct CalendarSettings: View {
                             NSWorkspace.shared.open(settingsURL)
                         }
                     }
+                }
+            }
+
+            Section {
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Show calendar & reminders")
+                            .font(.headline)
+                        Text("View upcoming schedule, events, and reminders in the notch.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    Spacer(minLength: 40)
+                    Defaults.Toggle(key: .showCalendar) {
+                        EmptyView()
+                    }
+                    .labelsHidden()
+                    .toggleStyle(.switch)
+                    .controlSize(.large)
+                    .disabled(!hasAnyAccess)
                 }
             }
 
@@ -1231,7 +1296,7 @@ struct CalendarSettings: View {
                     Text("Always show full event titles")
                 }
             }
-            .disabled(!hasAnyAccess)
+            .disabled(!hasAnyAccess || !showCalendar)
             Section(header: Text("Calendars")) {
                 if calendarManager.calendarAuthorizationStatus != .fullAccess {
                     Text("Calendar access is required to show events.")
@@ -1266,6 +1331,8 @@ struct CalendarSettings: View {
                     }
                 }
             }
+            .disabled(!hasAnyAccess || !showCalendar)
+
             Section(header: Text("Reminders")) {
                 if calendarManager.reminderAuthorizationStatus != .fullAccess {
                     Text("Reminder access is required to show reminders.")
@@ -1300,6 +1367,7 @@ struct CalendarSettings: View {
                     }
                 }
             }
+            .disabled(!hasAnyAccess || !showCalendar)
         }
         .accentColor(.effectiveAccent)
         .onAppear {
@@ -1452,18 +1520,39 @@ struct ClipboardSettings: View {
 
     var body: some View {
         Form {
+            Section {
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Enable clipboard history")
+                            .font(.headline)
+                        Text("Automatically save and search copied text, links, and images.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    Spacer(minLength: 40)
+                    Toggle("", isOn: $enabled)
+                        .labelsHidden()
+                        .toggleStyle(.switch)
+                        .controlSize(.large)
+                }
+            }
+
             Section("Capture") {
-                Toggle("Enable clipboard history", isOn: $enabled)
                 Stepper("History limit: \(historyLimit)", value: $historyLimit, in: 10...500, step: 10)
                     .onChange(of: historyLimit) { ClipboardHistoryStore.shared.enforceRetention() }
                 Stepper("Image limit: \(imageLimitMB) MB", value: $imageLimitMB, in: 1...25)
             }
+            .disabled(!enabled)
+
             Section("Text Recognition") {
                 Toggle("Extract text from images (OCR)", isOn: $ocrEnabled)
                 Text("Uses on-device Vision to recognize text in copied images.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
+            .disabled(!enabled)
+
             Section("Search") {
                 Picker("Mode", selection: $searchMode) {
                     ForEach(ClipboardSearchMode.allCases) { mode in
@@ -1472,18 +1561,21 @@ struct ClipboardSettings: View {
                 }
                 .readableSettingsPicker()
             }
+            .disabled(!enabled)
+
             Section {
                 Button("Clear History", role: .destructive) {
                     ClipboardHistoryStore.shared.clear()
                 }
             }
+            .disabled(!enabled)
         }
         .accentColor(.effectiveAccent)
     }
 }
 
 struct Shelf: View {
-    
+    @Default(.boringShelf) var boringShelf: Bool
     @Default(.shelfTapToOpen) var shelfTapToOpen: Bool
     @Default(.quickShareProvider) var quickShareProvider
     @Default(.expandedDragDetection) var expandedDragDetection: Bool
@@ -1500,9 +1592,26 @@ struct Shelf: View {
     var body: some View {
         Form {
             Section {
-                Defaults.Toggle(key: .boringShelf) {
-                    Text("Enable shelf")
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Enable shelf")
+                            .font(.headline)
+                        Text("Quickly drag, drop, stash, and share files directly from the notch.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    Spacer(minLength: 40)
+                    Defaults.Toggle(key: .boringShelf) {
+                        EmptyView()
+                    }
+                    .labelsHidden()
+                    .toggleStyle(.switch)
+                    .controlSize(.large)
                 }
+            }
+
+            Section {
                 Defaults.Toggle(key: .openShelfByDefault) {
                     Text("Open shelf by default if items are present")
                 }
@@ -1527,6 +1636,7 @@ struct Shelf: View {
                     Text("General")
                 }
             }
+            .disabled(!boringShelf)
             
             Section {
                 Picker("Quick Share Service", selection: $quickShareProvider) {

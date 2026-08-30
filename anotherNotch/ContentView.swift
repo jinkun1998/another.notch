@@ -280,7 +280,7 @@ struct ContentView: View {
         }
 
         if coordinator.expandingView.type == .battery && coordinator.expandingView.show
-            && vm.notchState == .closed && Defaults[.showPowerStatusNotifications]
+            && vm.notchState == .closed && Defaults[.showBatteryIndicator] && Defaults[.showPowerStatusNotifications]
         {
             return .init(
                 width: physicalNotchWidth + powerNotificationTextWidth + powerNotificationIconWidth,
@@ -675,7 +675,7 @@ struct ContentView: View {
                             .transition(.opacity)
                     } else if !showsMusicSneakPeek
                         && coordinator.expandingView.type == .battery && coordinator.expandingView.show
-                        && vm.notchState == .closed && Defaults[.showPowerStatusNotifications]
+                        && vm.notchState == .closed && Defaults[.showBatteryIndicator] && Defaults[.showPowerStatusNotifications]
                     {
                         HStack(spacing: 0) {
                             Text(batteryModel.statusText)
