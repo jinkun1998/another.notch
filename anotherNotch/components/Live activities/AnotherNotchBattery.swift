@@ -11,15 +11,13 @@ struct BatteryView: View {
     var batteryWidth: CGFloat = 26
     var isForNotification: Bool
 
-    var icon: String = "battery.0"
-
     /// Determines the icon to display when charging.
     var iconStatus: String {
         if isCharging {
-            return "bolt"
+            return "bolt.fill"
         }
         else if isPluggedIn {
-            return "plug"
+            return "powerplug.fill"
         }
         else {
             return ""
@@ -80,37 +78,34 @@ struct BatteryView: View {
     }
 
     private var legacyBattery: some View {
-        ZStack(alignment: .leading) {
-            Image(systemName: icon)
-                .resizable()
-                .fontWeight(.thin)
-                .aspectRatio(contentMode: .fit)
-                .foregroundColor(.white.opacity(0.5))
-                .frame(
-                    width: batteryWidth + 1
-                )
-
-            RoundedRectangle(cornerRadius: 2.5)
-                .fill(batteryColor)
-                .frame(
-                    width: CGFloat(((CGFloat(CFloat(levelBattery)) / 100) * (batteryWidth - 6))),
-                    height: (batteryWidth - 2.75) - 18
-                )
-                .padding(.leading, 2)
+        ZStack {
+            Image(systemName: legacyBatterySymbolName)
+                .font(.system(size: batteryWidth * 0.62, weight: .medium))
+                .symbolRenderingMode(.monochrome)
+                .foregroundStyle(batteryColor)
 
             if iconStatus != "" && (isForNotification || Defaults[.showPowerStatusIcons]) {
-                ZStack {
-                    Image(iconStatus)
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .foregroundColor(.white)
-                        .frame(
-                            width: 17,
-                            height: 17
-                        )
-                }
-                .frame(width: batteryWidth, height: batteryWidth)
+                Image(systemName: iconStatus)
+                    .font(.system(size: batteryWidth * 0.28, weight: .bold))
+                    .foregroundStyle(.black.opacity(0.8))
             }
+        }
+        .frame(width: batteryWidth, height: batteryWidth)
+        .accessibilityLabel("Battery \(Int(levelBattery)) percent")
+    }
+
+    private var legacyBatterySymbolName: String {
+        switch levelBattery {
+        case ..<12.5:
+            return "battery.0"
+        case ..<37.5:
+            return "battery.25"
+        case ..<62.5:
+            return "battery.50"
+        case ..<87.5:
+            return "battery.75"
+        default:
+            return "battery.100"
         }
     }
 }
