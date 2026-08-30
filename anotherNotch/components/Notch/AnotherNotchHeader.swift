@@ -21,7 +21,7 @@ struct AnotherNotchHeader: View {
 
         ZStack {
             Rectangle()
-                .fill(notchDebugColor)
+                .fill(notchBackgroundColor)
                 .frame(width: vm.closedNotchSize.width)
                 .frame(maxHeight: .infinity, alignment: .top)
                 .mask { NotchShape() }
@@ -87,13 +87,9 @@ struct AnotherNotchHeader: View {
         .environmentObject(vm)
     }
 
-    private var notchDebugColor: Color {
-        #if DEBUG
-        .red.opacity(0.9)
-        #else
+    private var notchBackgroundColor: Color {
         NSScreen.screen(withUUID: coordinator.selectedScreenUUID)?.safeAreaInsets.top ?? 0 > 0
             ? .black : .clear
-        #endif
     }
 
     func isHUDType(_ type: SneakContentType) -> Bool {
