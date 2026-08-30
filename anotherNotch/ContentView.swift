@@ -306,9 +306,7 @@ struct ContentView: View {
 
         if showsClosedSystemHUD {
             if Defaults[.closedHUDRows] == .two {
-                let currentExpandedHeight = max(baseSize.height, 58)
-                let reducedExpandedHeight = baseSize.height + (currentExpandedHeight - baseSize.height) / 2
-                return .init(width: max(baseSize.width + 120, 280), height: reducedExpandedHeight)
+                return .init(width: max(baseSize.width + 120, 280), height: baseSize.height + 22)
             } else {
                 let wingWidth = max(0, baseSize.height - 12) * 1.5
                 return .init(
