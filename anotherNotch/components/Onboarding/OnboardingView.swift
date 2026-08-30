@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import AppKit
 import CoreBluetooth
 import Defaults
 
@@ -35,6 +36,10 @@ struct OnboardingBackground: View {
 
 struct OnboardingView: View {
     @State var step: OnboardingStep = .welcome
+    @State private var accessibilityGranted: Bool = AXIsProcessTrusted()
+    @State private var accessibilityRequested: Bool = false
+    @State private var bluetoothGranted: Bool = (CBManager.authorization == .allowedAlways)
+    @State private var bluetoothRequested: Bool = false
     let onFinish: () -> Void
     let onOpenSettings: () -> Void
 
@@ -55,23 +60,47 @@ struct OnboardingView: View {
                     title: "Enable Accessibility Access",
                     description: "Accessibility access allows anotherNotch to replace macOS volume and brightness HUDs with dynamic notch overlays.",
                     privacyNote: "Used solely for hardware key HUD indicators. No keystrokes or private data are recorded.",
+                    isGranted: accessibilityGranted,
+                    hasRequested: accessibilityRequested,
                     onAllow: {
-                        Task {
-                            if await requestAccessibilityPermission() {
-                                Defaults[.hudReplacement] = true
-                            }
-                            withAnimation(.easeInOut(duration: 0.6)) {
-                                step = .bluetoothPermission
-                            }
+                        accessibilityRequested = true
+                        XPCHelperClient.shared.requestAccessibilityAuthorization()
+                        if !AXIsProcessTrusted() {
+                            openPrivacySettings("Privacy_Accessibility")
                         }
+                        checkAccessibility()
+                    },
+                    onOpenSettings: {
+                        openPrivacySettings("Privacy_Accessibility")
                     },
                     onSkip: {
+                        withAnimation(.easeInOut(duration: 0.6)) {
+                            step = .bluetoothPermission
+                        }
+                    },
+                    onContinue: {
                         withAnimation(.easeInOut(duration: 0.6)) {
                             step = .bluetoothPermission
                         }
                     }
                 )
                 .transition(.opacity)
+                .task {
+                    XPCHelperClient.shared.startMonitoringAccessibilityAuthorization()
+                    checkAccessibility()
+                    while !Task.isCancelled {
+                        try? await Task.sleep(for: .seconds(1))
+                        checkAccessibility()
+                    }
+                }
+                .onReceive(NotificationCenter.default.publisher(for: .accessibilityAuthorizationChanged)) { notification in
+                    if let granted = notification.userInfo?["granted"] as? Bool {
+                        handleAccessibilityStateChange(granted)
+                    }
+                }
+                .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+                    checkAccessibility()
+                }
 
             case .bluetoothPermission:
                 PermissionRequestView(
@@ -79,24 +108,49 @@ struct OnboardingView: View {
                     title: "Enable Bluetooth Accessories",
                     description: "anotherNotch can show when your Bluetooth audio accessories connect, including their battery level when available.",
                     privacyNote: "Bluetooth access is used only for connected accessory notifications.",
+                    isGranted: bluetoothGranted,
+                    hasRequested: bluetoothRequested,
                     onAllow: {
+                        bluetoothRequested = true
                         Task {
-                            if await requestBluetoothPermission() {
+                            let granted = await requestBluetoothPermission()
+                            if granted {
                                 Defaults[.showBluetoothDeviceConnectionIndicator] = true
-                            }
-                            withAnimation(.easeInOut(duration: 0.6)) {
-                                step = .musicPermission
+                                bluetoothGranted = true
+                                withAnimation(.easeInOut(duration: 0.6)) {
+                                    step = .musicPermission
+                                }
+                            } else {
+                                openPrivacySettings("Privacy_Bluetooth")
                             }
                         }
                     },
+                    onOpenSettings: {
+                        openPrivacySettings("Privacy_Bluetooth")
+                    },
                     onSkip: {
+                        withAnimation(.easeInOut(duration: 0.6)) {
+                            step = .musicPermission
+                        }
+                    },
+                    onContinue: {
                         withAnimation(.easeInOut(duration: 0.6)) {
                             step = .musicPermission
                         }
                     }
                 )
                 .transition(.opacity)
-                
+                .task {
+                    checkBluetooth()
+                    while !Task.isCancelled {
+                        try? await Task.sleep(for: .seconds(1))
+                        checkBluetooth()
+                    }
+                }
+                .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+                    checkBluetooth()
+                }
+
             case .musicPermission:
                 MusicControllerSelectionView(
                     onContinue: {
@@ -117,8 +171,40 @@ struct OnboardingView: View {
 
     // MARK: - Permission Request Logic
 
-    func requestAccessibilityPermission() async -> Bool {
-        await XPCHelperClient.shared.ensureAccessibilityAuthorization(promptIfNeeded: true)
+    private func checkAccessibility() {
+        let authorized = AXIsProcessTrusted()
+        handleAccessibilityStateChange(authorized)
+    }
+
+    private func handleAccessibilityStateChange(_ granted: Bool) {
+        if granted != accessibilityGranted {
+            accessibilityGranted = granted
+            if granted {
+                Defaults[.hudReplacement] = true
+                withAnimation(.easeInOut(duration: 0.6)) {
+                    step = .bluetoothPermission
+                }
+            }
+        }
+    }
+
+    private func checkBluetooth() {
+        let authorized = (CBManager.authorization == .allowedAlways)
+        if authorized != bluetoothGranted {
+            bluetoothGranted = authorized
+            if authorized {
+                Defaults[.showBluetoothDeviceConnectionIndicator] = true
+                withAnimation(.easeInOut(duration: 0.6)) {
+                    step = .musicPermission
+                }
+            }
+        }
+    }
+
+    private func openPrivacySettings(_ pane: String) {
+        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?\(pane)") {
+            NSWorkspace.shared.open(url)
+        }
     }
 
     func requestBluetoothPermission() async -> Bool {
@@ -141,7 +227,7 @@ private final class BluetoothPermissionRequester: NSObject, CBCentralManagerDele
         case .notDetermined:
             return await withCheckedContinuation { continuation in
                 self.continuation = continuation
-                centralManager = CBCentralManager(delegate: self, queue: .main)
+                centralManager = CBCentralManager(delegate: self, queue: .main, options: [CBCentralManagerOptionShowPowerAlertKey: false])
             }
         @unknown default:
             return false
@@ -162,8 +248,9 @@ private final class BluetoothPermissionRequester: NSObject, CBCentralManagerDele
     }
 
     private func finish(with granted: Bool) {
-        continuation?.resume(returning: granted)
+        guard let cont = continuation else { return }
         continuation = nil
         centralManager = nil
+        cont.resume(returning: granted)
     }
 }

@@ -8,6 +8,26 @@
 import SwiftUI
 
 extension Bundle {
+    var appName: String {
+        (infoDictionary?["CFBundleDisplayName"] as? String)
+            ?? (infoDictionary?["CFBundleName"] as? String)
+            ?? "anotherNotch"
+    }
+
+    var buildBadgeText: String? {
+        #if DEBUG
+        return "Debug"
+        #else
+        let version = (releaseVersionNumber ?? "").lowercased()
+        let build = (buildVersionNumber ?? "").lowercased()
+        let appNameLower = appName.lowercased()
+        if version.contains("beta") || build.contains("beta") || appNameLower.contains("beta") {
+            return "Beta"
+        }
+        return nil
+        #endif
+    }
+
     var releaseVersionNumber: String? {
         return infoDictionary?["CFBundleShortVersionString"] as? String
     }
