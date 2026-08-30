@@ -140,7 +140,21 @@ final class FeatureModuleRegistry: ObservableObject {
     }
 
     func isAvailable(_ id: FeatureModuleID) -> Bool {
-        Self.modules.first(where: { $0.id == id })?.isAvailable == true && isInstalled(id)
+        guard Self.modules.first(where: { $0.id == id })?.isAvailable == true && isInstalled(id) else {
+            return false
+        }
+        switch id {
+        case .home:
+            return true
+        case .clipboard:
+            return Defaults[.clipboardHistoryEnabled]
+        case .shelf:
+            return Defaults[.boringShelf]
+        case .calendar:
+            return Defaults[.showCalendar]
+        case .camera:
+            return Defaults[.showMirror]
+        }
     }
 
     func supportsScrolling(_ id: FeatureModuleID) -> Bool {
