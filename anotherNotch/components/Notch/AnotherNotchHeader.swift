@@ -61,7 +61,7 @@ struct AnotherNotchHeader: View {
                                 action: SettingsWindowController.present
                             )
                         }
-                        if Defaults[.showBatteryIndicator] {
+                        if Defaults[.batteryFeatureEnabled] && Defaults[.showBatteryIndicator] {
                             AnotherNotchBatteryView(
                                 batteryWidth: 30,
                                 isCharging: batteryModel.isCharging,

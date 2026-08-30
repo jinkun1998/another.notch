@@ -178,6 +178,7 @@ extension Defaults.Keys {
     )
     
     // MARK: Battery
+    static let batteryFeatureEnabled = Key<Bool>("batteryFeatureEnabled", default: true)
     static let showPowerStatusNotifications = Key<Bool>("showPowerStatusNotifications", default: true)
     static let showBatteryIndicator = Key<Bool>("showBatteryIndicator", default: false)
     static let showBatteryPercentage = Key<Bool>("showBatteryPercentage", default: true)

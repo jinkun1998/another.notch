@@ -32,11 +32,13 @@ struct ContentView: View {
     @ObservedObject private var modules = FeatureModuleRegistry.shared
     @State private var hoverTask: Task<Void, Never>?
     @State private var closingShellTask: Task<Void, Never>?
+    @State private var openBounceTask: Task<Void, Never>?
     @State private var tabTransitionTask: Task<Void, Never>?
     @State private var isHovering: Bool = false
     @State private var isClosingShell: Bool = false
     @State private var isTabTransitioning: Bool = false
     @State private var shellExpansion: CGFloat = .zero
+    @State private var openBounceScale: CGFloat = 1
     @State private var outgoingExpandedModule: FeatureModuleID?
     @State private var closingNotchSize: CGSize?
     @State private var anyDropDebounceTask: Task<Void, Never>?
@@ -55,7 +57,7 @@ struct ContentView: View {
     @Default(.bottomCornerRadius) var bottomCornerRadius
 
     private var openAnimation: Animation {
-        reduceMotion ? .easeOut(duration: 0.18) : .smooth(duration: 0.32, extraBounce: 0)
+        reduceMotion ? .easeOut(duration: 0.1) : .smooth(duration: 0.16, extraBounce: 0)
     }
 
     private var closeAnimation: Animation {
@@ -280,7 +282,7 @@ struct ContentView: View {
         }
 
         if coordinator.expandingView.type == .battery && coordinator.expandingView.show
-            && vm.notchState == .closed && Defaults[.showBatteryIndicator] && Defaults[.showPowerStatusNotifications]
+            && vm.notchState == .closed && Defaults[.batteryFeatureEnabled] && Defaults[.showBatteryIndicator] && Defaults[.showPowerStatusNotifications]
         {
             return .init(
                 width: physicalNotchWidth + powerNotificationTextWidth + powerNotificationIconWidth,
@@ -367,6 +369,7 @@ struct ContentView: View {
                         notchBackground
                     }
                     .clipShape(currentNotchShape)
+                    .scaleEffect(openBounceScale, anchor: .top)
                     .shadow(
                         color: ((shellExpansion > 0 || isHovering) && Defaults[.enableShadow])
                             ? .black.opacity(0.7) : .clear, radius: Defaults[.cornerRadiusScaling] ? 6 : 4
@@ -525,8 +528,10 @@ struct ContentView: View {
         }
         .onChange(of: vm.notchState) { _, state in
             closingShellTask?.cancel()
+            openBounceTask?.cancel()
 
             guard state == .open else {
+                openBounceScale = 1
                 closingNotchSize = closingNotchSize ?? vm.notchSize
                 isClosingShell = !reduceMotion
 
@@ -554,7 +559,9 @@ struct ContentView: View {
             closingNotchSize = vm.notchSize
             withAnimation(openAnimation) {
                 shellExpansion = 1
+                openBounceScale = 1.025
             }
+            triggerOpenBounce()
         }
         .onChange(of: vm.notchSize) { _, size in
             if vm.notchState == .open {
@@ -675,7 +682,7 @@ struct ContentView: View {
                             .transition(.opacity)
                     } else if !showsMusicSneakPeek
                         && coordinator.expandingView.type == .battery && coordinator.expandingView.show
-                        && vm.notchState == .closed && Defaults[.showBatteryIndicator] && Defaults[.showPowerStatusNotifications]
+                        && vm.notchState == .closed && Defaults[.batteryFeatureEnabled] && Defaults[.showBatteryIndicator] && Defaults[.showPowerStatusNotifications]
                     {
                         HStack(spacing: 0) {
                             Text(batteryModel.statusText)
@@ -949,6 +956,19 @@ struct ContentView: View {
 
     private func doOpen() {
         vm.open()
+    }
+
+    private func triggerOpenBounce() {
+        guard !reduceMotion else { return }
+
+        openBounceTask = Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(140))
+            guard !Task.isCancelled, vm.notchState == .open else { return }
+
+            withAnimation(.spring(response: 0.12, dampingFraction: 0.7)) {
+                openBounceScale = 1
+            }
+        }
     }
 
     // MARK: - Hover Management
