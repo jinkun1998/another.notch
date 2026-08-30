@@ -84,16 +84,7 @@ func moduleTabWingWidth() -> CGFloat {
 
 @MainActor
 func expandedContentInset(screenUUID: String? = nil) -> CGFloat {
-    let coverage = min(max(Defaults[.notchGradientBlackCoverage], 0.01), 1)
-    let contentWidth = max(baseMaximumOpenNotchSize.width, tabHeaderMinimumOpenWidth(screenUUID: screenUUID))
-    let contentHeight = baseMaximumOpenNotchSize.height
-        + max(0, getClosedNotchSize(screenUUID: screenUUID).height - openNotchHeaderHeight)
-    let horizontalFadeDepth = contentWidth * (1 - coverage) / (2 * coverage)
-    let bottomFadeDepth = coverage > 0.5
-        ? contentHeight * (1 - coverage) / (2 * coverage - 1)
-        : contentHeight * (1 - coverage) / coverage
-
-    return max(minimumExpandedContentInset, max(horizontalFadeDepth, bottomFadeDepth) / 2)
+    minimumExpandedContentInset
 }
 
 @MainActor
@@ -133,11 +124,10 @@ func maximumOpenNotchSize(screenUUID: String? = nil) -> CGSize {
 
 @MainActor
 func notchWindowSize(screenUUID: String? = nil) -> CGSize {
-    let maximumSize = maximumOpenNotchSize(screenUUID: screenUUID)
-    return pixelAlignedNotchSize(
-        .init(width: maximumSize.width, height: maximumSize.height + shadowPadding),
-        screenUUID: screenUUID
-    )
+    let screen = screenUUID.flatMap { NSScreen.screen(withUUID: $0) } ?? NSScreen.main
+    let screenWidth = screen?.frame.width ?? 1440
+    let maxAllowedHeight = ((screen?.frame.height ?? 900) * 0.75).rounded()
+    return .init(width: min(screenWidth, 960), height: max(650, maxAllowedHeight))
 }
 
 @MainActor

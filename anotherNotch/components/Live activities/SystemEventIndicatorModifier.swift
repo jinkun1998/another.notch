@@ -26,17 +26,31 @@ struct SystemEventIndicatorModifier: View {
     var body: some View {
         Group {
             if closedHUDRows == .two && eventType != .mic {
-                VStack(spacing: 5) {
-                    HStack(spacing: 10) {
+                VStack(spacing: 0) {
+                    HStack(spacing: 0) {
                         eventIcon
-                        Spacer(minLength: 0)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.leading, wingPadding + 2)
+
+                        Rectangle()
+                            .fill(.black)
+                            .frame(width: max(0, vm.closedNotchSize.width - cornerRadiusInsets.closed.top))
+
                         if Defaults[.showClosedNotchHUDPercentage] {
                             valueLabel
+                                .frame(maxWidth: .infinity, alignment: .trailing)
+                                .padding(.trailing, wingPadding + 2)
+                        } else {
+                            Color.clear
+                                .frame(maxWidth: .infinity, alignment: .trailing)
                         }
                     }
+                    .frame(height: vm.effectiveClosedNotchHeight)
+
                     DraggableProgressBar(value: $value, onChange: sendEventBack, restingHeight: 4)
+                        .padding(.horizontal, 14)
+                        .frame(maxHeight: .infinity, alignment: .center)
                 }
-                .padding(.horizontal, 12)
             } else {
                 HStack(spacing: 4) {
                     eventIcon
