@@ -57,7 +57,7 @@ struct ContentView: View {
     @Default(.bottomCornerRadius) var bottomCornerRadius
 
     private var openAnimation: Animation {
-        reduceMotion ? .easeOut(duration: 0.1) : .smooth(duration: 0.16, extraBounce: 0)
+        reduceMotion ? .easeOut(duration: 0.1) : .smooth(duration: 0.14, extraBounce: 0)
     }
 
     private var closeAnimation: Animation {
@@ -199,8 +199,8 @@ struct ContentView: View {
             LinearGradient(
                 stops: [
                     .init(color: .black.opacity(leadingEdgeOpacity), location: 0),
-                    .init(color: .black.opacity(0.96), location: horizontalInset),
-                    .init(color: .black.opacity(0.96), location: 1 - horizontalInset),
+                    .init(color: .black, location: horizontalInset),
+                    .init(color: .black, location: 1 - horizontalInset),
                     .init(color: .black.opacity(trailingEdgeOpacity), location: 1)
                 ],
                 startPoint: .leading,
@@ -559,7 +559,6 @@ struct ContentView: View {
             closingNotchSize = vm.notchSize
             withAnimation(openAnimation) {
                 shellExpansion = 1
-                openBounceScale = 1.025
             }
             triggerOpenBounce()
         }
@@ -962,10 +961,17 @@ struct ContentView: View {
         guard !reduceMotion else { return }
 
         openBounceTask = Task { @MainActor in
-            try? await Task.sleep(for: .milliseconds(140))
+            try? await Task.sleep(for: .milliseconds(120))
             guard !Task.isCancelled, vm.notchState == .open else { return }
 
-            withAnimation(.spring(response: 0.12, dampingFraction: 0.7)) {
+            withAnimation(.easeOut(duration: 0.04)) {
+                openBounceScale = 1.04
+            }
+
+            try? await Task.sleep(for: .milliseconds(40))
+            guard !Task.isCancelled, vm.notchState == .open else { return }
+
+            withAnimation(.spring(response: 0.12, dampingFraction: 0.8)) {
                 openBounceScale = 1
             }
         }
