@@ -26,16 +26,6 @@ public enum NotchState {
     case open
 }
 
-enum FeatureModuleID: String, CaseIterable, Hashable, Identifiable {
-    case home
-    case clipboard
-    case shelf
-    case calendar
-    case camera
-
-    var id: String { rawValue }
-}
-
 typealias NotchViews = FeatureModuleID
 
 struct FeatureModule: Identifiable {
@@ -140,21 +130,17 @@ final class FeatureModuleRegistry: ObservableObject {
     }
 
     func isAvailable(_ id: FeatureModuleID) -> Bool {
-        guard Self.modules.first(where: { $0.id == id })?.isAvailable == true && isInstalled(id) else {
-            return false
-        }
-        switch id {
-        case .home:
-            return true
-        case .clipboard:
-            return Defaults[.clipboardHistoryEnabled]
-        case .shelf:
-            return Defaults[.boringShelf]
-        case .calendar:
-            return Defaults[.showCalendar]
-        case .camera:
-            return Defaults[.showMirror]
-        }
+        FeatureModuleAvailability.isAvailable(
+            moduleIsAvailable: Self.modules.first(where: { $0.id == id })?.isAvailable == true,
+            isInstalled: isInstalled(id),
+            isMainFeatureEnabled: FeatureModuleAvailability.isMainFeatureEnabled(
+                for: id,
+                clipboardHistoryEnabled: Defaults[.clipboardHistoryEnabled],
+                shelfEnabled: Defaults[.boringShelf],
+                calendarEnabled: Defaults[.showCalendar],
+                cameraEnabled: Defaults[.showMirror]
+            )
+        )
     }
 
     func supportsScrolling(_ id: FeatureModuleID) -> Bool {
