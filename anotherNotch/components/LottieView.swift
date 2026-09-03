@@ -13,6 +13,7 @@ struct LottieView: NSViewRepresentable {
     let url: URL
     let speed: Double
     let loopMode: LottieLoopMode
+    var isAnimating = true
 
     private static var associatedURLKey: UInt8 = 0
 
@@ -38,15 +39,24 @@ struct LottieView: NSViewRepresentable {
                 animationView.animation = animation
                 animationView.loopMode = loopMode
                 animationView.animationSpeed = CGFloat(speed)
-                animationView.play()
+                updatePlayback(animationView)
                 objc_setAssociatedObject(animationView, &Self.associatedURLKey, url, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
             }
         } else {
             animationView.loopMode = loopMode
             animationView.animationSpeed = CGFloat(speed)
-            if !animationView.isAnimationPlaying {
-                animationView.play()
-            }
+            updatePlayback(animationView)
+        }
+    }
+
+    private func updatePlayback(_ animationView: LottieAnimationView) {
+        guard isAnimating else {
+            animationView.currentProgress = 0
+            animationView.pause()
+            return
+        }
+        if !animationView.isAnimationPlaying {
+            animationView.play()
         }
     }
 }

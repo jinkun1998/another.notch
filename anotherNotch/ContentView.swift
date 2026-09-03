@@ -883,28 +883,16 @@ struct ContentView: View {
         let compactMediaSize = max(0, vm.effectiveClosedNotchHeight - 12)
 
         HStack(spacing: 4) {
-            TimelineView(.animation(minimumInterval: 1 / 30, paused: !shouldRotateClosedAlbumArt)) { timeline in
-                Image(nsImage: musicManager.albumArt)
-                    .resizable()
-                    .clipped()
-                    .clipShape(Circle())
-                    .overlay {
-                        Circle().stroke(.white.opacity(0.18), lineWidth: 1)
-                    }
-                    .rotationEffect(
-                        .degrees(
-                            shouldRotateClosedAlbumArt
-                                ? timeline.date.timeIntervalSinceReferenceDate
-                                    .truncatingRemainder(dividingBy: 8) / 8 * 360
-                                : 0
-                        )
+            if shouldRotateClosedAlbumArt {
+                TimelineView(.animation(minimumInterval: 1 / 24)) { timeline in
+                    closedAlbumArt(
+                        size: compactMediaSize,
+                        rotation: timeline.date.timeIntervalSinceReferenceDate
+                            .truncatingRemainder(dividingBy: 8) / 8 * 360
                     )
-                    .frame(
-                        width: compactMediaSize,
-                        height: compactMediaSize
-                    )
-                    .zIndex(3)
-                    .padding(.leading, 10)
+                }
+            } else {
+                closedAlbumArt(size: compactMediaSize, rotation: 0)
             }
 
             Rectangle()
@@ -963,7 +951,7 @@ struct ContentView: View {
                             height: compactMediaSize
                         )
                 } else {
-                    LottieAnimationContainer()
+                    LottieAnimationContainer(isAnimating: false)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
             }
@@ -978,6 +966,21 @@ struct ContentView: View {
             height: vm.effectiveClosedNotchHeight,
             alignment: .center
         )
+    }
+
+
+    private func closedAlbumArt(size: CGFloat, rotation: Double) -> some View {
+        Image(nsImage: musicManager.albumArt)
+            .resizable()
+            .clipped()
+            .clipShape(Circle())
+            .overlay {
+                Circle().stroke(.white.opacity(0.18), lineWidth: 1)
+            }
+            .rotationEffect(.degrees(rotation))
+            .frame(width: size, height: size)
+            .zIndex(3)
+            .padding(.leading, 10)
     }
 
     var dragDetector: some View {

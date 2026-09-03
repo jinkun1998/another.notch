@@ -37,8 +37,12 @@ struct AlbumArtView: View {
             if Defaults[.lightingEffect] {
                 albumArtBackground
             }
-            TimelineView(.animation(minimumInterval: 1 / 30, paused: !shouldRotate)) { timeline in
-                albumArtButton(rotation: rotation(at: timeline.date))
+            if shouldRotate {
+                TimelineView(.animation(minimumInterval: 1 / 24)) { timeline in
+                    albumArtButton(rotation: rotation(at: timeline.date))
+                }
+            } else {
+                albumArtButton(rotation: 0)
             }
         }
     }
@@ -302,39 +306,62 @@ struct DynamicIslandWaveform: View {
     @Default(.waveformMatchesAlbumArt) private var waveformMatchesAlbumArt
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let isPlaying: Bool
+    @State private var cachedColors: [Color] = [.purple, .pink]
 
     private let heights: [CGFloat] = [0.45, 0.8, 1, 0.65, 0.35]
 
-    private var colors: [Color] {
-        guard waveformMatchesAlbumArt else { return [.purple, .pink] }
-
-        let albumColor = Color(nsColor: musicManager.avgColor)
-        return [
-            albumColor.ensureMinimumBrightness(factor: 0.8),
-            albumColor.ensureMinimumBrightness(factor: 0.35)
-        ]
-    }
-
     var body: some View {
-        TimelineView(.animation(minimumInterval: isPlaying && !reduceMotion ? 1 / 30 : nil, paused: !isPlaying)) { timeline in
-            HStack(spacing: 2) {
-                ForEach(heights.indices, id: \.self) { index in
-                    Capsule()
-                        .fill(LinearGradient(colors: colors, startPoint: .top, endPoint: .bottom))
-                        .frame(width: 2, height: 18 * heights[index])
-                        .scaleEffect(y: level(for: index, at: timeline.date), anchor: .center)
+        Group {
+            if isPlaying && !reduceMotion {
+                TimelineView(.animation(minimumInterval: 1 / 15)) { timeline in
+                    waveformBars(at: timeline.date)
                 }
+            } else {
+                waveformBars(at: nil)
             }
+        }
+        .onAppear {
+            if waveformMatchesAlbumArt {
+                musicManager.calculateAverageColor()
+            }
+            updateColors()
+        }
+        .onReceive(musicManager.$avgColor) { _ in
+            updateColors()
         }
         .onChange(of: waveformMatchesAlbumArt) { _, matchesAlbumArt in
             if matchesAlbumArt {
                 musicManager.calculateAverageColor()
             }
+            updateColors()
         }
     }
 
-    private func level(for index: Int, at date: Date) -> CGFloat {
-        guard isPlaying else { return 0.45 }
+    private func updateColors() {
+        guard waveformMatchesAlbumArt else {
+            cachedColors = [.purple, .pink]
+            return
+        }
+        let albumColor = Color(nsColor: musicManager.avgColor)
+        cachedColors = [
+            albumColor.ensureMinimumBrightness(factor: 0.8),
+            albumColor.ensureMinimumBrightness(factor: 0.35)
+        ]
+    }
+
+    private func waveformBars(at date: Date?) -> some View {
+        HStack(spacing: 2) {
+            ForEach(heights.indices, id: \.self) { index in
+                Capsule()
+                    .fill(LinearGradient(colors: cachedColors, startPoint: .top, endPoint: .bottom))
+                    .frame(width: 2, height: 18 * heights[index])
+                    .scaleEffect(y: level(for: index, at: date), anchor: .center)
+            }
+        }
+    }
+
+    private func level(for index: Int, at date: Date?) -> CGFloat {
+        guard let date = date, isPlaying else { return 0.45 }
         guard !reduceMotion else { return 0.65 }
 
         let phase = date.timeIntervalSinceReferenceDate * 5 + Double(index) * 0.9
