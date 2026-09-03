@@ -248,8 +248,10 @@ jobs:
 
       - name: Create embedded release notes
         env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RELEASE_NOTES: ${{ needs.preparation.outputs.release_notes }}
-        run: printf '%s' "$RELEASE_NOTES" > Release/anotherNotch.html
+        run: |
+          gh api markdown -f text="$RELEASE_NOTES" > Release/anotherNotch.html
 
       - name: Build Sparkle generate_appcast from source
         run: |
