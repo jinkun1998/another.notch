@@ -135,6 +135,8 @@ This project is based on [Boring Notch](https://github.com/TheBoredTeam/boring.n
 
 Clipboard history inspiration: [Maccy](https://github.com/p0deje/Maccy) by [p0deje](https://github.com/p0deje).
 
+Notch motion inspiration: [NotchKit](https://github.com/duongductrong/NotchKit) by [duongductrong](https://github.com/duongductrong).
+
 Boring Notch is licensed under the GNU General Public License v3.0 (GPL-3.0).
 
 This project has been substantially modified and developed independently from the original project. It is not affiliated with or endorsed by TheBoredTeam.
