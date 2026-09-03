@@ -13,6 +13,8 @@
 		A11E00140000000000000014 /* FeatureModuleID.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11E00010000000000000001 /* FeatureModuleID.swift */; };
 		A11E00150000000000000015 /* FeatureModuleAvailability.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11E00020000000000000002 /* FeatureModuleAvailability.swift */; };
 		A11E00160000000000000016 /* ScreenBrightnessDisplaySelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11E00050000000000000005 /* ScreenBrightnessDisplaySelector.swift */; };
+		A11E00170000000000000017 /* NotchMotionPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11E00060000000000000006 /* NotchMotionPolicy.swift */; };
+		A11E00180000000000000018 /* NotchMotionPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11E00060000000000000006 /* NotchMotionPolicy.swift */; };
 		1100290C2E847E2800035A57 /* NSItemProvider+LoadHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1100290B2E847E2800035A57 /* NSItemProvider+LoadHelpers.swift */; };
 		110029272E84FD4C00035A57 /* TemporaryFileStorageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110029262E84FD4C00035A57 /* TemporaryFileStorageService.swift */; };
 		1100292A2E8691B400035A57 /* FileShareView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110029292E8691B400035A57 /* FileShareView.swift */; };
@@ -194,6 +196,7 @@
 		A11E00030000000000000003 /* FeatureModuleAvailabilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureModuleAvailabilityTests.swift; sourceTree = "<group>"; };
 		A11E00040000000000000004 /* anotherNotchTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = anotherNotchTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A11E00050000000000000005 /* ScreenBrightnessDisplaySelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnotherNotchXPCHelper/ScreenBrightnessDisplaySelector.swift; sourceTree = SOURCE_ROOT; };
+		A11E00060000000000000006 /* NotchMotionPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotchMotionPolicy.swift; sourceTree = "<group>"; };
 		1100290B2E847E2800035A57 /* NSItemProvider+LoadHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSItemProvider+LoadHelpers.swift"; sourceTree = "<group>"; };
 		110029262E84FD4C00035A57 /* TemporaryFileStorageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemporaryFileStorageService.swift; sourceTree = "<group>"; };
 		110029292E8691B400035A57 /* FileShareView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileShareView.swift; sourceTree = "<group>"; };
@@ -660,6 +663,7 @@
 				1153BD902D986DB300979FB0 /* PlaybackState.swift */,
 				A11E00010000000000000001 /* FeatureModuleID.swift */,
 				A11E00020000000000000002 /* FeatureModuleAvailability.swift */,
+				A11E00060000000000000006 /* NotchMotionPolicy.swift */,
 			);
 			path = models;
 			sourceTree = "<group>";
@@ -975,6 +979,7 @@
 				A11E00140000000000000014 /* FeatureModuleID.swift in Sources */,
 				A11E00150000000000000015 /* FeatureModuleAvailability.swift in Sources */,
 				A11E00160000000000000016 /* ScreenBrightnessDisplaySelector.swift in Sources */,
+				A11E00180000000000000018 /* NotchMotionPolicy.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -991,6 +996,7 @@
 			files = (
 				A11E00110000000000000011 /* FeatureModuleID.swift in Sources */,
 				A11E00120000000000000012 /* FeatureModuleAvailability.swift in Sources */,
+				A11E00170000000000000017 /* NotchMotionPolicy.swift in Sources */,
 				A1B2C3D52F12345600A1B2C3 /* LiquidGlass.swift in Sources */,
 				115C12EC2ED3D003009754CA /* OpenNotchHUD.swift in Sources */,
 				14C08BB92C8DE4B1000F8AA0 /* AnotherNotchCalendar.swift in Sources */,
