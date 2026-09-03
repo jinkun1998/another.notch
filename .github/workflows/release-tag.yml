@@ -97,7 +97,9 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }}
           TAG: ${{ needs.validate_tag.outputs.tag }}
-        run: gh release view "$TAG" --json body --jq .body > Release/anotherNotch.html
+        run: |
+          RAW_NOTES="$(gh release view "$TAG" --json body --jq .body)"
+          gh api markdown -f text="$RAW_NOTES" > Release/anotherNotch.html
 
       - name: Build Sparkle generate_appcast from source
         run: |
