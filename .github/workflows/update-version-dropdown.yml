@@ -33,7 +33,13 @@ jobs:
       - name: Get latest 5 versions with placeholder
         id: tags
         run: |
-          TAGS=$(git tag --sort=-v:refname | head -n 5 | jq -R -s -c 'split("\n")[:-1]')
+          TAGS=$(
+            {
+              git tag --list --sort=-version:refname 'v*' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$'
+              git tag --list --sort=-version:refname 'v*' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+-'
+            } |
+            head -n 5 |
+            jq -R -s -c 'split("\n")[:-1]')
           VERSIONS=$(echo '["Select a version"]' | jq -c --argjson tags "$TAGS" '. + $tags')
           echo "versions=$VERSIONS" >> $GITHUB_OUTPUT
 
