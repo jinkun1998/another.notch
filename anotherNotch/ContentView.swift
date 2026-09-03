@@ -32,13 +32,14 @@ struct ContentView: View {
     @ObservedObject private var modules = FeatureModuleRegistry.shared
     @State private var hoverTask: Task<Void, Never>?
     @State private var closingShellTask: Task<Void, Never>?
-    @State private var openBounceTask: Task<Void, Never>?
+    @State private var expandedContentTask: Task<Void, Never>?
     @State private var tabTransitionTask: Task<Void, Never>?
     @State private var isHovering: Bool = false
     @State private var isClosingShell: Bool = false
+    @State private var isExpandedContentVisible: Bool = false
     @State private var isTabTransitioning: Bool = false
     @State private var shellExpansion: CGFloat = .zero
-    @State private var openBounceScale: CGFloat = 1
+    @State private var displayedExpandedModule: FeatureModuleID?
     @State private var outgoingExpandedModule: FeatureModuleID?
     @State private var closingNotchSize: CGSize?
     @State private var anyDropDebounceTask: Task<Void, Never>?
@@ -56,16 +57,8 @@ struct ContentView: View {
     @Default(.notchGradientBlackCoverage) var notchGradientBlackCoverage
     @Default(.bottomCornerRadius) var bottomCornerRadius
 
-    private var openAnimation: Animation {
-        reduceMotion ? .easeOut(duration: 0.1) : .smooth(duration: 0.14, extraBounce: 0)
-    }
-
-    private var closeAnimation: Animation {
-        .easeOut(duration: closeAnimationDuration)
-    }
-
-    private var closeAnimationDuration: TimeInterval {
-        reduceMotion ? 0.12 : 0.24
+    private var motion: NotchMotionPolicy {
+        .init(reduceMotion: reduceMotion)
     }
 
     private var interactionAnimation: Animation {
@@ -76,12 +69,6 @@ struct ContentView: View {
         reduceMotion
             ? .linear(duration: NotchTabTransition.reducedMotionDuration)
             : .easeInOut(duration: NotchTabTransition.standardDuration)
-    }
-
-    private var tabTransitionDuration: TimeInterval {
-        reduceMotion
-            ? NotchTabTransition.reducedMotionDuration
-            : NotchTabTransition.standardDuration
     }
 
     private let extendedHoverPadding: CGFloat = 30
@@ -369,7 +356,6 @@ struct ContentView: View {
                         notchBackground
                     }
                     .clipShape(currentNotchShape)
-                    .scaleEffect(openBounceScale, anchor: .top)
                     .shadow(
                         color: ((shellExpansion > 0 || isHovering) && Defaults[.enableShadow])
                             ? .black.opacity(0.7) : .clear, radius: Defaults[.cornerRadiusScaling] ? 6 : 4
@@ -438,6 +424,7 @@ struct ContentView: View {
 
                         guard newState != .open else { return }
                         tabTransitionTask?.cancel()
+                        displayedExpandedModule = coordinator.currentView
                         outgoingExpandedModule = nil
                         isTabTransitioning = false
                     }
@@ -447,6 +434,9 @@ struct ContentView: View {
                             beginTabTransition(from: oldView, to: view)
                         } else {
                             hoverTask?.cancel()
+                            displayedExpandedModule = view
+                            outgoingExpandedModule = nil
+                            isTabTransitioning = false
                         }
                     }
                     .onChange(of: modules.installedIDs) { _, _ in
@@ -523,29 +513,34 @@ struct ContentView: View {
         .environmentObject(vm)
         .onAppear {
             shellExpansion = vm.notchState == .open ? 1 : 0
+            isExpandedContentVisible = vm.notchState == .open
+            displayedExpandedModule = coordinator.currentView
             MusicManager.shared.forceUpdate()
             updateClosedNotchViewport()
         }
         .onChange(of: vm.notchState) { _, state in
             closingShellTask?.cancel()
-            openBounceTask?.cancel()
+            expandedContentTask?.cancel()
 
             guard state == .open else {
-                openBounceScale = 1
+                tabTransitionTask?.cancel()
+                displayedExpandedModule = coordinator.currentView
+                outgoingExpandedModule = nil
+                isTabTransitioning = false
                 closingNotchSize = closingNotchSize ?? vm.notchSize
-                isClosingShell = !reduceMotion
-
-                guard !reduceMotion else {
-                    shellExpansion = 0
-                    vm.isClosingTransition = false
-                    return
-                }
-
-                withAnimation(closeAnimation) {
-                    shellExpansion = 0
+                isClosingShell = true
+                withAnimation(motion.expandedContentHideAnimation) {
+                    isExpandedContentVisible = false
                 }
                 closingShellTask = Task { @MainActor in
-                    try? await Task.sleep(for: .milliseconds(Int(closeAnimationDuration * 1_000)))
+                    try? await Task.sleep(for: .seconds(motion.expandedContentHideDuration))
+                    guard !Task.isCancelled, vm.notchState == .closed else { return }
+
+                    withAnimation(motion.closeShellAnimation) {
+                        shellExpansion = 0
+                    }
+
+                    try? await Task.sleep(for: .seconds(motion.closeDuration))
                     guard !Task.isCancelled, vm.notchState == .closed else { return }
                     isClosingShell = false
                     closingNotchSize = nil
@@ -556,11 +551,20 @@ struct ContentView: View {
             }
 
             isClosingShell = false
+            vm.isClosingTransition = false
+            displayedExpandedModule = coordinator.currentView
             closingNotchSize = vm.notchSize
-            withAnimation(openAnimation) {
+            withAnimation(motion.openShellAnimation) {
                 shellExpansion = 1
             }
-            triggerOpenBounce()
+            expandedContentTask = Task { @MainActor in
+                try? await Task.sleep(for: .seconds(motion.expandedContentRevealDelay))
+                guard !Task.isCancelled, vm.notchState == .open else { return }
+
+                withAnimation(motion.expandedContentRevealAnimation) {
+                    isExpandedContentVisible = true
+                }
+            }
         }
         .onChange(of: vm.notchSize) { _, size in
             if vm.notchState == .open {
@@ -606,6 +610,13 @@ struct ContentView: View {
                 }
             }
         }
+        .onDisappear {
+            hoverTask?.cancel()
+            closingShellTask?.cancel()
+            expandedContentTask?.cancel()
+            tabTransitionTask?.cancel()
+            anyDropDebounceTask?.cancel()
+        }
     }
 
     @ViewBuilder
@@ -626,7 +637,13 @@ struct ContentView: View {
                     if vm.notchState == .open || isClosingShellActive {
                         AnotherNotchHeader()
                             .frame(height: openNotchHeaderHeight)
-                            .opacity(gestureProgress != 0 ? 1.0 - min(abs(gestureProgress) * 0.1, 0.3) : 1.0)
+                            .scaleEffect(isExpandedContentVisible ? 1 : 0.96, anchor: .top)
+                            .opacity(
+                                isExpandedContentVisible
+                                    ? (gestureProgress != 0 ? 1.0 - min(abs(gestureProgress) * 0.1, 0.3) : 1.0)
+                                    : 0
+                            )
+                            .allowsHitTesting(isExpandedContentVisible)
                     } else {
                         compactNotchContent()
                     }
@@ -646,14 +663,15 @@ struct ContentView: View {
                         expandedModuleView(outgoingExpandedModule)
                             .id(outgoingExpandedModule)
                             .opacity(isTabTransitioning ? 0 : 1)
-                            .transition(.opacity)
+                            .scaleEffect(isTabTransitioning ? 0.96 : 1, anchor: .top)
                             .allowsHitTesting(false)
+                    } else {
+                        let displayedModule = displayedExpandedModule ?? coordinator.currentView
+                        expandedModuleView(displayedModule)
+                            .id(displayedModule)
+                            .opacity(isTabTransitioning ? 0 : 1)
+                            .scaleEffect(isTabTransitioning ? 0.96 : 1, anchor: .top)
                     }
-
-                    expandedModuleView(coordinator.currentView)
-                        .id(coordinator.currentView)
-                        .opacity(outgoingExpandedModule == nil || isTabTransitioning ? 1 : 0)
-                        .transition(.opacity)
                 }
                 .padding(.top, expandedContentTopInset(screenUUID: vm.screenUUID))
                 .padding(.horizontal, sharedExpandedContentInset)
@@ -663,9 +681,10 @@ struct ContentView: View {
                     maxHeight: expandedContentHeight,
                     alignment: .top
                 )
-                .opacity(shellExpansion)
+                .opacity(isExpandedContentVisible ? shellExpansion : 0)
+                .scaleEffect(isExpandedContentVisible ? 1 : 0.96, anchor: .top)
                 .zIndex(1)
-                .allowsHitTesting(vm.notchState == .open)
+                .allowsHitTesting(vm.notchState == .open && isExpandedContentVisible)
                 .opacity(
                     gestureProgress != 0 ? 1.0 - min(abs(gestureProgress) * 0.1, 0.3) : 1.0
                 )
@@ -735,7 +754,8 @@ struct ContentView: View {
                               }
                           )
                           .frame(height: closedNotchContentSize.height, alignment: .center)
-                          .transition(.opacity)
+                          .transition(motion.hudTransition)
+                          .animation(motion.hudAnimation, value: showsClosedSystemHUD)
                       } else if showsCompactMusicActivity {
                           musicLiveActivity()
                               .frame(height: vm.effectiveClosedNotchHeight, alignment: .center)
@@ -792,7 +812,7 @@ struct ContentView: View {
 
     private func beginTabTransition(from oldView: FeatureModuleID, to newView: FeatureModuleID) {
         tabTransitionTask?.cancel()
-        outgoingExpandedModule = oldView
+        outgoingExpandedModule = displayedExpandedModule ?? oldView
         isTabTransitioning = false
 
         withAnimation(resizeAnimation) {
@@ -803,15 +823,26 @@ struct ContentView: View {
             await Task.yield()
             guard !Task.isCancelled else { return }
 
-            withAnimation(resizeAnimation) {
+            withAnimation(motion.expandedContentHideAnimation) {
                 isTabTransitioning = true
             }
 
-            try? await Task.sleep(for: .milliseconds(Int(tabTransitionDuration * 1_000)))
+            try? await Task.sleep(for: .seconds(motion.expandedContentHideDuration))
             guard !Task.isCancelled else { return }
 
             outgoingExpandedModule = nil
-            isTabTransitioning = false
+            displayedExpandedModule = newView
+            isTabTransitioning = true
+
+            await Task.yield()
+            guard !Task.isCancelled else { return }
+
+            withAnimation(motion.expandedContentRevealAnimation) {
+                isTabTransitioning = false
+            }
+
+            try? await Task.sleep(for: .seconds(motion.expandedContentRevealDuration))
+            guard !Task.isCancelled else { return }
         }
     }
 
@@ -955,26 +986,6 @@ struct ContentView: View {
 
     private func doOpen() {
         vm.open()
-    }
-
-    private func triggerOpenBounce() {
-        guard !reduceMotion else { return }
-
-        openBounceTask = Task { @MainActor in
-            try? await Task.sleep(for: .milliseconds(120))
-            guard !Task.isCancelled, vm.notchState == .open else { return }
-
-            withAnimation(.easeOut(duration: 0.04)) {
-                openBounceScale = 1.04
-            }
-
-            try? await Task.sleep(for: .milliseconds(40))
-            guard !Task.isCancelled, vm.notchState == .open else { return }
-
-            withAnimation(.spring(response: 0.12, dampingFraction: 0.8)) {
-                openBounceScale = 1
-            }
-        }
     }
 
     // MARK: - Hover Management

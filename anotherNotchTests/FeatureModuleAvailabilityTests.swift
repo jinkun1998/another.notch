@@ -1,6 +1,28 @@
 import XCTest
 
 final class FeatureModuleAvailabilityTests: XCTestCase {
+    func testStandardNotchMotionTiming() {
+        let policy = NotchMotionPolicy(reduceMotion: false)
+
+        XCTAssertEqual(policy.openResponse, 0.42, accuracy: 0.001)
+        XCTAssertEqual(policy.openDampingFraction, 0.80, accuracy: 0.001)
+        XCTAssertEqual(policy.closeDuration, 0.30, accuracy: 0.001)
+        XCTAssertEqual(policy.expandedContentRevealDelay, 0.08, accuracy: 0.001)
+        XCTAssertEqual(policy.expandedContentRevealDuration, 0.22, accuracy: 0.001)
+        XCTAssertEqual(policy.expandedContentHideDuration, 0.12, accuracy: 0.001)
+    }
+
+    func testReduceMotionUsesShortNonBouncyTiming() {
+        let policy = NotchMotionPolicy(reduceMotion: true)
+
+        XCTAssertEqual(policy.expandedContentRevealDelay, 0)
+        XCTAssertLessThan(policy.openResponse, 0.42)
+        XCTAssertLessThan(policy.closeDuration, 0.30)
+        XCTAssertLessThan(policy.expandedContentRevealDuration, 0.22)
+        XCTAssertLessThanOrEqual(policy.expandedContentHideDuration, 0.12)
+        XCTAssertEqual(policy.openDampingFraction, 1)
+    }
+
     func testScreenBrightnessDisplaySelectionPrefersBuiltInDisplay() {
         let selected = ScreenBrightnessDisplaySelector.select(
             from: [10, 20, 30],

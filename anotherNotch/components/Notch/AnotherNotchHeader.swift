@@ -14,6 +14,11 @@ struct AnotherNotchHeader: View {
     @ObservedObject var coordinator = AnotherNotchViewCoordinator.shared
     @ObservedObject private var clipboardHistory = ClipboardHistoryStore.shared
     @ObservedObject private var modules = FeatureModuleRegistry.shared
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    private var motion: NotchMotionPolicy {
+        .init(reduceMotion: reduceMotion)
+    }
 
     var body: some View {
         let tabCount = CGFloat(modules.installedModules.count)
@@ -40,7 +45,8 @@ struct AnotherNotchHeader: View {
                 if vm.notchState == .open {
                     if isHUDType(coordinator.sneakPeek.type) && coordinator.sneakPeek.show && Defaults[.showOpenNotchHUD] {
                         OpenNotchHUD(type: $coordinator.sneakPeek.type, value: $coordinator.sneakPeek.value, icon: $coordinator.sneakPeek.icon)
-                            .transition(.scale(scale: 0.8).combined(with: .opacity))
+                            .transition(motion.hudTransition)
+                            .animation(motion.hudAnimation, value: coordinator.sneakPeek.show)
                     } else {
                         if coordinator.currentView == .clipboard {
                             Button(role: .destructive) {
