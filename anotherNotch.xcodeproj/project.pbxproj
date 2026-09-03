@@ -12,6 +12,7 @@
 		A11E00130000000000000013 /* FeatureModuleAvailabilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11E00030000000000000003 /* FeatureModuleAvailabilityTests.swift */; };
 		A11E00140000000000000014 /* FeatureModuleID.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11E00010000000000000001 /* FeatureModuleID.swift */; };
 		A11E00150000000000000015 /* FeatureModuleAvailability.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11E00020000000000000002 /* FeatureModuleAvailability.swift */; };
+		A11E00160000000000000016 /* ScreenBrightnessDisplaySelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11E00050000000000000005 /* ScreenBrightnessDisplaySelector.swift */; };
 		1100290C2E847E2800035A57 /* NSItemProvider+LoadHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1100290B2E847E2800035A57 /* NSItemProvider+LoadHelpers.swift */; };
 		110029272E84FD4C00035A57 /* TemporaryFileStorageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110029262E84FD4C00035A57 /* TemporaryFileStorageService.swift */; };
 		1100292A2E8691B400035A57 /* FileShareView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110029292E8691B400035A57 /* FileShareView.swift */; };
@@ -192,6 +193,7 @@
 		A11E00020000000000000002 /* FeatureModuleAvailability.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureModuleAvailability.swift; sourceTree = "<group>"; };
 		A11E00030000000000000003 /* FeatureModuleAvailabilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureModuleAvailabilityTests.swift; sourceTree = "<group>"; };
 		A11E00040000000000000004 /* anotherNotchTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = anotherNotchTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		A11E00050000000000000005 /* ScreenBrightnessDisplaySelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnotherNotchXPCHelper/ScreenBrightnessDisplaySelector.swift; sourceTree = SOURCE_ROOT; };
 		1100290B2E847E2800035A57 /* NSItemProvider+LoadHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSItemProvider+LoadHelpers.swift"; sourceTree = "<group>"; };
 		110029262E84FD4C00035A57 /* TemporaryFileStorageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemporaryFileStorageService.swift; sourceTree = "<group>"; };
 		110029292E8691B400035A57 /* FileShareView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileShareView.swift; sourceTree = "<group>"; };
@@ -972,6 +974,7 @@
 				A11E00130000000000000013 /* FeatureModuleAvailabilityTests.swift in Sources */,
 				A11E00140000000000000014 /* FeatureModuleID.swift in Sources */,
 				A11E00150000000000000015 /* FeatureModuleAvailability.swift in Sources */,
+				A11E00160000000000000016 /* ScreenBrightnessDisplaySelector.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

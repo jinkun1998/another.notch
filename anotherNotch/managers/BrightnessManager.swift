@@ -21,9 +21,7 @@ final class BrightnessManager: ObservableObject {
 
 	func refresh() {
 		Task { @MainActor in
-			if let current = await client.currentScreenBrightness() {
-				publish(brightness: current, touchDate: false)
-			}
+			_ = await refreshBrightness(touchDate: false)
 		}
 	}
 
@@ -34,10 +32,10 @@ final class BrightnessManager: ObservableObject {
 			let ok = await client.setScreenBrightness(target)
 			if ok {
 				publish(brightness: target, touchDate: true)
+				AnotherNotchViewCoordinator.shared.toggleSneakPeek(status: true, type: .brightness, value: CGFloat(target))
 			} else {
-				refresh()
+				_ = await refreshBrightness(touchDate: false)
 			}
-			AnotherNotchViewCoordinator.shared.toggleSneakPeek(status: true, type: .brightness, value: CGFloat(target))
 		}
 	}
 
@@ -48,18 +46,22 @@ final class BrightnessManager: ObservableObject {
 			if ok {
 				publish(brightness: clamped, touchDate: true)
 			} else {
-				refresh()
+				_ = await refreshBrightness(touchDate: false)
 			}
 		}
 	}
 
-	private func publish(brightness: Float, touchDate: Bool) {
-		DispatchQueue.main.async {
-			if self.rawBrightness != brightness || touchDate {
-				if touchDate { self.lastChangeAt = Date() }
-				self.rawBrightness = brightness
-				self.animatedBrightness = brightness
-			}
+	@MainActor private func refreshBrightness(touchDate: Bool) async -> Float? {
+		guard let current = await client.currentScreenBrightness() else { return nil }
+		publish(brightness: current, touchDate: touchDate)
+		return current
+	}
+
+	@MainActor private func publish(brightness: Float, touchDate: Bool) {
+		if rawBrightness != brightness || touchDate {
+			if touchDate { lastChangeAt = Date() }
+			rawBrightness = brightness
+			animatedBrightness = brightness
 		}
 	}
 }
