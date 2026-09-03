@@ -28,6 +28,7 @@ struct MusicPlayerView: View {
 }
 
 struct AlbumArtView: View {
+    @EnvironmentObject var vm: AnotherNotchViewModel
     @ObservedObject var musicManager = MusicManager.shared
     @Default(.rotateAlbumArt) private var rotateAlbumArt
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -55,7 +56,7 @@ struct AlbumArtView: View {
     }
 
     private var shouldRotate: Bool {
-        rotateAlbumArt && musicManager.isPlaying && !reduceMotion
+        rotateAlbumArt && musicManager.isPlaying && !reduceMotion && vm.notchState == .open
     }
 
     private func rotation(at date: Date) -> Double {
@@ -95,6 +96,10 @@ struct MusicControlsView: View {
     @State private var lastDragged: Date = .distantPast
     @Default(.musicControlSlots) private var slotConfig
     @Default(.useMusicVisualizer) private var useMusicVisualizer
+
+    private var isExpandedAndVisible: Bool {
+        vm.notchState == .open
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -137,13 +142,13 @@ struct MusicControlsView: View {
                 .contentShape(Rectangle())
                 .onTapGesture {}
                 if useMusicVisualizer {
-                    DynamicIslandWaveform(isPlaying: musicManager.isPlaying)
+                    DynamicIslandWaveform(isPlaying: musicManager.isPlaying && isExpandedAndVisible)
                         .frame(width: 28, height: 18)
                         .padding(.leading, 10)
                 }
             }
             if Defaults[.enableLyrics] {
-                TimelineView(.animation(minimumInterval: 0.25)) { timeline in
+                TimelineView(.animation(minimumInterval: 0.25, paused: !isExpandedAndVisible || !musicManager.isPlaying)) { timeline in
                     let currentElapsed: Double = {
                         guard musicManager.isPlaying else { return musicManager.elapsedTime }
                         let delta = timeline.date.timeIntervalSince(musicManager.timestampDate)
@@ -179,7 +184,7 @@ struct MusicControlsView: View {
     }
 
     private var musicSlider: some View {
-        TimelineView(.animation(minimumInterval: musicManager.playbackRate > 0 ? 0.1 : nil)) { timeline in
+        TimelineView(.animation(minimumInterval: (musicManager.playbackRate > 0 && isExpandedAndVisible) ? 0.1 : nil, paused: !isExpandedAndVisible || !musicManager.isPlaying)) { timeline in
             MusicSliderView(
                 sliderValue: $sliderValue,
                 duration: $musicManager.songDuration,
@@ -311,7 +316,7 @@ struct DynamicIslandWaveform: View {
     }
 
     var body: some View {
-        TimelineView(.animation(minimumInterval: isPlaying && !reduceMotion ? 1 / 30 : nil)) { timeline in
+        TimelineView(.animation(minimumInterval: isPlaying && !reduceMotion ? 1 / 30 : nil, paused: !isPlaying)) { timeline in
             HStack(spacing: 2) {
                 ForEach(heights.indices, id: \.self) { index in
                     Capsule()

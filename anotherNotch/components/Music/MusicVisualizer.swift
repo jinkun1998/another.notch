@@ -16,7 +16,7 @@ struct AudioSpectrumView: View {
     ]
 
     var body: some View {
-        TimelineView(.animation(minimumInterval: isPlaying && !reduceMotion ? 1.0 / 45.0 : nil)) { timeline in
+        TimelineView(.animation(minimumInterval: isPlaying && !reduceMotion ? 1.0 / 45.0 : nil, paused: !isPlaying)) { timeline in
             HStack(alignment: .center, spacing: 1) {
                 ForEach(Array(harmonics.enumerated()), id: \.offset) { _, harmonic in
                     RoundedRectangle(cornerRadius: 0.75, style: .continuous)

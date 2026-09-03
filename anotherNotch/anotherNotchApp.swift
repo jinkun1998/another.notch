@@ -184,7 +184,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private func setupDragDetectors() {
         cleanupDragDetectors()
 
-        guard Defaults[.expandedDragDetection] else { return }
+        guard Defaults[.expandedDragDetection], FeatureModuleRegistry.shared.isAvailable(.shelf) else { return }
 
         if Defaults[.showOnAllDisplays] {
             for screen in NSScreen.screens {
