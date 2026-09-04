@@ -1157,6 +1157,7 @@ struct FullScreenDropDelegate: DropDelegate {
 
     func performDrop(info _: DropInfo) -> Bool {
         isTargeted = false
+        HapticFeedback.perform(.alignment)
         onDrop()
         return true
     }
