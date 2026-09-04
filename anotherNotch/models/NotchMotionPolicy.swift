@@ -36,6 +36,16 @@ enum NotchShellAnimation: Equatable {
     }
 }
 
+enum ContinuousAnimationPolicy {
+    static func updateInterval(
+        isActive: Bool,
+        reducesMotion: Bool,
+        activeInterval: TimeInterval
+    ) -> TimeInterval? {
+        isActive && !reducesMotion ? activeInterval : nil
+    }
+}
+
 struct NotchMotionPolicy {
     let reducesMotion: Bool
     let style: NotchMotionStyle

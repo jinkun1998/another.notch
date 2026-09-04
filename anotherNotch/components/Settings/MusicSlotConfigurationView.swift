@@ -23,6 +23,7 @@ struct MusicSlotConfigurationView: View {
                     musicControlSlots = MusicControlButton.defaultLayout
                 }
                 .buttonStyle(.borderless)
+                .foregroundStyle(.red)
             }
         }
         .onAppear(perform: normalizeSlots)

@@ -40,7 +40,7 @@ struct ContentView: View {
     @State private var isExpandedContentVisible: Bool = false
     @State private var isTabTransitioning: Bool = false
     @State private var shellExpansion: CGFloat = .zero
-    @State private var glassBackgroundProgress: CGFloat = .zero
+    @State private var gradientBackgroundProgress: CGFloat = .zero
     @State private var displayedExpandedModule: FeatureModuleID?
     @State private var outgoingExpandedModule: FeatureModuleID?
     @State private var closingNotchSize: CGSize?
@@ -176,20 +176,29 @@ struct ContentView: View {
 
     private var notchBackground: some View {
         GeometryReader { geometry in
-            Color.black
-                .mask {
-                    ZStack(alignment: .top) {
-                        glassBackgroundMask
-                        Rectangle()
-                            .fill(.black)
-                            .frame(height: geometry.size.height)
-                            .offset(y: geometry.size.height * glassBackgroundProgress)
+            ZStack(alignment: .top) {
+                Color.black
+                    .mask {
+                        ZStack(alignment: .top) {
+                            notchGradientMask
+                            Rectangle()
+                                .fill(.black)
+                                .frame(height: geometry.size.height)
+                                .offset(y: geometry.size.height * gradientBackgroundProgress)
+                        }
                     }
+
+                if shellExpansion > 0 {
+                    LiquidGlassSurface(shape: currentNotchShape, opacity: 1)
+                        .mask { notchTransparentEdgeMask }
+                        .allowsHitTesting(false)
+                        .accessibilityHidden(true)
                 }
+            }
         }
     }
 
-    private var glassBackgroundMask: some View {
+    private var notchGradientMask: some View {
         let horizontalInset = (1 - opaqueNotchCoverage) / 2
         let leadingEdgeOpacity = notchTransparency * 0.25
         let trailingEdgeOpacity = notchTransparency * 0.18
@@ -211,6 +220,36 @@ struct ContentView: View {
                     .init(color: .black, location: opaqueNotchCoverage),
                     .init(color: .black.opacity(0.3), location: min(0.98, opaqueNotchCoverage + 0.1)),
                     .init(color: .clear, location: 1)
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+        }
+    }
+
+    private var notchTransparentEdgeMask: some View {
+        let horizontalInset = (1 - opaqueNotchCoverage) / 2
+        let leadingEdgeTransparency = 1 - (notchTransparency * 0.25)
+        let trailingEdgeTransparency = 1 - (notchTransparency * 0.18)
+
+        return ZStack {
+            LinearGradient(
+                stops: [
+                    .init(color: .white.opacity(leadingEdgeTransparency), location: 0),
+                    .init(color: .clear, location: horizontalInset),
+                    .init(color: .clear, location: 1 - horizontalInset),
+                    .init(color: .white.opacity(trailingEdgeTransparency), location: 1)
+                ],
+                startPoint: .leading,
+                endPoint: .trailing
+            )
+
+            LinearGradient(
+                stops: [
+                    .init(color: .clear, location: 0),
+                    .init(color: .clear, location: opaqueNotchCoverage),
+                    .init(color: .white.opacity(0.7), location: min(0.98, opaqueNotchCoverage + 0.1)),
+                    .init(color: .white, location: 1)
                 ],
                 startPoint: .top,
                 endPoint: .bottom
@@ -521,7 +560,7 @@ struct ContentView: View {
         .environmentObject(vm)
         .onAppear {
             shellExpansion = vm.notchState == .open ? 1 : 0
-            glassBackgroundProgress = shellExpansion
+            gradientBackgroundProgress = shellExpansion
             isExpandedContentVisible = vm.notchState == .open
             displayedExpandedModule = coordinator.currentView
             MusicManager.shared.forceUpdate()
@@ -542,7 +581,7 @@ struct ContentView: View {
                 isClosingShell = true
                 withAnimation(motion.expandedContentHideAnimation) {
                     isExpandedContentVisible = false
-                    glassBackgroundProgress = 0
+                    gradientBackgroundProgress = 0
                 }
                 closingShellTask = Task { @MainActor in
                     try? await Task.sleep(for: .seconds(motion.expandedContentHideDuration))
@@ -567,7 +606,7 @@ struct ContentView: View {
             vm.isClosingTransition = false
             displayedExpandedModule = coordinator.currentView
             closingNotchSize = vm.notchSize
-            glassBackgroundProgress = 1
+            gradientBackgroundProgress = 1
             withAnimation(motion.openShellAnimation) {
                 shellExpansion = 1
             }

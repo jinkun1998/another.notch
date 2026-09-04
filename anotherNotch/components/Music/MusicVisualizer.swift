@@ -17,8 +17,12 @@ struct AudioSpectrumView: View {
 
     var body: some View {
         Group {
-            if isPlaying && !reduceMotion {
-                TimelineView(.animation(minimumInterval: 1.0 / 45.0)) { timeline in
+            if let updateInterval = ContinuousAnimationPolicy.updateInterval(
+                isActive: isPlaying,
+                reducesMotion: reduceMotion,
+                activeInterval: 1.0 / 45.0
+            ) {
+                TimelineView(.animation(minimumInterval: updateInterval)) { timeline in
                     spectrumBars(at: timeline.date)
                 }
             } else {

@@ -97,7 +97,7 @@ Homebrew support is coming soon. Until then, install manually using the release 
 - [x] Shelf functionality with drag-and-drop & AirDrop
 - [x] Notch sizing & custom display heights
 - [x] Dynamic Island fluid morph expansion and collapse
-- [x] Liquid-glass edge and transparency controls
+- [x] Notch gradient and transparency controls
 - [x] Modern macOS System Settings UI
 - [x] System HUD replacements (volume, brightness, backlight)
 - [x] Bluetooth device live activity
@@ -131,13 +131,15 @@ Homebrew support is coming soon. Until then, install manually using the release 
 
 ## Credits & Attribution
 
-This project is based on [Boring Notch](https://github.com/TheBoredTeam/boring.notch) by [TheBoredTeam](https://github.com/TheBoredTeam). Original copyright and GPL-3.0 notices are retained.
+This project is based on [Boring Notch](https://github.com/TheBoredTeam/boring.notch) by [TheBoredTeam](https://github.com/TheBoredTeam).
 
 Clipboard history inspiration: [Maccy](https://github.com/p0deje/Maccy) by [p0deje](https://github.com/p0deje).
 
 Notch motion inspiration: [NotchKit](https://github.com/duongductrong/NotchKit) by [duongductrong](https://github.com/duongductrong).
 
-Boring Notch is licensed under the GNU General Public License v3.0 (GPL-3.0).
+## Licenses
+
+*anotherNotch* is licensed under the GNU General Public License v3.0 (GPL-3.0).
 
 This project has been substantially modified and developed independently from the original project. It is not affiliated with or endorsed by TheBoredTeam.
 

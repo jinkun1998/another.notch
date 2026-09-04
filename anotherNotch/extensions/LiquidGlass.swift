@@ -3,16 +3,25 @@ import SwiftUI
 struct LiquidGlassSurface<EffectShape: Shape>: View {
     let shape: EffectShape
     var opacity: CGFloat = 0.8
+    var interactive = false
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
 
     @ViewBuilder
     var body: some View {
         if #available(macOS 26.0, *), !reduceTransparency {
-            shape
-                .fill(.white.opacity(0.01))
-                .glassEffect(.regular, in: shape)
-                .overlay { shape.stroke(.white.opacity(0.28), lineWidth: 1) }
-                .opacity(opacity)
+            if interactive {
+                shape
+                    .fill(.white.opacity(0.01))
+                    .glassEffect(.regular.interactive(), in: shape)
+                    .overlay { shape.stroke(.white.opacity(0.28), lineWidth: 1) }
+                    .opacity(opacity)
+            } else {
+                shape
+                    .fill(.white.opacity(0.01))
+                    .glassEffect(.regular, in: shape)
+                    .overlay { shape.stroke(.white.opacity(0.28), lineWidth: 1) }
+                    .opacity(opacity)
+            }
         } else {
             shape
                 .fill(.black.opacity(0.2))

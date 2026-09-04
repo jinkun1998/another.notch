@@ -75,14 +75,77 @@ struct UpdaterSettingsView: View {
     }
 }
 
+private struct LiquidGlassChannelSegmentedPicker: View {
+    @Binding var selection: SoftwareUpdateChannel
+
+    @Namespace private var selectionNamespace
+    @State private var hoveredItem: SoftwareUpdateChannel?
+
+    private let selectionAnimation = Animation.spring(response: 0.32, dampingFraction: 0.82)
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Text("Release channel")
+            Spacer(minLength: 8)
+            HStack(spacing: 2) {
+                ForEach(SoftwareUpdateChannel.allCases) { channel in
+                    segment(for: channel)
+                }
+            }
+            .padding(2)
+            .background {
+                RoundedRectangle(cornerRadius: 9, style: .continuous)
+                    .fill(Color.primary.opacity(0.06))
+            }
+            .animation(selectionAnimation, value: selection)
+        }
+    }
+
+    private func segment(for channel: SoftwareUpdateChannel) -> some View {
+        let isSelected = selection == channel
+
+        return Button {
+            guard selection != channel else { return }
+            withAnimation(selectionAnimation) {
+                selection = channel
+            }
+        } label: {
+            Text(channel.rawValue)
+                .font(.system(size: 11.5, weight: .medium))
+                .foregroundStyle(isSelected ? Color.white : Color.secondary)
+                .lineLimit(1)
+                .padding(.horizontal, 10)
+                .frame(height: 24)
+                .background {
+                    if isSelected {
+                        selectedSegmentBackground
+                            .matchedGeometryEffect(id: "selectedChannelSegment", in: selectionNamespace)
+                    } else if hoveredItem == channel {
+                        RoundedRectangle(cornerRadius: 7, style: .continuous)
+                            .fill(Color.primary.opacity(0.07))
+                    }
+                }
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .onHover { isHovering in
+            withAnimation(.easeOut(duration: 0.12)) {
+                hoveredItem = isHovering ? channel : nil
+            }
+        }
+        .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
+    }
+
+    private var selectedSegmentBackground: some View {
+        RoundedRectangle(cornerRadius: 7, style: .continuous)
+            .fill(Color.effectiveAccent)
+    }
+}
+
 struct SoftwareUpdateChannelPicker: View {
     @Default(.softwareUpdateChannel) private var updateChannel
 
     var body: some View {
-        Picker("Release channel", selection: $updateChannel) {
-            ForEach(SoftwareUpdateChannel.allCases) { channel in
-                Text(channel.rawValue).tag(channel)
-            }
-        }
+        LiquidGlassChannelSegmentedPicker(selection: $updateChannel)
     }
 }
