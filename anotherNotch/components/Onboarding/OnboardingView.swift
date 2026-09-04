@@ -125,7 +125,10 @@ struct OnboardingView: View {
     @State private var accessibilityRequested: Bool = false
     @State private var bluetoothGranted: Bool = (CBManager.authorization == .allowedAlways)
     @State private var bluetoothRequested: Bool = false
-    @State private var selectedModules = Set<FeatureModuleID>()
+    @State private var selectedModules: Set<FeatureModuleID> = {
+        let installed = FeatureModuleRegistry.shared.installedIDs
+        return installed.isEmpty ? Set(FeatureModuleID.allCases.filter { $0 != .home }) : installed
+    }()
     let onFinish: () -> Void
     let onOpenSettings: () -> Void
 
