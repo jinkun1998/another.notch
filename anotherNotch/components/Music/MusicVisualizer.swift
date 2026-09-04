@@ -16,21 +16,31 @@ struct AudioSpectrumView: View {
     ]
 
     var body: some View {
-        TimelineView(.animation(minimumInterval: isPlaying && !reduceMotion ? 1.0 / 45.0 : nil)) { timeline in
-            HStack(alignment: .center, spacing: 1) {
-                ForEach(Array(harmonics.enumerated()), id: \.offset) { _, harmonic in
-                    RoundedRectangle(cornerRadius: 0.75, style: .continuous)
-                        .fill(.white)
-                        .frame(width: 1.5, height: 14 * level(for: harmonic, at: timeline.date))
+        Group {
+            if isPlaying && !reduceMotion {
+                TimelineView(.animation(minimumInterval: 1.0 / 45.0)) { timeline in
+                    spectrumBars(at: timeline.date)
                 }
+            } else {
+                spectrumBars(at: nil)
             }
-            .frame(maxWidth: .infinity, alignment: .center)
-            .frame(height: 14)
         }
     }
 
-    private func level(for harmonic: (CGFloat, CGFloat, Double, Double), at date: Date) -> CGFloat {
-        guard isPlaying else { return 0.12 }
+    private func spectrumBars(at date: Date?) -> some View {
+        HStack(alignment: .center, spacing: 1) {
+            ForEach(Array(harmonics.enumerated()), id: \.offset) { _, harmonic in
+                RoundedRectangle(cornerRadius: 0.75, style: .continuous)
+                    .fill(.white)
+                    .frame(width: 1.5, height: 14 * level(for: harmonic, at: date))
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .center)
+        .frame(height: 14)
+    }
+
+    private func level(for harmonic: (CGFloat, CGFloat, Double, Double), at date: Date?) -> CGFloat {
+        guard let date = date, isPlaying else { return 0.12 }
         guard !reduceMotion else { return 0.6 }
 
         let time = date.timeIntervalSinceReferenceDate

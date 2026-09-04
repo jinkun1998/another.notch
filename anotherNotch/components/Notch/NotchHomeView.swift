@@ -9,6 +9,7 @@
 import Combine
 import Defaults
 import AppKit
+import QuartzCore
 import SwiftUI
 
 // MARK: - Music Player Components
@@ -28,6 +29,7 @@ struct MusicPlayerView: View {
 }
 
 struct AlbumArtView: View {
+    @EnvironmentObject var vm: AnotherNotchViewModel
     @ObservedObject var musicManager = MusicManager.shared
     @Default(.rotateAlbumArt) private var rotateAlbumArt
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -36,8 +38,12 @@ struct AlbumArtView: View {
             if Defaults[.lightingEffect] {
                 albumArtBackground
             }
-            TimelineView(.animation(minimumInterval: 1 / 30, paused: !shouldRotate)) { timeline in
-                albumArtButton(rotation: rotation(at: timeline.date))
+            if shouldRotate {
+                TimelineView(.animation(minimumInterval: 1 / 24)) { timeline in
+                    albumArtButton(rotation: rotation(at: timeline.date))
+                }
+            } else {
+                albumArtButton(rotation: 0)
             }
         }
     }
@@ -55,7 +61,7 @@ struct AlbumArtView: View {
     }
 
     private var shouldRotate: Bool {
-        rotateAlbumArt && musicManager.isPlaying && !reduceMotion
+        rotateAlbumArt && musicManager.isPlaying && !reduceMotion && vm.notchState == .open
     }
 
     private func rotation(at date: Date) -> Double {
@@ -95,6 +101,10 @@ struct MusicControlsView: View {
     @State private var lastDragged: Date = .distantPast
     @Default(.musicControlSlots) private var slotConfig
     @Default(.useMusicVisualizer) private var useMusicVisualizer
+
+    private var isExpandedAndVisible: Bool {
+        vm.notchState == .open
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -137,13 +147,16 @@ struct MusicControlsView: View {
                 .contentShape(Rectangle())
                 .onTapGesture {}
                 if useMusicVisualizer {
-                    DynamicIslandWaveform(isPlaying: musicManager.isPlaying)
+                    DynamicIslandWaveform(
+                        isPlaying: musicManager.isPlaying && isExpandedAndVisible,
+                        framesPerSecond: 15
+                    )
                         .frame(width: 28, height: 18)
                         .padding(.leading, 10)
                 }
             }
             if Defaults[.enableLyrics] {
-                TimelineView(.animation(minimumInterval: 0.25)) { timeline in
+                TimelineView(.animation(minimumInterval: 0.25, paused: !isExpandedAndVisible || !musicManager.isPlaying)) { timeline in
                     let currentElapsed: Double = {
                         guard musicManager.isPlaying else { return musicManager.elapsedTime }
                         let delta = timeline.date.timeIntervalSince(musicManager.timestampDate)
@@ -179,7 +192,7 @@ struct MusicControlsView: View {
     }
 
     private var musicSlider: some View {
-        TimelineView(.animation(minimumInterval: musicManager.playbackRate > 0 ? 0.1 : nil)) { timeline in
+        TimelineView(.animation(minimumInterval: (musicManager.playbackRate > 0 && isExpandedAndVisible) ? 0.1 : nil, paused: !isExpandedAndVisible || !musicManager.isPlaying)) { timeline in
             MusicSliderView(
                 sliderValue: $sliderValue,
                 duration: $musicManager.songDuration,
@@ -297,43 +310,153 @@ struct DynamicIslandWaveform: View {
     @Default(.waveformMatchesAlbumArt) private var waveformMatchesAlbumArt
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let isPlaying: Bool
+    let framesPerSecond: Double
+    @State private var cachedColors: [Color] = [.purple, .pink]
 
     private let heights: [CGFloat] = [0.45, 0.8, 1, 0.65, 0.35]
 
-    private var colors: [Color] {
-        guard waveformMatchesAlbumArt else { return [.purple, .pink] }
-
-        let albumColor = Color(nsColor: musicManager.avgColor)
-        return [
-            albumColor.ensureMinimumBrightness(factor: 0.8),
-            albumColor.ensureMinimumBrightness(factor: 0.35)
-        ]
-    }
-
     var body: some View {
-        TimelineView(.animation(minimumInterval: isPlaying && !reduceMotion ? 1 / 30 : nil)) { timeline in
-            HStack(spacing: 2) {
-                ForEach(heights.indices, id: \.self) { index in
-                    Capsule()
-                        .fill(LinearGradient(colors: colors, startPoint: .top, endPoint: .bottom))
-                        .frame(width: 2, height: 18 * heights[index])
-                        .scaleEffect(y: level(for: index, at: timeline.date), anchor: .center)
-                }
+        CoreAnimatedWaveform(
+            colors: cachedColors,
+            isAnimating: isPlaying && !reduceMotion,
+            framesPerSecond: framesPerSecond
+        )
+        .onAppear {
+            if waveformMatchesAlbumArt {
+                musicManager.calculateAverageColor()
             }
+            updateColors()
+        }
+        .onReceive(musicManager.$avgColor) { _ in
+            updateColors()
+        }
+        .onReceive(musicManager.$albumArt) { _ in
+            guard waveformMatchesAlbumArt else { return }
+            musicManager.calculateAverageColor()
         }
         .onChange(of: waveformMatchesAlbumArt) { _, matchesAlbumArt in
             if matchesAlbumArt {
                 musicManager.calculateAverageColor()
             }
+            updateColors()
         }
     }
 
-    private func level(for index: Int, at date: Date) -> CGFloat {
-        guard isPlaying else { return 0.45 }
-        guard !reduceMotion else { return 0.65 }
+    private func updateColors() {
+        guard waveformMatchesAlbumArt else {
+            cachedColors = [.purple, .pink]
+            return
+        }
+        let albumColor = Color(nsColor: musicManager.avgColor)
+        cachedColors = [
+            albumColor.ensureMinimumBrightness(factor: 0.8),
+            albumColor.ensureMinimumBrightness(factor: 0.35)
+        ]
+    }
 
-        let phase = date.timeIntervalSinceReferenceDate * 5 + Double(index) * 0.9
-        return 0.55 + CGFloat((sin(phase) + 1) / 2) * 0.45
+}
+
+private struct CoreAnimatedWaveform: NSViewRepresentable {
+    let colors: [Color]
+    let isAnimating: Bool
+    let framesPerSecond: Double
+
+    func makeNSView(context: Context) -> WaveformView {
+        WaveformView()
+    }
+
+    func updateNSView(_ waveformView: WaveformView, context: Context) {
+        waveformView.update(
+            colors: colors.map(NSColor.init),
+            isAnimating: isAnimating,
+            framesPerSecond: framesPerSecond
+        )
+    }
+
+    final class WaveformView: NSView {
+        private let heights: [CGFloat] = [0.45, 0.8, 1, 0.65, 0.35]
+        private let bars = (0..<5).map { _ in CAGradientLayer() }
+        private var animatedFramesPerSecond: Double?
+
+        override init(frame frameRect: NSRect) {
+            super.init(frame: frameRect)
+            wantsLayer = true
+            layer = CALayer()
+            bars.forEach { bar in
+                bar.startPoint = CGPoint(x: 0.5, y: 0)
+                bar.endPoint = CGPoint(x: 0.5, y: 1)
+                bar.cornerRadius = 1
+                bar.masksToBounds = true
+                layer?.addSublayer(bar)
+            }
+        }
+
+        required init?(coder: NSCoder) {
+            nil
+        }
+
+        override func layout() {
+            super.layout()
+            let barWidth: CGFloat = 2
+            let spacing: CGFloat = 2
+            let totalWidth = barWidth * CGFloat(bars.count)
+                + spacing * CGFloat(bars.count - 1)
+            let startX = (bounds.width - totalWidth) / 2
+
+            for (index, bar) in bars.enumerated() {
+                let height = min(bounds.height, 18) * heights[index]
+                bar.frame = CGRect(
+                    x: startX + CGFloat(index) * (barWidth + spacing),
+                    y: (bounds.height - height) / 2,
+                    width: barWidth,
+                    height: height
+                )
+            }
+        }
+
+        func update(colors: [NSColor], isAnimating: Bool, framesPerSecond: Double) {
+            let gradientColors = colors.compactMap(\.cgColor)
+            bars.forEach { $0.colors = gradientColors }
+
+            guard isAnimating else {
+                animatedFramesPerSecond = nil
+                bars.forEach {
+                    $0.removeAnimation(forKey: "waveformScale")
+                    $0.setValue(0.45, forKeyPath: "transform.scale.y")
+                }
+                return
+            }
+
+            guard animatedFramesPerSecond != framesPerSecond else { return }
+            animatedFramesPerSecond = framesPerSecond
+            for (index, bar) in bars.enumerated() {
+                bar.removeAnimation(forKey: "waveformScale")
+                startAnimation(on: bar, index: index, framesPerSecond: framesPerSecond)
+            }
+        }
+
+        private func startAnimation(
+            on bar: CALayer,
+            index: Int,
+            framesPerSecond: Double
+        ) {
+            let duration = 2.0
+            let frameCount = max(2, Int(framesPerSecond * duration))
+            var values = (0..<frameCount).map { frame in
+                let time = Double(frame) / framesPerSecond
+                let phase = time / duration * .pi * 4 + Double(index) * 0.9
+                return 0.55 + (sin(phase) + 1) / 2 * 0.45
+            }
+            values.append(values[0])
+            assert(values.first == values.last)
+
+            let animation = CAKeyframeAnimation(keyPath: "transform.scale.y")
+            animation.values = values
+            animation.duration = duration
+            animation.repeatCount = .infinity
+            animation.calculationMode = .discrete
+            bar.add(animation, forKey: "waveformScale")
+        }
     }
 }
 

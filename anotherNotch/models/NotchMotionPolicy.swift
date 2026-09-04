@@ -1,22 +1,60 @@
+import Defaults
 import SwiftUI
+
+enum NotchMotionStyle: String, CaseIterable, Codable, Defaults.Serializable {
+    case polished = "Polished"
+    case spring = "Spring"
+    case minimal = "Minimal"
+}
+
+enum NotchShellAnimation: Equatable {
+    case easeOut(duration: TimeInterval)
+    case smooth(duration: TimeInterval)
+    case spring(response: TimeInterval, dampingFraction: CGFloat)
+
+    var duration: TimeInterval {
+        switch self {
+        case let .easeOut(duration), let .smooth(duration): duration
+        case let .spring(response, _): response
+        }
+    }
+
+    var dampingFraction: CGFloat {
+        switch self {
+        case let .spring(_, dampingFraction): dampingFraction
+        case .easeOut, .smooth: 1
+        }
+    }
+
+    var animation: Animation {
+        switch self {
+        case let .easeOut(duration): .easeOut(duration: duration)
+        case let .smooth(duration): .smooth(duration: duration)
+        case let .spring(response, dampingFraction):
+            .spring(response: response, dampingFraction: dampingFraction)
+        }
+    }
+}
 
 struct NotchMotionPolicy {
     let reducesMotion: Bool
+    let style: NotchMotionStyle
 
-    init(reduceMotion: Bool) {
+    init(reduceMotion: Bool, style: NotchMotionStyle = .polished) {
         reducesMotion = reduceMotion
+        self.style = style
     }
 
     var openResponse: TimeInterval {
-        reducesMotion ? 0.18 : 0.42
+        openShell.duration
     }
 
     var openDampingFraction: CGFloat {
-        reducesMotion ? 1 : 0.80
+        openShell.dampingFraction
     }
 
     var closeDuration: TimeInterval {
-        reducesMotion ? 0.18 : 0.30
+        closeShell.duration
     }
 
     var expandedContentRevealDelay: TimeInterval {
@@ -32,15 +70,11 @@ struct NotchMotionPolicy {
     }
 
     var openShellAnimation: Animation {
-        reducesMotion
-            ? .easeOut(duration: openResponse)
-            : .spring(response: openResponse, dampingFraction: openDampingFraction)
+        openShell.animation
     }
 
     var closeShellAnimation: Animation {
-        reducesMotion
-            ? .easeOut(duration: closeDuration)
-            : .smooth(duration: closeDuration)
+        closeShell.animation
     }
 
     var expandedContentRevealAnimation: Animation {
@@ -57,5 +91,26 @@ struct NotchMotionPolicy {
 
     var hudTransition: AnyTransition {
         .opacity.combined(with: .scale(scale: reducesMotion ? 0.98 : 0.96))
+    }
+
+    var openShell: NotchShellAnimation {
+        if reducesMotion || style == .minimal {
+            return .easeOut(duration: 0.18)
+        }
+
+        return .spring(
+            response: 0.42,
+            dampingFraction: style == .spring ? 1 : 0.80
+        )
+    }
+
+    var closeShell: NotchShellAnimation {
+        if reducesMotion || style == .minimal {
+            return .easeOut(duration: 0.18)
+        }
+
+        return style == .spring
+            ? .spring(response: 0.45, dampingFraction: 1)
+            : .smooth(duration: 0.30)
     }
 }

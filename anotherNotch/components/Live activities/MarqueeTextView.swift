@@ -48,12 +48,11 @@ struct MarqueeText: View {
         self.centerWhenFits = centerWhenFits
     }
     
-    private var needsScrolling: Bool {
-        textSize.width > frameWidth
-    }
-    
     var body: some View {
         GeometryReader { geometry in
+            let viewportWidth = max(0, min(frameWidth, geometry.size.width))
+            let needsScrolling = textSize.width > viewportWidth
+
             ZStack(alignment: .leading) {
                 HStack(spacing: loopingSpacing) {
                     Text(text)
@@ -79,7 +78,7 @@ struct MarqueeText: View {
                     self.animate = false
                     self.offset = 0
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.01){
-                        if needsScrolling {
+                        if textSize.width > viewportWidth {
                             self.animate = true
                             self.offset = -(textSize.width + 10)
                             
@@ -87,7 +86,7 @@ struct MarqueeText: View {
                     }
                 }
             }
-            .frame(width: frameWidth, alignment: centerWhenFits && !needsScrolling ? .center : .leading)
+            .frame(width: viewportWidth, alignment: centerWhenFits && !needsScrolling ? .center : .leading)
             .clipped()
         }
         .frame(height: textSize.height * 1.3)

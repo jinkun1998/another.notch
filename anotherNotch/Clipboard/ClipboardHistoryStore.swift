@@ -138,7 +138,7 @@ final class ClipboardHistoryStore: ObservableObject {
     func startMonitoring() {
         guard timer == nil else { return }
         lastChangeCount = pasteboard.changeCount
-        timer = Timer.scheduledTimer(withTimeInterval: 0.35, repeats: true) { [weak self] _ in
+        timer = Timer.scheduledTimer(withTimeInterval: 0.75, repeats: true) { [weak self] _ in
             Task { @MainActor in self?.captureIfNeeded() }
         }
     }

@@ -139,6 +139,7 @@ extension Defaults.Keys {
     static let notchTransparency = Key<CGFloat>("notchTransparency", default: 0.8)
     static let notchGradientBlackCoverage = Key<CGFloat>("notchGradientBlackCoverage", default: 0.85)
     static let bottomCornerRadius = Key<CGFloat>("bottomCornerRadius", default: 50)
+    static let notchMotionStyle = Key<NotchMotionStyle>("notchMotionStyle", default: .polished)
 
     static let showNotHumanFace = Key<Bool>("showNotHumanFace", default: false)
     static let tileShowLabels = Key<Bool>("tileShowLabels", default: false)

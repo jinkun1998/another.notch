@@ -10,6 +10,7 @@ struct MinimalFaceFeatures: View {
     @State private var isBlinking = false
     @State var height:CGFloat = 20;
     @State var width:CGFloat = 30;
+    @State private var blinkTimer: Timer?
     
     var body: some View {
         VStack(spacing: 4) { // Adjusted spacing to fit within 30x30
@@ -43,10 +44,14 @@ struct MinimalFaceFeatures: View {
         .onAppear {
             startBlinking()
         }
+        .onDisappear {
+            stopBlinking()
+        }
     }
     
     func startBlinking() {
-        Timer.scheduledTimer(withTimeInterval: 3, repeats: true) { _ in
+        stopBlinking()
+        blinkTimer = Timer.scheduledTimer(withTimeInterval: 3, repeats: true) { _ in
             withAnimation(.spring(duration: 0.2)) {
                 isBlinking = true
             }
@@ -56,6 +61,11 @@ struct MinimalFaceFeatures: View {
                 }
             }
         }
+    }
+
+    func stopBlinking() {
+        blinkTimer?.invalidate()
+        blinkTimer = nil
     }
 }
 

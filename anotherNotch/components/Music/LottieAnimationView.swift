@@ -10,11 +10,23 @@ import Defaults
 
 struct LottieAnimationContainer: View {
     @Default(.selectedVisualizer) var selectedVisualizer
+    var isAnimating = true
+
     var body: some View {
         if selectedVisualizer == nil {
-            LottieView(url: URL(string: "https://assets9.lottiefiles.com/packages/lf20_mniampqn.json")!, speed: 1.0, loopMode: .loop)
+            LottieView(
+                url: URL(string: "https://assets9.lottiefiles.com/packages/lf20_mniampqn.json")!,
+                speed: 1.0,
+                loopMode: .loop,
+                isAnimating: isAnimating
+            )
         } else {
-            LottieView(url: selectedVisualizer!.url, speed: selectedVisualizer!.speed, loopMode: .loop)
+            LottieView(
+                url: selectedVisualizer!.url,
+                speed: selectedVisualizer!.speed,
+                loopMode: .loop,
+                isAnimating: isAnimating
+            )
         }
     }
 }
