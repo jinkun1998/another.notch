@@ -39,6 +39,109 @@ private extension View {
     }
 }
 
+private struct LiquidGlassSegmentedPicker<Item: Hashable>: View {
+    let title: LocalizedStringKey?
+    @Binding var selection: Item
+    let items: [Item]
+    let label: (Item) -> String
+    var icon: ((Item) -> String?)? = nil
+    var fillsWidth: Bool = false
+
+    @Namespace private var selectionNamespace
+    @State private var hoveredItem: Item?
+
+    private let selectionAnimation = Animation.spring(response: 0.32, dampingFraction: 0.82)
+
+    init(
+        _ title: LocalizedStringKey? = nil,
+        selection: Binding<Item>,
+        items: [Item],
+        fillsWidth: Bool = false,
+        icon: ((Item) -> String?)? = nil,
+        label: @escaping (Item) -> String
+    ) {
+        self.title = title
+        self._selection = selection
+        self.items = items
+        self.fillsWidth = fillsWidth
+        self.icon = icon
+        self.label = label
+    }
+
+    var body: some View {
+        if let title {
+            HStack(spacing: 12) {
+                Text(title)
+                Spacer(minLength: 8)
+                controlBody
+            }
+        } else {
+            controlBody
+        }
+    }
+
+    private var controlBody: some View {
+        HStack(spacing: 2) {
+            ForEach(items, id: \.self) { item in
+                segment(for: item)
+            }
+        }
+        .padding(2)
+        .background {
+            RoundedRectangle(cornerRadius: 9, style: .continuous)
+                .fill(Color.primary.opacity(0.06))
+        }
+        .animation(selectionAnimation, value: selection)
+    }
+
+    private func segment(for item: Item) -> some View {
+        let isSelected = selection == item
+
+        return Button {
+            guard selection != item else { return }
+            withAnimation(selectionAnimation) {
+                selection = item
+            }
+        } label: {
+            HStack(spacing: 5) {
+                if let iconName = icon?(item) {
+                    Image(systemName: iconName)
+                        .font(.system(size: 10, weight: .semibold))
+                }
+                Text(label(item))
+                    .lineLimit(1)
+            }
+            .font(.system(size: 11.5, weight: .medium))
+            .foregroundStyle(isSelected ? Color.white : Color.secondary)
+            .padding(.horizontal, 10)
+            .frame(maxWidth: fillsWidth ? .infinity : nil)
+            .frame(height: 24)
+            .background {
+                if isSelected {
+                    selectedSegmentBackground
+                        .matchedGeometryEffect(id: "selectedSegment", in: selectionNamespace)
+                } else if hoveredItem == item {
+                    RoundedRectangle(cornerRadius: 7, style: .continuous)
+                        .fill(Color.primary.opacity(0.07))
+                }
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .onHover { isHovering in
+            withAnimation(.easeOut(duration: 0.12)) {
+                hoveredItem = isHovering ? item : nil
+            }
+        }
+        .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
+    }
+
+    private var selectedSegmentBackground: some View {
+        RoundedRectangle(cornerRadius: 7, style: .continuous)
+            .fill(Color.effectiveAccent)
+    }
+}
+
 private enum SettingsPage: String, CaseIterable, Identifiable {
     case general = "General"
     case appearance = "Appearance"
@@ -513,11 +616,13 @@ private struct CameraSettings: View {
             }
 
             Section {
-                Picker("Mirror shape", selection: $mirrorShape) {
-                    Text("Circle").tag(MirrorShapeEnum.circle)
-                    Text("Square").tag(MirrorShapeEnum.rectangle)
+                LiquidGlassSegmentedPicker(
+                    "Mirror shape",
+                    selection: $mirrorShape,
+                    items: [MirrorShapeEnum.circle, MirrorShapeEnum.rectangle]
+                ) { shape in
+                    shape == .circle ? "Circle" : "Square"
                 }
-                .readableSettingsPicker()
                 .disabled(!isAuthorized || !showMirror)
             } header: {
                 Text("Appearance")
@@ -567,12 +672,13 @@ struct GeneralSettings: View {
                     NotificationCenter.default.post(
                         name: Notification.Name.showOnAllDisplaysChanged, object: nil)
                 }
-                Picker("Preferred display", selection: $coordinator.preferredScreenUUID) {
-                    ForEach(screens, id: \.uuid) { screen in
-                        Text(screen.name).tag(screen.uuid as String?)
-                    }
+                LiquidGlassSegmentedPicker(
+                    "Preferred display",
+                    selection: $coordinator.preferredScreenUUID,
+                    items: screens.map { $0.uuid as String? }
+                ) { uuid in
+                    screens.first(where: { $0.uuid == uuid })?.name ?? "Default"
                 }
-                .readableSettingsPicker()
                 .onChange(of: NSScreen.screens) {
                     screens = NSScreen.screens.compactMap { screen in
                         guard let uuid = screen.displayUUID else { return nil }
@@ -594,19 +700,21 @@ struct GeneralSettings: View {
             }
 
             Section {
-                Picker(
+                LiquidGlassSegmentedPicker(
+                    "Notch height on notch displays",
                     selection: $notchHeightMode,
-                    label:
-                        Text("Notch height on notch displays")
-                ) {
-                    Text("Match real notch height")
-                        .tag(WindowHeightMode.matchRealNotchSize)
-                    Text("Match menu bar height")
-                        .tag(WindowHeightMode.matchMenuBar)
-                    Text("Custom height")
-                        .tag(WindowHeightMode.custom)
+                    items: [
+                        WindowHeightMode.matchRealNotchSize,
+                        WindowHeightMode.matchMenuBar,
+                        WindowHeightMode.custom
+                    ]
+                ) { mode in
+                    switch mode {
+                    case .matchRealNotchSize: return "Real Notch"
+                    case .matchMenuBar: return "Menu Bar"
+                    case .custom: return "Custom"
+                    }
                 }
-                .readableSettingsPicker()
                 .onChange(of: notchHeightMode) {
                     switch notchHeightMode {
                     case .matchRealNotchSize:
@@ -628,15 +736,21 @@ struct GeneralSettings: View {
                             name: Notification.Name.notchHeightChanged, object: nil)
                     }
                 }
-                Picker("Notch height on non-notch displays", selection: $nonNotchHeightMode) {
-                    Text("Match menubar height")
-                        .tag(WindowHeightMode.matchMenuBar)
-                    Text("Match real notch height")
-                        .tag(WindowHeightMode.matchRealNotchSize)
-                    Text("Custom height")
-                        .tag(WindowHeightMode.custom)
+                LiquidGlassSegmentedPicker(
+                    "Notch height on non-notch displays",
+                    selection: $nonNotchHeightMode,
+                    items: [
+                        WindowHeightMode.matchMenuBar,
+                        WindowHeightMode.matchRealNotchSize,
+                        WindowHeightMode.custom
+                    ]
+                ) { mode in
+                    switch mode {
+                    case .matchMenuBar: return "Menu Bar"
+                    case .matchRealNotchSize: return "Real Notch"
+                    case .custom: return "Custom"
+                    }
                 }
-                .readableSettingsPicker()
                 .onChange(of: nonNotchHeightMode) {
                     switch nonNotchHeightMode {
                     case .matchMenuBar:
@@ -851,12 +965,11 @@ struct BluetoothDeviceNotifications: View {
                 }
             }
             Section("Indicator Layout") {
-                Picker("Rows", selection: $indicatorRows) {
-                    ForEach(BluetoothDeviceIndicatorRows.allCases) { rows in
-                        Text(rows.rawValue).tag(rows)
-                    }
-                }
-                .readableSettingsPicker()
+                LiquidGlassSegmentedPicker(
+                    "Rows",
+                    selection: $indicatorRows,
+                    items: BluetoothDeviceIndicatorRows.allCases
+                ) { $0.rawValue }
                 Defaults.Toggle(key: .showBluetoothDeviceName) {
                     Text("Show device name")
                 }
@@ -998,20 +1111,17 @@ struct HUD: View {
             }
             
             Section {
-                Picker("Option key behaviour", selection: $optionKeyAction) {
-                    ForEach(OptionKeyAction.allCases) { opt in
-                        Text(opt.rawValue).tag(opt)
-                    }
-                }
-                .readableSettingsPicker()
-                
-                Picker("Progress bar style", selection: $enableGradient) {
-                    Text("Hierarchical")
-                        .tag(false)
-                    Text("Gradient")
-                        .tag(true)
-                }
-                .readableSettingsPicker()
+                LiquidGlassSegmentedPicker(
+                    "Option key behaviour",
+                    selection: $optionKeyAction,
+                    items: OptionKeyAction.allCases
+                ) { $0.rawValue }
+
+                LiquidGlassSegmentedPicker(
+                    "Progress bar style",
+                    selection: $enableGradient,
+                    items: [false, true]
+                ) { $0 ? "Gradient" : "Hierarchical" }
                 Defaults.Toggle(key: .systemEventIndicatorShadow) {
                     Text("Enable glowing effect")
                 }
@@ -1040,12 +1150,11 @@ struct HUD: View {
             .disabled(!hudReplacement)
             
             Section {
-                Picker("HUD rows", selection: $closedHUDRows) {
-                    ForEach(ClosedHUDRows.allCases) { rows in
-                        Text(rows.rawValue).tag(rows)
-                    }
-                }
-                .readableSettingsPicker()
+                LiquidGlassSegmentedPicker(
+                    "HUD rows",
+                    selection: $closedHUDRows,
+                    items: ClosedHUDRows.allCases
+                ) { $0.rawValue }
 
                 Defaults.Toggle(key: .showClosedNotchHUDPercentage) {
                     Text("Show percentage")
@@ -1130,12 +1239,11 @@ struct Media: View {
             }
 
             Section {
-                Picker("Music Source", selection: $mediaController) {
-                    ForEach(availableMediaControllers) { controller in
-                        Text(controller.rawValue).tag(controller)
-                    }
-                }
-                .readableSettingsPicker()
+                LiquidGlassSegmentedPicker(
+                    "Music Source",
+                    selection: $mediaController,
+                    items: availableMediaControllers
+                ) { $0.rawValue }
                 .onChange(of: mediaController) { _, _ in
                     NotificationCenter.default.post(
                         name: Notification.Name.mediaControllerChanged,
@@ -1169,12 +1277,11 @@ struct Media: View {
 
             Section {
                 Toggle("Show sneak peek on playback changes", isOn: $enableSneakPeek)
-                Picker("Sneak Peek Style", selection: $sneakPeekStyles) {
-                    ForEach(SneakPeekStyle.allCases) { style in
-                        Text(style.rawValue).tag(style)
-                    }
-                }
-                .readableSettingsPicker()
+                LiquidGlassSegmentedPicker(
+                    "Sneak Peek Style",
+                    selection: $sneakPeekStyles,
+                    items: SneakPeekStyle.allCases
+                ) { $0.rawValue }
                 Stepper(value: $sneakPeekDuration, in: 0.5...10, step: 0.5) {
                     HStack {
                         Text("Sneak Peek Duration")
@@ -1193,20 +1300,21 @@ struct Media: View {
                         }
                     }
                 }
-                Picker(
+                LiquidGlassSegmentedPicker(
+                    "Full screen behavior",
                     selection: $hideNotchOption,
-                    label:
-                        HStack {
-                            Text("Full screen behavior")
-                            settingsBadge(text: "Beta")
-                        }
-                ) {
-                    Text("Hide for all apps").tag(HideNotchOption.always)
-                    Text("Hide for media app only").tag(
-                        HideNotchOption.nowPlayingOnly)
-                    Text("Never hide").tag(HideNotchOption.never)
+                    items: [
+                        HideNotchOption.always,
+                        HideNotchOption.nowPlayingOnly,
+                        HideNotchOption.never
+                    ]
+                ) { opt in
+                    switch opt {
+                    case .always: return "All Apps"
+                    case .nowPlayingOnly: return "Media App"
+                    case .never: return "Never"
+                    }
                 }
-                .readableSettingsPicker()
             } header: {
                 Text("Media playback live activity")
             }
@@ -1509,8 +1617,11 @@ struct About: View {
                 Button("Quit \(Bundle.main.appName)", role: .destructive) {
                     NSApp.terminate(nil)
                 }
+                .tint(.red)
+                .foregroundStyle(.red)
             }
         }
+        .accentColor(.effectiveAccent)
         .sheet(isPresented: $showVietQRModal) {
             VStack(spacing: 16) {
                 HStack {
@@ -1593,12 +1704,11 @@ struct ClipboardSettings: View {
             .disabled(!enabled)
 
             Section("Search") {
-                Picker("Mode", selection: $searchMode) {
-                    ForEach(ClipboardSearchMode.allCases) { mode in
-                        Text(mode.rawValue).tag(mode)
-                    }
-                }
-                .readableSettingsPicker()
+                LiquidGlassSegmentedPicker(
+                    "Mode",
+                    selection: $searchMode,
+                    items: ClipboardSearchMode.allCases
+                ) { $0.rawValue }
             }
             .disabled(!enabled)
 
@@ -1606,6 +1716,7 @@ struct ClipboardSettings: View {
                 Button("Clear History", role: .destructive) {
                     ClipboardHistoryStore.shared.clear()
                 }
+                .foregroundStyle(.red)
             }
             .disabled(!enabled)
         }
@@ -1678,27 +1789,11 @@ struct Shelf: View {
             .disabled(!boringShelf)
             
             Section {
-                Picker("Quick Share Service", selection: $quickShareProvider) {
-                    ForEach(quickShareService.availableProviders, id: \.id) { provider in
-                        HStack {
-                            Group {
-                                if let imgData = provider.imageData, let nsImg = NSImage(data: imgData) {
-                                    Image(nsImage: nsImg)
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fit)
-                                } else {
-                                    Image(systemName: "square.and.arrow.up")
-                                }
-                            }
-                            .frame(width: 16, height: 16)
-                            .foregroundColor(.accentColor)
-                            Text(provider.id)
-                        }
-                        .tag(provider.id)
-                    }
-                }
-                .pickerStyle(.menu)
-                .readableSettingsPicker()
+                LiquidGlassSegmentedPicker(
+                    "Quick Share Service",
+                    selection: $quickShareProvider,
+                    items: quickShareService.availableProviders.map { $0.id }
+                ) { $0 }
                 
                 if let selectedProvider = selectedProvider {
                     HStack {
@@ -1906,28 +2001,24 @@ struct Appearance: View {
                 Defaults.Toggle(key: .settingsIconInNotch) {
                     Text("Show settings icon in notch")
                 }
-                Button("Reset Notch Appearance to Defaults", systemImage: "arrow.counterclockwise") {
-                    Defaults.reset(
-                        .notchMotionStyle,
-                        .notchTransparency,
-                        .notchGradientBlackCoverage,
-                        .bottomCornerRadius,
-                        .enableShadow,
-                        .cornerRadiusScaling
-                    )
-                }
 
             } header: {
                 Text("General")
             }
 
             Section {
-                Picker("Style", selection: $notchMotionStyle) {
-                    ForEach(NotchMotionStyle.allCases, id: \.self) { style in
-                        Text(style.rawValue).tag(style)
+                LiquidGlassSegmentedPicker(
+                    "Style",
+                    selection: $notchMotionStyle,
+                    items: NotchMotionStyle.allCases,
+                    icon: { style in
+                        switch style {
+                        case .polished: return "sparkles"
+                        case .spring: return "waveform.path"
+                        case .minimal: return "minus"
+                        }
                     }
-                }
-                .readableSettingsPicker()
+                ) { $0.rawValue }
             } header: {
                 Text("Notch motion")
             }
@@ -1972,12 +2063,11 @@ struct Appearance: View {
                 }
                 Toggle("Rotate album artwork during playback", isOn: $rotateAlbumArt)
                 Defaults.Toggle("Match waveform to album artwork", key: .waveformMatchesAlbumArt)
-                Picker("Slider color", selection: $sliderColor) {
-                    ForEach(SliderColorEnum.allCases, id: \.self) { option in
-                        Text(option.rawValue)
-                    }
-                }
-                .readableSettingsPicker()
+                LiquidGlassSegmentedPicker(
+                    "Slider color",
+                    selection: $sliderColor,
+                    items: SliderColorEnum.allCases
+                ) { $0.rawValue }
             } header: {
                 Text("Media")
             }
@@ -1990,19 +2080,13 @@ struct Appearance: View {
                 .disabled(true)
                 if !useMusicVisualizer {
                     if customVisualizers.count > 0 {
-                        Picker(
+                        LiquidGlassSegmentedPicker(
                             "Selected animation",
-                            selection: $selectedVisualizer
-                        ) {
-                            ForEach(
-                                customVisualizers,
-                                id: \.self
-                            ) { visualizer in
-                                Text(visualizer.name)
-                                    .tag(visualizer)
-                            }
+                            selection: $selectedVisualizer,
+                            items: customVisualizers.map { Optional($0) }
+                        ) { visualizer in
+                            visualizer?.name ?? "None"
                         }
-                        .readableSettingsPicker()
                     } else {
                         HStack {
                             Text("Selected animation")
@@ -2166,8 +2250,45 @@ struct Appearance: View {
                     Text("Additional features")
                 }
             }
+
+            Section {
+                Button(action: resetNotchAppearance) {
+                    HStack(spacing: 10) {
+                        Image(systemName: "arrow.counterclockwise")
+                            .font(.body.weight(.medium))
+                            .foregroundStyle(.red)
+                            .frame(width: 24, height: 24)
+                            .background(Color.red.opacity(0.12), in: Circle())
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Restore Default Appearance")
+                                .fontWeight(.medium)
+                                .foregroundStyle(.red)
+                            Text("Resets motion, gradient, corners, and shadow")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+
+                        Spacer(minLength: 8)
+                    }
+                    .padding(.vertical, 4)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+            }
         }
         .accentColor(.effectiveAccent)
+    }
+
+    private func resetNotchAppearance() {
+        Defaults.reset(
+            .notchMotionStyle,
+            .notchTransparency,
+            .notchGradientBlackCoverage,
+            .bottomCornerRadius,
+            .enableShadow,
+            .cornerRadiusScaling
+        )
     }
 }
 
@@ -2215,11 +2336,11 @@ struct Advanced: View {
             Section {
                 VStack(alignment: .leading, spacing: 16) {
                     // Toggle between system and custom
-                    Picker("Accent color", selection: $useCustomAccentColor) {
-                        Text("System").tag(false)
-                        Text("Custom").tag(true)
-                    }
-                    .pickerStyle(.segmented)
+                    LiquidGlassSegmentedPicker(
+                        selection: $useCustomAccentColor,
+                        items: [false, true],
+                        fillsWidth: true
+                    ) { $0 ? "Custom" : "System" }
                     
                     if !useCustomAccentColor {
                         // System accent info

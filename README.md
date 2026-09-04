@@ -131,15 +131,15 @@ Homebrew support is coming soon. Until then, install manually using the release 
 
 ## Credits & Attribution
 
-This project is based on [Boring Notch](https://github.com/TheBoredTeam/boring.notch) by [TheBoredTeam](https://github.com/TheBoredTeam). Original copyright and GPL-3.0 notices are retained.
+This project is based on [Boring Notch](https://github.com/TheBoredTeam/boring.notch) by [TheBoredTeam](https://github.com/TheBoredTeam).
 
 Clipboard history inspiration: [Maccy](https://github.com/p0deje/Maccy) by [p0deje](https://github.com/p0deje).
 
 Notch motion inspiration: [NotchKit](https://github.com/duongductrong/NotchKit) by [duongductrong](https://github.com/duongductrong).
 
-## LICENSE
+## Licenses
 
-Boring Notch is licensed under the GNU General Public License v3.0 (GPL-3.0).
+*anotherNotch* is licensed under the GNU General Public License v3.0 (GPL-3.0).
 
 This project has been substantially modified and developed independently from the original project. It is not affiliated with or endorsed by TheBoredTeam.
 
