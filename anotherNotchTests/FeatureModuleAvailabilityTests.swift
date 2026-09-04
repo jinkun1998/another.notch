@@ -1,6 +1,59 @@
+import AppKit
+import Foundation
 import XCTest
 
 final class FeatureModuleAvailabilityTests: XCTestCase {
+    func testClosedNotchCPUStaysBelowTenPercent() throws {
+        try XCTSkipUnless(
+            ProcessInfo.processInfo.environment["RUN_CLOSED_NOTCH_CPU_TEST"] == "1",
+            "Set RUN_CLOSED_NOTCH_CPU_TEST=1 to run the machine-dependent CPU check."
+        )
+
+        let appURL = Bundle(for: Self.self)
+            .bundleURL
+            .deletingLastPathComponent()
+            .appendingPathComponent("anotherNotch (Debug).app")
+        try XCTSkipUnless(
+            FileManager.default.fileExists(atPath: appURL.path),
+            "Debug app bundle is unavailable."
+        )
+
+        let app = try launchApplication(at: appURL)
+        defer {
+            app.terminate()
+        }
+
+        Thread.sleep(forTimeInterval: 5)
+        let peakCPUPercent = try XCTUnwrap(cpuSamples(for: app.processIdentifier).max())
+
+        XCTAssertLessThanOrEqual(peakCPUPercent, 10, "Closed notch used \(peakCPUPercent)% CPU.")
+    }
+
+    func testIdleSpectrumStopsCPUTimelineUpdates() throws {
+        XCTAssertNil(
+            ContinuousAnimationPolicy.updateInterval(
+                isActive: false,
+                reducesMotion: false,
+                activeInterval: 1.0 / 45.0
+            )
+        )
+        XCTAssertNil(
+            ContinuousAnimationPolicy.updateInterval(
+                isActive: true,
+                reducesMotion: true,
+                activeInterval: 1.0 / 45.0
+            )
+        )
+        let activeInterval = try XCTUnwrap(
+            ContinuousAnimationPolicy.updateInterval(
+                isActive: true,
+                reducesMotion: false,
+                activeInterval: 1.0 / 45.0
+            )
+        )
+        XCTAssertEqual(activeInterval, 1.0 / 45.0, accuracy: 0.000_001)
+    }
+
     func testPolishedNotchMotionTiming() {
         let policy = NotchMotionPolicy(reduceMotion: false, style: .polished)
 
@@ -133,5 +186,59 @@ final class FeatureModuleAvailabilityTests: XCTestCase {
             calendarEnabled: enabledModule == .calendar,
             cameraEnabled: enabledModule == .camera
         )
+    }
+
+    private func cpuSamples(for processID: pid_t) throws -> [Double] {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/top")
+        process.arguments = [
+            "-l", "3",
+            "-s", "1",
+            "-pid", String(processID),
+            "-stats", "pid,cpu"
+        ]
+
+        let output = Pipe()
+        process.standardOutput = output
+        try process.run()
+        process.waitUntilExit()
+        guard process.terminationStatus == 0 else {
+            throw NSError(domain: "anotherNotchTests", code: Int(process.terminationStatus))
+        }
+
+        return String(decoding: output.fileHandleForReading.readDataToEndOfFile(), as: UTF8.self)
+            .split(whereSeparator: \.isNewline)
+            .compactMap { line in
+                let fields = line.split(whereSeparator: \.isWhitespace)
+                guard fields.count == 2, fields[0] == String(processID) else { return nil }
+                return Double(fields[1])
+            }
+    }
+
+    private func launchApplication(at appURL: URL) throws -> NSRunningApplication {
+        let configuration = NSWorkspace.OpenConfiguration()
+        configuration.activates = false
+        configuration.arguments = ["-onboardingCompleted", "YES"]
+        configuration.createsNewApplicationInstance = true
+        configuration.promptsUserIfNeeded = false
+
+        let semaphore = DispatchSemaphore(value: 0)
+        var launchedApplication: NSRunningApplication?
+        var launchError: Error?
+        NSWorkspace.shared.openApplication(at: appURL, configuration: configuration) { application, error in
+            launchedApplication = application
+            launchError = error
+            semaphore.signal()
+        }
+
+        guard semaphore.wait(timeout: .now() + 5) == .success else {
+            throw NSError(domain: "anotherNotchTests", code: 1, userInfo: [
+                NSLocalizedDescriptionKey: "Timed out launching the Debug app."
+            ])
+        }
+        if let launchError {
+            throw launchError
+        }
+        return try XCTUnwrap(launchedApplication)
     }
 }

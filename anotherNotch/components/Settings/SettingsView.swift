@@ -1906,6 +1906,16 @@ struct Appearance: View {
                 Defaults.Toggle(key: .settingsIconInNotch) {
                     Text("Show settings icon in notch")
                 }
+                Button("Reset Notch Appearance to Defaults", systemImage: "arrow.counterclockwise") {
+                    Defaults.reset(
+                        .notchMotionStyle,
+                        .notchTransparency,
+                        .notchGradientBlackCoverage,
+                        .bottomCornerRadius,
+                        .enableShadow,
+                        .cornerRadiusScaling
+                    )
+                }
 
             } header: {
                 Text("General")
@@ -1925,7 +1935,7 @@ struct Appearance: View {
             Section {
                 Slider(value: $notchTransparency, in: 0...1, step: 0.05) {
                     HStack {
-                        Text("Glass edge opacity")
+                        Text("Edge opacity")
                         Spacer()
                         Text("\(Int(notchTransparency * 100))%")
                             .foregroundStyle(.secondary)
