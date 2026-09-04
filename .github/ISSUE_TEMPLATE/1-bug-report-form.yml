@@ -37,10 +37,10 @@ body:
       options:
         - Select a version
         - v1.0.0
+        - v1.0.1-beta.2
         - v1.0.1-beta.1
         - v1.0.0-beta8
         - v1.0.0-beta.12
-        - v1.0.0-beta.11
     validations:
       required: true
   - type: input
