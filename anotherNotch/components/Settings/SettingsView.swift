@@ -988,8 +988,11 @@ struct HUD: View {
                         .foregroundStyle(accessibilityAuthorized ? .green : .secondary)
                     Spacer()
                     Button(accessibilityAuthorized ? "Manage" : "Grant") {
-                        openPrivacySettings("Privacy_Accessibility")
-                        XPCHelperClient.shared.requestAccessibilityAuthorization()
+                        if accessibilityAuthorized {
+                            openPrivacySettings("Privacy_Accessibility")
+                        } else {
+                            XPCHelperClient.shared.requestAccessibilityAuthorization()
+                        }
                     }
                 }
             }
