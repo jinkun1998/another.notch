@@ -13,7 +13,10 @@ private struct NotchActionButton: View {
     let title: String
 
     var body: some View {
-        Button(action: action) {
+        Button(action: {
+            HapticFeedback.perform(.generic)
+            action()
+        }) {
             VStack(spacing: 8) {
                 icon.resizable()
                     .aspectRatio(contentMode: .fit)

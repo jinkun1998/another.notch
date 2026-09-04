@@ -471,7 +471,10 @@ private struct DynamicIslandMusicButton: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        Button(action: action) {
+        Button(action: {
+            HapticFeedback.perform(.generic)
+            action()
+        }) {
             Group {
                 if let image {
                     Image(nsImage: image)
@@ -551,6 +554,7 @@ struct VolumeControlView: View {
     var body: some View {
         HStack(spacing: 4) {
             Button(action: {
+                HapticFeedback.perform(.generic)
                 if musicManager.volumeControlSupported {
                     withAnimation(.easeInOut(duration: 0.12)) {
                         showVolumeSlider.toggle()
@@ -745,11 +749,18 @@ struct CustomSlider: View {
                 DragGesture(minimumDistance: 0)
                     .onChanged { gesture in
                         guard width > 0 else { return }
+                        if !dragging {
+                            HapticFeedback.perform(.levelChange)
+                        }
                         withAnimation {
                             dragging = true
                         }
                         let newValue = range.lowerBound + Double(gesture.location.x / width) * rangeSpan
-                        value = min(max(newValue, range.lowerBound), range.upperBound)
+                        let clamped = min(max(newValue, range.lowerBound), range.upperBound)
+                        if Int(clamped * 10) != Int(value * 10) {
+                            HapticFeedback.perform(.levelChange)
+                        }
+                        value = clamped
                         onDragChange?(value)
                     }
                     .onEnded { _ in

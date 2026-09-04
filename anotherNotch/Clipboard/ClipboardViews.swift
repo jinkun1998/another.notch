@@ -100,6 +100,7 @@ private struct ClipboardEntryRow: View {
     var body: some View {
         HStack(spacing: 12) {
             Button {
+                HapticFeedback.perform(.generic)
                 onSelect()
             } label: {
                 HStack(spacing: 10) {

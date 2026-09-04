@@ -99,6 +99,7 @@ private struct LiquidGlassSegmentedPicker<Item: Hashable>: View {
 
         return Button {
             guard selection != item else { return }
+            HapticFeedback.perform(.alignment)
             withAnimation(selectionAnimation) {
                 selection = item
             }

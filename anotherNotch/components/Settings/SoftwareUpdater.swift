@@ -106,6 +106,7 @@ private struct LiquidGlassChannelSegmentedPicker: View {
 
         return Button {
             guard selection != channel else { return }
+            HapticFeedback.perform(.alignment)
             withAnimation(selectionAnimation) {
                 selection = channel
             }
