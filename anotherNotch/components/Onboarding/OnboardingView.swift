@@ -15,6 +15,7 @@ enum OnboardingStep {
     case accessibilityPermission
     case bluetoothPermission
     case musicPermission
+    case moduleSelection
     case finished
 }
 
@@ -34,12 +35,97 @@ struct OnboardingBackground: View {
     }
 }
 
+private struct OnboardingModuleSelectionView: View {
+    @Binding var selectedModules: Set<FeatureModuleID>
+    let onContinue: () -> Void
+
+    private let modules = FeatureModuleRegistry.modules.filter { $0.id != .home }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            Spacer()
+
+            Text("Choose Your Tabs")
+                .font(.largeTitle)
+                .fontWeight(.bold)
+
+            Text("Select the modules you want in your notch. You can add or remove them later in Settings.")
+                .foregroundStyle(.secondary)
+
+            VStack(spacing: 8) {
+                ForEach(modules) { module in
+                    OnboardingModuleSelectionRow(
+                        module: module,
+                        isSelected: selectedModules.contains(module.id)
+                    ) {
+                        toggle(module.id)
+                    }
+                }
+            }
+
+            Spacer()
+
+            Button("Continue", action: onContinue)
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+                .keyboardShortcut(.defaultAction)
+                .frame(maxWidth: .infinity)
+        }
+        .padding(32)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(OnboardingBackground())
+    }
+
+    private func toggle(_ module: FeatureModuleID) {
+        if selectedModules.contains(module) {
+            selectedModules.remove(module)
+        } else {
+            selectedModules.insert(module)
+        }
+    }
+}
+
+private struct OnboardingModuleSelectionRow: View {
+    let module: FeatureModule
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 14) {
+                Image(systemName: module.icon)
+                    .font(.title3)
+                    .frame(width: 24)
+                    .foregroundStyle(Color.effectiveAccent)
+
+                Text(module.title)
+                    .fontWeight(.medium)
+
+                Spacer()
+
+                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                    .font(.title3)
+                    .foregroundStyle(isSelected ? Color.effectiveAccent : Color.secondary)
+            }
+            .padding(14)
+            .background(
+                .white.opacity(isSelected ? 0.12 : 0.06),
+                in: RoundedRectangle(cornerRadius: 12, style: .continuous)
+            )
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("\(module.title) module")
+        .accessibilityValue(isSelected ? "Selected" : "Not selected")
+    }
+}
+
 struct OnboardingView: View {
     @State var step: OnboardingStep = .welcome
     @State private var accessibilityGranted: Bool = AXIsProcessTrusted()
     @State private var accessibilityRequested: Bool = false
     @State private var bluetoothGranted: Bool = (CBManager.authorization == .allowedAlways)
     @State private var bluetoothRequested: Bool = false
+    @State private var selectedModules = Set<FeatureModuleID>()
     let onFinish: () -> Void
     let onOpenSettings: () -> Void
 
@@ -155,11 +241,20 @@ struct OnboardingView: View {
                 MusicControllerSelectionView(
                     onContinue: {
                         withAnimation(.easeInOut(duration: 0.6)) {
-                            AnotherNotchViewCoordinator.shared.firstLaunch = false
-                            step = .finished
+                            step = .moduleSelection
                         }
                     }
                 )
+                .transition(.opacity)
+
+            case .moduleSelection:
+                OnboardingModuleSelectionView(selectedModules: $selectedModules) {
+                    installSelectedModules()
+                    withAnimation(.easeInOut(duration: 0.6)) {
+                        AnotherNotchViewCoordinator.shared.firstLaunch = false
+                        step = .finished
+                    }
+                }
                 .transition(.opacity)
 
             case .finished:
@@ -204,6 +299,25 @@ struct OnboardingView: View {
     private func openPrivacySettings(_ pane: String) {
         if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?\(pane)") {
             NSWorkspace.shared.open(url)
+        }
+    }
+
+    private func installSelectedModules() {
+        for module in selectedModules {
+            FeatureModuleRegistry.shared.install(module)
+
+            switch module {
+            case .home:
+                break
+            case .clipboard:
+                Defaults[.clipboardHistoryEnabled] = true
+            case .shelf:
+                Defaults[.boringShelf] = true
+            case .calendar:
+                Defaults[.showCalendar] = true
+            case .camera:
+                Defaults[.showMirror] = true
+            }
         }
     }
 
