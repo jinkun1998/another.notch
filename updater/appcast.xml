@@ -5,6 +5,26 @@
         <link>https://github.com/jinkun1998/another.notch/releases</link>
         <description>anotherNotch updates</description>
         <item>
+            <title>1.0.1-beta.2</title>
+            <pubDate>Fri, 04 Sep 2026 04:29:40 +0000</pubDate>
+            <link>https://github.com/jinkun1998/another.notch/releases</link>
+            <sparkle:channel>beta</sparkle:channel>
+            <sparkle:version>25</sparkle:version>
+            <sparkle:shortVersionString>1.0.1-beta.2</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <description><![CDATA[<div class="markdown-heading"><h1 class="heading-element">v1.0.0-beta.2</h1><a id="user-content-v100-beta2" class="anchor" aria-label="Permalink: v1.0.0-beta.2" href="#v100-beta2"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
+<div class="markdown-heading"><h2 class="heading-element">Improvements</h2><a id="user-content-improvements" class="anchor" aria-label="Permalink: Improvements" href="#improvements"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
+<ul>
+<li>Onboarding Access: Added an "Onboarding" entry to the menu bar extra to re-run onboarding anytime.</li>
+<li>Onboarding Visuals: Replaced raw visual-effect background with the standard liquid-glass notch material (LiquidGlassSurface + LiquidGlassEdge), respecting transparency
+settings.</li>
+<li>Sparkle Appcast: Updated release metadata for 1.0.0-beta.1 Sparkle feed.</li>
+</ul>
+<p>Full Changelog: <a href="https://github.com/jinkun1998/another.notch/compare/v1.0.0-beta.1...v1.0.0-beta.2">https://github.com/jinkun1998/another.notch/compare/v1.0.0-beta.1...v1.0.0-beta.2</a></p>
+]]></description>
+            <enclosure url="https://github.com/jinkun1998/another.notch/releases/download/v1.0.1-beta.2/anotherNotch.dmg" length="8987762" type="application/octet-stream" sparkle:edSignature="ZsAGVq/WYTcA5kD53sKvEo73MhoEWZLaE6EYeVH19Mtde6hQWPa5DfvdUnautT181zieSwKJGZ88l5SX0iCQDQ=="/>
+        </item>
+        <item>
             <title>1.0.1-beta.1</title>
             <pubDate>Thu, 03 Sep 2026 09:53:13 +0000</pubDate>
             <link>https://github.com/jinkun1998/another.notch/releases</link>
@@ -39,18 +59,6 @@
             <description><![CDATA[**Full Changelog**: https://github.com/jinkun1998/another.notch/compare/v1.0.0-beta.11...v1.0.0-beta.12
 ]]></description>
             <enclosure url="https://github.com/jinkun1998/another.notch/releases/download/v1.0.0-beta.12/anotherNotch.dmg" length="8681130" type="application/octet-stream" sparkle:edSignature="q87FD84x2D7D7IwXlb2MDbGMoFVDAHPZMwzW5vmreTBo764LmlBFYoMppZTdniFELKII4gt5ScAcmoehvtJpCA=="/>
-        </item>
-        <item>
-            <title>1.0.0-beta.11</title>
-            <pubDate>Thu, 27 Aug 2026 14:36:05 +0000</pubDate>
-            <link>https://github.com/jinkun1998/another.notch/releases</link>
-            <sparkle:channel>beta</sparkle:channel>
-            <sparkle:version>20</sparkle:version>
-            <sparkle:shortVersionString>1.0.0-beta.11</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-            <description><![CDATA[**Full Changelog**: https://github.com/jinkun1998/another.notch/compare/v1.0.0-beta.10...v1.0.0-beta.11
-]]></description>
-            <enclosure url="https://github.com/jinkun1998/another.notch/releases/download/v1.0.0-beta.11/anotherNotch.dmg" length="8680695" type="application/octet-stream" sparkle:edSignature="9tb9jNCf8MhNzCI+Pz1+pcUEhxHoWm/64QojdOy39gQCPgWsvl2emTkfDnfCZDAr+Kzfw1Va+oHirbJES/GuAQ=="/>
         </item>
     </channel>
 </rss>
