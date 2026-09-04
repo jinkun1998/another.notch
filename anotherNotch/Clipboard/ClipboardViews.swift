@@ -109,9 +109,14 @@ private struct ClipboardEntryRow: View {
 
                     VStack(alignment: .leading, spacing: 3) {
                         HStack(spacing: 6) {
+                            if entry.isPinned {
+                                Image(systemName: "pin.fill")
+                                    .font(.system(size: 9, weight: .bold))
+                                    .foregroundStyle(.orange)
+                            }
                             Text(entry.kind == .url ? "URL" : entry.kind == .image ? "Image" : "Text")
                                 .font(.system(size: 11, weight: .semibold))
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(entry.isPinned ? .orange : .secondary)
                             Text(entry.timestamp, style: .time)
                                 .font(.system(size: 10))
                                 .foregroundStyle(.secondary.opacity(0.8))
@@ -136,6 +141,19 @@ private struct ClipboardEntryRow: View {
             .buttonStyle(.plain)
 
             Button {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                    store.togglePin(entry)
+                }
+            } label: {
+                Image(systemName: entry.isPinned ? "pin.fill" : "pin")
+                    .font(.system(size: 11))
+                    .rotationEffect(.degrees(entry.isPinned ? 0 : 45))
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(entry.isPinned ? Color.orange : (isHovering ? Color.secondary : Color.clear))
+            .accessibilityLabel(entry.isPinned ? "Unpin clipboard entry" : "Pin clipboard entry")
+
+            Button {
                 store.delete(entry)
             } label: {
                 Image(systemName: "trash.fill")
@@ -149,9 +167,42 @@ private struct ClipboardEntryRow: View {
         .padding(.vertical, 8)
         .background(
             RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .fill(isSelected ? Color.white.opacity(0.18) : isHovering ? Color.white.opacity(0.12) : Color.white.opacity(0.05))
+                .fill(
+                    isSelected
+                        ? Color.white.opacity(0.18)
+                        : entry.isPinned
+                            ? (isHovering ? Color.orange.opacity(0.16) : Color.orange.opacity(0.09))
+                            : isHovering
+                                ? Color.white.opacity(0.12)
+                                : Color.white.opacity(0.05)
+                )
         )
-        .onHover { isHovering = $0 }
+        .onHover { hovering in
+            isHovering = hovering
+            if hovering {
+                HapticFeedback.perform(.alignment)
+            }
+        }
+        .contextMenu {
+            Button {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                    store.togglePin(entry)
+                }
+            } label: {
+                Label(entry.isPinned ? "Unpin" : "Pin to Top", systemImage: entry.isPinned ? "pin.slash" : "pin")
+            }
+            Button {
+                store.copy(entry)
+            } label: {
+                Label("Copy", systemImage: "doc.on.doc")
+            }
+            Divider()
+            Button(role: .destructive) {
+                store.delete(entry)
+            } label: {
+                Label("Delete", systemImage: "trash")
+            }
+        }
     }
 
     private var detail: String {

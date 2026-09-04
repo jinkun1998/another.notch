@@ -80,6 +80,14 @@ enum SoftwareUpdateChannel: String, CaseIterable, Identifiable, Defaults.Seriali
     var id: String { rawValue }
 }
 
+enum HapticFeedbackLevel: String, CaseIterable, Identifiable, Defaults.Serializable {
+    case light = "Light"
+    case medium = "Medium"
+    case strong = "Strong"
+
+    var id: String { rawValue }
+}
+
 // Action to perform when Option (⌥) is held while pressing media keys
 enum OptionKeyAction: String, CaseIterable, Identifiable, Defaults.Serializable {
     case openSettings = "Open System Settings"
@@ -104,6 +112,7 @@ extension Defaults.Keys {
     // MARK: Behavior
     static let minimumHoverDuration = Key<TimeInterval>("minimumHoverDuration", default: 0.3)
     static let enableHaptics = Key<Bool>("enableHaptics", default: true)
+    static let hapticFeedbackLevel = Key<HapticFeedbackLevel>("hapticFeedbackLevel", default: .light)
     static let openNotchOnHover = Key<Bool>("openNotchOnHover", default: true)
     static let extendHoverArea = Key<Bool>("extendHoverArea", default: false)
     static let notchHeightMode = Key<WindowHeightMode>(

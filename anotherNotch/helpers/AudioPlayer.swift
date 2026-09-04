@@ -18,6 +18,25 @@ class AudioPlayer {
 enum HapticFeedback {
     static func perform(_ pattern: NSHapticFeedbackManager.FeedbackPattern = .generic) {
         guard Defaults[.enableHaptics] else { return }
-        NSHapticFeedbackManager.defaultPerformer.perform(pattern, performanceTime: .default)
+        perform(pattern: pattern, level: Defaults[.hapticFeedbackLevel])
+    }
+
+    static func perform(for level: HapticFeedbackLevel) {
+        perform(pattern: .generic, level: level)
+    }
+
+    private static func perform(pattern: NSHapticFeedbackManager.FeedbackPattern, level: HapticFeedbackLevel) {
+        let performer = NSHapticFeedbackManager.defaultPerformer
+        switch level {
+        case .light:
+            performer.perform(.alignment, performanceTime: .default)
+        case .medium:
+            performer.perform(pattern, performanceTime: .default)
+        case .strong:
+            performer.perform(.levelChange, performanceTime: .default)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.045) {
+                performer.perform(.levelChange, performanceTime: .default)
+            }
+        }
     }
 }

@@ -16,14 +16,31 @@ struct ClipboardEntry: Codable, Identifiable, Hashable {
     let id: UUID
     let timestamp: Date
     let kind: ClipboardEntryKind
+    var isPinned: Bool
     fileprivate let value: String?
     fileprivate let imageFileName: String?
     fileprivate var ocrText: String?
 
-    init(kind: ClipboardEntryKind, value: String? = nil, imageFileName: String? = nil, ocrText: String? = nil) {
+    enum CodingKeys: String, CodingKey {
+        case id, timestamp, kind, isPinned, value, imageFileName, ocrText
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        timestamp = try container.decode(Date.self, forKey: .timestamp)
+        kind = try container.decode(ClipboardEntryKind.self, forKey: .kind)
+        isPinned = try container.decodeIfPresent(Bool.self, forKey: .isPinned) ?? false
+        value = try container.decodeIfPresent(String.self, forKey: .value)
+        imageFileName = try container.decodeIfPresent(String.self, forKey: .imageFileName)
+        ocrText = try container.decodeIfPresent(String.self, forKey: .ocrText)
+    }
+
+    init(kind: ClipboardEntryKind, value: String? = nil, imageFileName: String? = nil, ocrText: String? = nil, isPinned: Bool = false) {
         id = UUID()
         timestamp = Date()
         self.kind = kind
+        self.isPinned = isPinned
         self.value = value
         self.imageFileName = imageFileName
         self.ocrText = ocrText
@@ -97,7 +114,10 @@ enum ClipboardEntrySearch {
                 return (entry, result.score, index)
             }
             .sorted { lhs, rhs in
-                lhs.score == rhs.score ? lhs.index < rhs.index : lhs.score < rhs.score
+                if lhs.entry.isPinned != rhs.entry.isPinned {
+                    return lhs.entry.isPinned && !rhs.entry.isPinned
+                }
+                return lhs.score == rhs.score ? lhs.index < rhs.index : lhs.score < rhs.score
             }
             .map { $0.entry }
     }
@@ -180,9 +200,17 @@ final class ClipboardHistoryStore: ObservableObject {
         persist()
     }
 
+    func togglePin(_ entry: ClipboardEntry) {
+        guard let index = entries.firstIndex(where: { $0.id == entry.id }) else { return }
+        entries[index].isPinned.toggle()
+        sortEntries()
+        persist()
+    }
+
     func clear() {
-        entries.forEach { removeImageFile(for: $0) }
-        entries = []
+        let unpinned = entries.filter { !$0.isPinned }
+        unpinned.forEach { removeImageFile(for: $0) }
+        entries.removeAll { !$0.isPinned }
         hudEntry = nil
         persist()
     }
@@ -222,15 +250,17 @@ final class ClipboardHistoryStore: ObservableObject {
 
     private func append(kind: ClipboardEntryKind, value: String? = nil, imageFileName: String? = nil) {
         let entry = ClipboardEntry(kind: kind, value: value, imageFileName: imageFileName)
-        guard fingerprint(for: entry) != entries.first.map({ fingerprint(for: $0) }) else {
+        guard fingerprint(for: entry) != entries.first(where: { !$0.isPinned }).map({ fingerprint(for: $0) }) else {
             removeImageFile(for: entry)
             return
         }
 
-        entries.insert(entry, at: 0)
-        while entries.count > Defaults[.clipboardHistoryLimit] {
-            removeImageFile(for: entries.removeLast())
+        if let firstUnpinnedIndex = entries.firstIndex(where: { !$0.isPinned }) {
+            entries.insert(entry, at: firstUnpinnedIndex)
+        } else {
+            entries.append(entry)
         }
+        trim()
         persist()
         recognizeText(in: entry)
         showHUD(for: entry)
@@ -325,13 +355,28 @@ final class ClipboardHistoryStore: ObservableObject {
               let decoded = try? JSONDecoder().decode([ClipboardEntry].self, from: data)
         else { return }
         entries = decoded.filter { $0.kind != .image || imageData(for: $0) != nil }
+        sortEntries()
         trim()
         entries.filter { $0.kind == .image && $0.ocrText == nil }.forEach(recognizeText)
     }
 
+    private func sortEntries() {
+        entries.sort { lhs, rhs in
+            if lhs.isPinned != rhs.isPinned {
+                return lhs.isPinned && !rhs.isPinned
+            }
+            return lhs.timestamp > rhs.timestamp
+        }
+    }
+
     private func trim() {
-        while entries.count > Defaults[.clipboardHistoryLimit] {
-            removeImageFile(for: entries.removeLast())
+        let limit = Defaults[.clipboardHistoryLimit]
+        while entries.count > limit {
+            if let lastUnpinnedIndex = entries.lastIndex(where: { !$0.isPinned }) {
+                removeImageFile(for: entries.remove(at: lastUnpinnedIndex))
+            } else {
+                removeImageFile(for: entries.removeLast())
+            }
         }
         persist()
     }
