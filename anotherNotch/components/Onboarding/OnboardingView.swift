@@ -65,9 +65,6 @@ struct OnboardingView: View {
                     onAllow: {
                         accessibilityRequested = true
                         XPCHelperClient.shared.requestAccessibilityAuthorization()
-                        if !AXIsProcessTrusted() {
-                            openPrivacySettings("Privacy_Accessibility")
-                        }
                         checkAccessibility()
                     },
                     onOpenSettings: {
