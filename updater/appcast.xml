@@ -5,6 +5,26 @@
         <link>https://github.com/jinkun1998/another.notch/releases</link>
         <description>anotherNotch updates</description>
         <item>
+            <title>1.0.1-beta.4</title>
+            <pubDate>Fri, 04 Sep 2026 09:46:10 +0000</pubDate>
+            <link>https://github.com/jinkun1998/another.notch/releases</link>
+            <sparkle:channel>beta</sparkle:channel>
+            <sparkle:version>27</sparkle:version>
+            <sparkle:shortVersionString>1.0.1-beta.4</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <description><![CDATA[<div class="markdown-heading"><h2 class="heading-element">Improvements</h2><a id="user-content-improvements" class="anchor" aria-label="Permalink: Improvements" href="#improvements"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
+<ul>
+<li>Notch motion profiles: added Polished, Spring, and Minimal styles under Appearance. Respects system Reduce Motion.</li>
+<li>Notch edge gradient: masked to expanding and open states only. Fixes transition flash near physical notch.</li>
+<li>Segmented pickers: converted settings comboboxes to sliding segmented controls.</li>
+<li>Action buttons: styled destructive and reset actions red. Standard buttons use configured accent color.</li>
+<li>Performance: stopped spectrogram timeline updates during idle audio to minimize closed-notch CPU usage.</li>
+</ul>
+<p>Full Changelog: <a href="https://github.com/jinkun1998/another.notch/compare/v1.0.1-beta.3...v1.0.1-beta.4">https://github.com/jinkun1998/another.notch/compare/v1.0.1-beta.3...v1.0.1-beta.4</a></p>
+]]></description>
+            <enclosure url="https://github.com/jinkun1998/another.notch/releases/download/v1.0.1-beta.4/anotherNotch.dmg" length="8990004" type="application/octet-stream" sparkle:edSignature="sY7KmKkAgaSp1i8s+Gwja+Zvasrwm+ep5Hpl5dG4XABM0u4T6vqARbpnIJb8mk3lJcLgLiRMu765zfhLpYiFBQ=="/>
+        </item>
+        <item>
             <title>1.0.1-beta.3</title>
             <pubDate>Fri, 04 Sep 2026 07:11:58 +0000</pubDate>
             <link>https://github.com/jinkun1998/another.notch/releases</link>
@@ -52,30 +72,6 @@ settings.</li>
 <p>Full Changelog: <a href="https://github.com/jinkun1998/another.notch/compare/v1.0.0-beta.1...v1.0.0-beta.2">https://github.com/jinkun1998/another.notch/compare/v1.0.0-beta.1...v1.0.0-beta.2</a></p>
 ]]></description>
             <enclosure url="https://github.com/jinkun1998/another.notch/releases/download/v1.0.1-beta.2/anotherNotch.dmg" length="8987762" type="application/octet-stream" sparkle:edSignature="ZsAGVq/WYTcA5kD53sKvEo73MhoEWZLaE6EYeVH19Mtde6hQWPa5DfvdUnautT181zieSwKJGZ88l5SX0iCQDQ=="/>
-        </item>
-        <item>
-            <title>1.0.1-beta.1</title>
-            <pubDate>Thu, 03 Sep 2026 09:53:13 +0000</pubDate>
-            <link>https://github.com/jinkun1998/another.notch/releases</link>
-            <sparkle:channel>beta</sparkle:channel>
-            <sparkle:version>24</sparkle:version>
-            <sparkle:shortVersionString>1.0.1-beta.1</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-            <description><![CDATA[## v1.0.1-beta.1
-
-  ### Improvements
-  - Polished notch opening, closing, tab switching, HUD, battery, and layout motion.
-  - Improved Shelf drops, Calendar authorization refresh, and built-in display brightness handling.
-  - Refreshed demo media and documentation.
-
-  ### Fixes
-  - Stable Sparkle appcast publishing.
-  - Issue-report version dropdown.
-  - Release signing and CodeQL build reliability.
-
-  **Full Changelog**: `v1.0.0...v1.0.1-beta.1`
-]]></description>
-            <enclosure url="https://github.com/jinkun1998/another.notch/releases/download/v1.0.1-beta.1/anotherNotch.dmg" length="8915913" type="application/octet-stream" sparkle:edSignature="DFnO3ChFwWa/F+h6SyDxjxnj0e2OjMP5DiBnQfXMIbA3K4irc/lAC3jkzyBCEnG1EShEeemBh7KmPLplFmbBDg=="/>
         </item>
     </channel>
 </rss>
