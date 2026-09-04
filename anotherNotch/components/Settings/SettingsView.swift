@@ -1429,6 +1429,7 @@ func lighterColor(from nsColor: NSColor, amount: CGFloat = 0.14) -> Color {
 struct About: View {
     @State private var showBuildNumber: Bool = false
     @State private var showVietQRModal: Bool = false
+    @State private var showOnboarding: Bool = false
     let updaterController: SPUStandardUpdaterController
 
     var body: some View {
@@ -1478,6 +1479,12 @@ struct About: View {
                     Label("View on GitHub", systemImage: "arrow.up.right.square")
                 }
 
+                Button {
+                    showOnboarding = true
+                } label: {
+                    Label("Run Onboarding Again", systemImage: "arrow.counterclockwise")
+                }
+
                 SoftwareUpdateChannelPicker()
                 CheckForUpdatesView(updater: updaterController.updater)
             }
@@ -1496,10 +1503,6 @@ struct About: View {
                 } label: {
                     Label("VietQR / Bank Transfer", systemImage: "qrcode")
                 }
-            }
-
-            Section("Thanks") {
-                Link("Maccy by p0deje", destination: URL(string: "https://github.com/p0deje/Maccy")!)
             }
 
             Section {
@@ -1531,6 +1534,18 @@ struct About: View {
             }
             .padding(20)
             .frame(width: 360)
+        }
+        .sheet(isPresented: $showOnboarding) {
+            OnboardingView(
+                onFinish: {
+                    AnotherNotchViewCoordinator.shared.firstLaunch = false
+                    UserDefaults.standard.set(true, forKey: "onboardingCompleted")
+                    showOnboarding = false
+                },
+                onOpenSettings: {
+                    showOnboarding = false
+                }
+            )
         }
     }
 }
