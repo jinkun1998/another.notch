@@ -14,10 +14,7 @@ struct TabButton: View {
     let onClick: () -> Void
     
     var body: some View {
-        Button(action: {
-            HapticFeedback.perform(.alignment)
-            onClick()
-        }) {
+        Button(action: onClick) {
             Image(systemName: icon)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .contentShape(Rectangle())

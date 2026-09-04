@@ -471,10 +471,7 @@ private struct DynamicIslandMusicButton: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        Button(action: {
-            HapticFeedback.perform(.generic)
-            action()
-        }) {
+        Button(action: action) {
             Group {
                 if let image {
                     Image(nsImage: image)
@@ -554,7 +551,6 @@ struct VolumeControlView: View {
     var body: some View {
         HStack(spacing: 4) {
             Button(action: {
-                HapticFeedback.perform(.generic)
                 if musicManager.volumeControlSupported {
                     withAnimation(.easeInOut(duration: 0.12)) {
                         showVolumeSlider.toggle()

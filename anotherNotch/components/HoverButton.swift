@@ -21,10 +21,7 @@ struct HoverButton: View {
     var body: some View {
         let size = CGFloat(scale == .large ? 40 : 30)
         
-        Button(action: {
-            HapticFeedback.perform(.generic)
-            action()
-        }) {
+        Button(action: action) {
             Rectangle()
                 .fill(.clear)
                 .contentShape(Rectangle())
