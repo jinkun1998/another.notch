@@ -1,26 +1,50 @@
 import XCTest
 
 final class FeatureModuleAvailabilityTests: XCTestCase {
-    func testStandardNotchMotionTiming() {
-        let policy = NotchMotionPolicy(reduceMotion: false)
+    func testPolishedNotchMotionTiming() {
+        let policy = NotchMotionPolicy(reduceMotion: false, style: .polished)
 
         XCTAssertEqual(policy.openResponse, 0.42, accuracy: 0.001)
         XCTAssertEqual(policy.openDampingFraction, 0.80, accuracy: 0.001)
         XCTAssertEqual(policy.closeDuration, 0.30, accuracy: 0.001)
+        XCTAssertEqual(policy.openShell, .spring(response: 0.42, dampingFraction: 0.80))
+        XCTAssertEqual(policy.closeShell, .smooth(duration: 0.30))
         XCTAssertEqual(policy.expandedContentRevealDelay, 0.08, accuracy: 0.001)
         XCTAssertEqual(policy.expandedContentRevealDuration, 0.22, accuracy: 0.001)
         XCTAssertEqual(policy.expandedContentHideDuration, 0.12, accuracy: 0.001)
     }
 
-    func testReduceMotionUsesShortNonBouncyTiming() {
-        let policy = NotchMotionPolicy(reduceMotion: true)
+    func testSpringNotchMotionTiming() {
+        let policy = NotchMotionPolicy(reduceMotion: false, style: .spring)
 
-        XCTAssertEqual(policy.expandedContentRevealDelay, 0)
-        XCTAssertLessThan(policy.openResponse, 0.42)
-        XCTAssertLessThan(policy.closeDuration, 0.30)
-        XCTAssertLessThan(policy.expandedContentRevealDuration, 0.22)
-        XCTAssertLessThanOrEqual(policy.expandedContentHideDuration, 0.12)
-        XCTAssertEqual(policy.openDampingFraction, 1)
+        XCTAssertEqual(policy.openResponse, 0.42, accuracy: 0.001)
+        XCTAssertEqual(policy.openDampingFraction, 1, accuracy: 0.001)
+        XCTAssertEqual(policy.closeDuration, 0.45, accuracy: 0.001)
+        XCTAssertEqual(policy.openShell, .spring(response: 0.42, dampingFraction: 1))
+        XCTAssertEqual(policy.closeShell, .spring(response: 0.45, dampingFraction: 1))
+    }
+
+    func testMinimalNotchMotionTiming() {
+        let policy = NotchMotionPolicy(reduceMotion: false, style: .minimal)
+
+        XCTAssertEqual(policy.openResponse, 0.18, accuracy: 0.001)
+        XCTAssertEqual(policy.closeDuration, 0.18, accuracy: 0.001)
+        XCTAssertEqual(policy.openShell, .easeOut(duration: 0.18))
+        XCTAssertEqual(policy.closeShell, .easeOut(duration: 0.18))
+    }
+
+    func testReduceMotionOverridesEveryNotchMotionStyle() {
+        for style in NotchMotionStyle.allCases {
+            let policy = NotchMotionPolicy(reduceMotion: true, style: style)
+
+            XCTAssertEqual(policy.openResponse, 0.18, accuracy: 0.001)
+            XCTAssertEqual(policy.closeDuration, 0.18, accuracy: 0.001)
+            XCTAssertEqual(policy.openShell, .easeOut(duration: 0.18))
+            XCTAssertEqual(policy.closeShell, .easeOut(duration: 0.18))
+            XCTAssertEqual(policy.expandedContentRevealDelay, 0)
+            XCTAssertEqual(policy.expandedContentRevealDuration, 0.14, accuracy: 0.001)
+            XCTAssertEqual(policy.expandedContentHideDuration, 0.10, accuracy: 0.001)
+        }
     }
 
     func testScreenBrightnessDisplaySelectionPrefersBuiltInDisplay() {

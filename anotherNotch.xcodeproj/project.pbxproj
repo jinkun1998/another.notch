@@ -15,6 +15,7 @@
 		A11E00160000000000000016 /* ScreenBrightnessDisplaySelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11E00050000000000000005 /* ScreenBrightnessDisplaySelector.swift */; };
 		A11E00170000000000000017 /* NotchMotionPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11E00060000000000000006 /* NotchMotionPolicy.swift */; };
 		A11E00180000000000000018 /* NotchMotionPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11E00060000000000000006 /* NotchMotionPolicy.swift */; };
+		A11E00190000000000000019 /* Defaults in Frameworks */ = {isa = PBXBuildFile; productRef = A11E00070000000000000007 /* Defaults */; };
 		1100290C2E847E2800035A57 /* NSItemProvider+LoadHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1100290B2E847E2800035A57 /* NSItemProvider+LoadHelpers.swift */; };
 		110029272E84FD4C00035A57 /* TemporaryFileStorageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110029262E84FD4C00035A57 /* TemporaryFileStorageService.swift */; };
 		1100292A2E8691B400035A57 /* FileShareView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110029292E8691B400035A57 /* FileShareView.swift */; };
@@ -350,6 +351,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A11E00190000000000000019 /* Defaults in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -822,6 +824,9 @@
 			dependencies = (
 			);
 			name = anotherNotchTests;
+			packageProductDependencies = (
+				A11E00070000000000000007 /* Defaults */,
+			);
 			productName = anotherNotchTests;
 			productReference = A11E00040000000000000004 /* anotherNotchTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -1636,6 +1641,11 @@
 			productName = KeyboardShortcuts;
 		};
 		B19016212CC15B3D00E3F12E /* Defaults */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B19016202CC15B3D00E3F12E /* XCRemoteSwiftPackageReference "Defaults" */;
+			productName = Defaults;
+		};
+		A11E00070000000000000007 /* Defaults */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = B19016202CC15B3D00E3F12E /* XCRemoteSwiftPackageReference "Defaults" */;
 			productName = Defaults;

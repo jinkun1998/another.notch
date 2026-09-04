@@ -29,7 +29,6 @@ struct AnotherNotchHeader: View {
                 .fill(notchBackgroundColor)
                 .frame(width: vm.closedNotchSize.width)
                 .frame(maxHeight: .infinity, alignment: .top)
-                .mask { NotchShape() }
 
             HStack(spacing: 0) {
                 TabSelectionView(tabWidth: moduleTabWidth)

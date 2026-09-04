@@ -32,6 +32,7 @@ struct ContentView: View {
     @ObservedObject private var modules = FeatureModuleRegistry.shared
     @State private var hoverTask: Task<Void, Never>?
     @State private var closingShellTask: Task<Void, Never>?
+    @State private var closingTransitionID: UUID?
     @State private var expandedContentTask: Task<Void, Never>?
     @State private var tabTransitionTask: Task<Void, Never>?
     @State private var isHovering: Bool = false
@@ -39,6 +40,7 @@ struct ContentView: View {
     @State private var isExpandedContentVisible: Bool = false
     @State private var isTabTransitioning: Bool = false
     @State private var shellExpansion: CGFloat = .zero
+    @State private var glassBackgroundProgress: CGFloat = .zero
     @State private var displayedExpandedModule: FeatureModuleID?
     @State private var outgoingExpandedModule: FeatureModuleID?
     @State private var closingNotchSize: CGSize?
@@ -55,9 +57,10 @@ struct ContentView: View {
     @Default(.notchTransparency) var notchTransparency
     @Default(.notchGradientBlackCoverage) var notchGradientBlackCoverage
     @Default(.bottomCornerRadius) var bottomCornerRadius
+    @Default(.notchMotionStyle) var notchMotionStyle
 
     private var motion: NotchMotionPolicy {
-        .init(reduceMotion: reduceMotion)
+        .init(reduceMotion: reduceMotion, style: notchMotionStyle)
     }
 
     private var interactionAnimation: Animation {
@@ -172,35 +175,46 @@ struct ContentView: View {
     }
 
     private var notchBackground: some View {
+        GeometryReader { geometry in
+            Color.black
+                .mask {
+                    ZStack(alignment: .top) {
+                        glassBackgroundMask
+                        Rectangle()
+                            .fill(.black)
+                            .frame(height: geometry.size.height)
+                            .offset(y: geometry.size.height * glassBackgroundProgress)
+                    }
+                }
+        }
+    }
+
+    private var glassBackgroundMask: some View {
         let horizontalInset = (1 - opaqueNotchCoverage) / 2
         let leadingEdgeOpacity = notchTransparency * 0.25
         let trailingEdgeOpacity = notchTransparency * 0.18
 
-        return ZStack {
-            Color.black.opacity(1 - shellExpansion)
+        return LinearGradient(
+            stops: [
+                .init(color: .black.opacity(leadingEdgeOpacity), location: 0),
+                .init(color: .black, location: horizontalInset),
+                .init(color: .black, location: 1 - horizontalInset),
+                .init(color: .black.opacity(trailingEdgeOpacity), location: 1)
+            ],
+            startPoint: .leading,
+            endPoint: .trailing
+        )
+        .mask {
             LinearGradient(
                 stops: [
-                    .init(color: .black.opacity(leadingEdgeOpacity), location: 0),
-                    .init(color: .black, location: horizontalInset),
-                    .init(color: .black, location: 1 - horizontalInset),
-                    .init(color: .black.opacity(trailingEdgeOpacity), location: 1)
+                    .init(color: .black, location: 0),
+                    .init(color: .black, location: opaqueNotchCoverage),
+                    .init(color: .black.opacity(0.3), location: min(0.98, opaqueNotchCoverage + 0.1)),
+                    .init(color: .clear, location: 1)
                 ],
-                startPoint: .leading,
-                endPoint: .trailing
+                startPoint: .top,
+                endPoint: .bottom
             )
-            .mask {
-                LinearGradient(
-                    stops: [
-                        .init(color: .black, location: 0),
-                        .init(color: .black, location: opaqueNotchCoverage),
-                        .init(color: .black.opacity(0.3), location: min(0.98, opaqueNotchCoverage + 0.1)),
-                        .init(color: .clear, location: 1)
-                    ],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-            }
-            .opacity(shellExpansion)
         }
     }
 
@@ -325,6 +339,28 @@ struct ContentView: View {
         )
     }
 
+    private var notchShell: some View {
+        notchLayout()
+            .frame(alignment: .top)
+            .padding(.horizontal, shellHorizontalPadding)
+            .padding([.horizontal, .bottom], 12 * shellExpansion)
+            .frame(
+                width: shellFrameSize.width,
+                height: shellFrameSize.height,
+                alignment: .top
+            )
+            .background { notchBackground }
+            .clipShape(currentNotchShape)
+            .compositingGroup()
+            .offset(y: notchVisualTopOffset)
+            .shadow(
+                color: ((shellExpansion > 0 || isHovering) && Defaults[.enableShadow])
+                    ? .black.opacity(0.7) : .clear,
+                radius: Defaults[.cornerRadiusScaling] ? 6 : 4
+            )
+            .padding(.bottom, vm.effectiveClosedNotchHeight == 0 ? 10 : 0)
+    }
+
     var body: some View {
         // Calculate scale based on gesture progress only
         let gestureScale: CGFloat = {
@@ -335,33 +371,10 @@ struct ContentView: View {
         
         ZStack(alignment: .top) {
             VStack(spacing: 0) {
-                notchLayout()
-                    .frame(alignment: .top)
-                    .padding(
-                        .horizontal,
-                        shellHorizontalPadding
-                    )
-                    .padding([.horizontal, .bottom], 12 * shellExpansion)
-                    .frame(
-                        width: shellFrameSize.width,
-                        height: shellFrameSize.height,
-                        alignment: .top
-                    )
-                    .background {
-                        notchBackground
-                    }
-                    .clipShape(currentNotchShape)
-                    .shadow(
-                        color: ((shellExpansion > 0 || isHovering) && Defaults[.enableShadow])
-                            ? .black.opacity(0.7) : .clear, radius: Defaults[.cornerRadiusScaling] ? 6 : 4
-                    )
-                    .padding(
-                        .bottom,
-                        vm.effectiveClosedNotchHeight == 0 ? 10 : 0
-                    )
+                notchShell
                     .conditionalModifier(true) { view in
                         return view
-                            .animation(sneakPeekAnimation, value: shellFrameSize)
+                            .animation(sneakPeekAnimation, value: closedNotchContentSize)
                             .animation(interactionAnimation, value: gestureProgress)
                     }
                     .contentShape(Rectangle())
@@ -508,6 +521,7 @@ struct ContentView: View {
         .environmentObject(vm)
         .onAppear {
             shellExpansion = vm.notchState == .open ? 1 : 0
+            glassBackgroundProgress = shellExpansion
             isExpandedContentVisible = vm.notchState == .open
             displayedExpandedModule = coordinator.currentView
             MusicManager.shared.forceUpdate()
@@ -518,6 +532,8 @@ struct ContentView: View {
             expandedContentTask?.cancel()
 
             guard state == .open else {
+                let transitionID = UUID()
+                closingTransitionID = transitionID
                 tabTransitionTask?.cancel()
                 displayedExpandedModule = coordinator.currentView
                 outgoingExpandedModule = nil
@@ -526,29 +542,32 @@ struct ContentView: View {
                 isClosingShell = true
                 withAnimation(motion.expandedContentHideAnimation) {
                     isExpandedContentVisible = false
+                    glassBackgroundProgress = 0
                 }
                 closingShellTask = Task { @MainActor in
                     try? await Task.sleep(for: .seconds(motion.expandedContentHideDuration))
                     guard !Task.isCancelled, vm.notchState == .closed else { return }
 
-                    withAnimation(motion.closeShellAnimation) {
+                    withAnimation(motion.closeShellAnimation, completionCriteria: .removed) {
                         shellExpansion = 0
-                    }
+                    } completion: {
+                        guard closingTransitionID == transitionID, vm.notchState == .closed else { return }
 
-                    try? await Task.sleep(for: .seconds(motion.closeDuration))
-                    guard !Task.isCancelled, vm.notchState == .closed else { return }
-                    isClosingShell = false
-                    closingNotchSize = nil
-                    vm.isClosingTransition = false
-                    updateClosedNotchViewport()
+                        isClosingShell = false
+                        closingNotchSize = nil
+                        vm.isClosingTransition = false
+                        updateClosedNotchViewport()
+                    }
                 }
                 return
             }
 
+            closingTransitionID = nil
             isClosingShell = false
             vm.isClosingTransition = false
             displayedExpandedModule = coordinator.currentView
             closingNotchSize = vm.notchSize
+            glassBackgroundProgress = 1
             withAnimation(motion.openShellAnimation) {
                 shellExpansion = 1
             }

@@ -1872,6 +1872,7 @@ struct Appearance: View {
     @Default(.notchTransparency) var notchTransparency
     @Default(.notchGradientBlackCoverage) var notchGradientBlackCoverage
     @Default(.bottomCornerRadius) var bottomCornerRadius
+    @Default(.notchMotionStyle) var notchMotionStyle
 
     let icons: [String] = ["logo2"]
     @State private var selectedIcon: String = "logo2"
@@ -1890,6 +1891,17 @@ struct Appearance: View {
 
             } header: {
                 Text("General")
+            }
+
+            Section {
+                Picker("Style", selection: $notchMotionStyle) {
+                    ForEach(NotchMotionStyle.allCases, id: \.self) { style in
+                        Text(style.rawValue).tag(style)
+                    }
+                }
+                .readableSettingsPicker()
+            } header: {
+                Text("Notch motion")
             }
 
             Section {
