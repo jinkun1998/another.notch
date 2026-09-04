@@ -154,7 +154,6 @@ private enum SettingsPage: String, CaseIterable, Identifiable {
     case bluetooth = "Bluetooth"
     case shelf = "Shelf"
     case camera = "Camera"
-    case shortcuts = "Shortcuts"
     case advanced = "Advanced"
     case about = "About"
 
@@ -173,7 +172,6 @@ private enum SettingsPage: String, CaseIterable, Identifiable {
         case .bluetooth: "airpodspro"
         case .shelf: "books.vertical"
         case .camera: "web.camera"
-        case .shortcuts: "keyboard"
         case .advanced: "gearshape.2"
         case .about: "info.circle"
         }
@@ -192,7 +190,6 @@ private enum SettingsPage: String, CaseIterable, Identifiable {
         case .bluetooth: "Bluetooth output connection notifications."
         case .shelf: "Drag, drop, and saved Shelf items."
         case .camera: "Camera mirror appearance and access."
-        case .shortcuts: "Keyboard shortcuts for quick actions."
         case .advanced: "Accent color, window behavior, and privacy."
         case .about: "Version, updates, and project information."
         }
@@ -262,7 +259,6 @@ struct SettingsView: View {
                 }
 
                 Section("System") {
-                    sidebarRow(.shortcuts)
                     sidebarRow(.advanced)
                 }
 
@@ -323,8 +319,6 @@ struct SettingsView: View {
                     ModuleSettings(moduleID: .camera) {
                         CameraSettings()
                     }
-                    case .shortcuts:
-                    Shortcuts()
                     case .advanced:
                     Advanced()
                     case .about:
@@ -1789,11 +1783,27 @@ struct Shelf: View {
             .disabled(!boringShelf)
             
             Section {
-                LiquidGlassSegmentedPicker(
-                    "Quick Share Service",
-                    selection: $quickShareProvider,
-                    items: quickShareService.availableProviders.map { $0.id }
-                ) { $0 }
+                Picker("Quick Share Service", selection: $quickShareProvider) {
+                    ForEach(quickShareService.availableProviders, id: \.id) { provider in
+                        HStack {
+                            Group {
+                                if let imgData = provider.imageData, let nsImg = NSImage(data: imgData) {
+                                    Image(nsImage: nsImg)
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fit)
+                                } else {
+                                    Image(systemName: "square.and.arrow.up")
+                                }
+                            }
+                            .frame(width: 16, height: 16)
+                            .foregroundColor(.accentColor)
+                            Text(provider.id)
+                        }
+                        .tag(provider.id)
+                    }
+                }
+                .pickerStyle(.menu)
+                .readableSettingsPicker()
                 
                 if let selectedProvider = selectedProvider {
                     HStack {
@@ -2601,29 +2611,6 @@ struct AccentCircleButton: View {
         }
         .buttonStyle(.plain)
         .help(isSystemDefault ? "Use your macOS system accent color" : "")
-    }
-}
-
-struct Shortcuts: View {
-    var body: some View {
-        Form {
-            Section {
-                KeyboardShortcuts.Recorder("Toggle Sneak Peek:", name: .toggleSneakPeek)
-            } header: {
-                Text("Media")
-            } footer: {
-                Text(
-                    "Sneak Peek shows the media title and artist under the notch for a few seconds."
-                )
-                .multilineTextAlignment(.trailing)
-                .foregroundStyle(.secondary)
-                .font(.caption)
-            }
-            Section {
-                KeyboardShortcuts.Recorder("Toggle Notch Open:", name: .toggleNotchOpen)
-            }
-        }
-        .accentColor(.effectiveAccent)
     }
 }
 
