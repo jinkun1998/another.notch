@@ -9,6 +9,7 @@
 import Combine
 import Defaults
 import AppKit
+import QuartzCore
 import SwiftUI
 
 // MARK: - Music Player Components
@@ -146,7 +147,10 @@ struct MusicControlsView: View {
                 .contentShape(Rectangle())
                 .onTapGesture {}
                 if useMusicVisualizer {
-                    DynamicIslandWaveform(isPlaying: musicManager.isPlaying && isExpandedAndVisible)
+                    DynamicIslandWaveform(
+                        isPlaying: musicManager.isPlaying && isExpandedAndVisible,
+                        framesPerSecond: 15
+                    )
                         .frame(width: 28, height: 18)
                         .padding(.leading, 10)
                 }
@@ -306,20 +310,17 @@ struct DynamicIslandWaveform: View {
     @Default(.waveformMatchesAlbumArt) private var waveformMatchesAlbumArt
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let isPlaying: Bool
+    let framesPerSecond: Double
     @State private var cachedColors: [Color] = [.purple, .pink]
 
     private let heights: [CGFloat] = [0.45, 0.8, 1, 0.65, 0.35]
 
     var body: some View {
-        Group {
-            if isPlaying && !reduceMotion {
-                TimelineView(.animation(minimumInterval: 1 / 15)) { timeline in
-                    waveformBars(at: timeline.date)
-                }
-            } else {
-                waveformBars(at: nil)
-            }
-        }
+        CoreAnimatedWaveform(
+            colors: cachedColors,
+            isAnimating: isPlaying && !reduceMotion,
+            framesPerSecond: framesPerSecond
+        )
         .onAppear {
             if waveformMatchesAlbumArt {
                 musicManager.calculateAverageColor()
@@ -328,6 +329,10 @@ struct DynamicIslandWaveform: View {
         }
         .onReceive(musicManager.$avgColor) { _ in
             updateColors()
+        }
+        .onReceive(musicManager.$albumArt) { _ in
+            guard waveformMatchesAlbumArt else { return }
+            musicManager.calculateAverageColor()
         }
         .onChange(of: waveformMatchesAlbumArt) { _, matchesAlbumArt in
             if matchesAlbumArt {
@@ -349,23 +354,109 @@ struct DynamicIslandWaveform: View {
         ]
     }
 
-    private func waveformBars(at date: Date?) -> some View {
-        HStack(spacing: 2) {
-            ForEach(heights.indices, id: \.self) { index in
-                Capsule()
-                    .fill(LinearGradient(colors: cachedColors, startPoint: .top, endPoint: .bottom))
-                    .frame(width: 2, height: 18 * heights[index])
-                    .scaleEffect(y: level(for: index, at: date), anchor: .center)
-            }
-        }
+}
+
+private struct CoreAnimatedWaveform: NSViewRepresentable {
+    let colors: [Color]
+    let isAnimating: Bool
+    let framesPerSecond: Double
+
+    func makeNSView(context: Context) -> WaveformView {
+        WaveformView()
     }
 
-    private func level(for index: Int, at date: Date?) -> CGFloat {
-        guard let date = date, isPlaying else { return 0.45 }
-        guard !reduceMotion else { return 0.65 }
+    func updateNSView(_ waveformView: WaveformView, context: Context) {
+        waveformView.update(
+            colors: colors.map(NSColor.init),
+            isAnimating: isAnimating,
+            framesPerSecond: framesPerSecond
+        )
+    }
 
-        let phase = date.timeIntervalSinceReferenceDate * 5 + Double(index) * 0.9
-        return 0.55 + CGFloat((sin(phase) + 1) / 2) * 0.45
+    final class WaveformView: NSView {
+        private let heights: [CGFloat] = [0.45, 0.8, 1, 0.65, 0.35]
+        private let bars = (0..<5).map { _ in CAGradientLayer() }
+        private var animatedFramesPerSecond: Double?
+
+        override init(frame frameRect: NSRect) {
+            super.init(frame: frameRect)
+            wantsLayer = true
+            layer = CALayer()
+            bars.forEach { bar in
+                bar.startPoint = CGPoint(x: 0.5, y: 0)
+                bar.endPoint = CGPoint(x: 0.5, y: 1)
+                bar.cornerRadius = 1
+                bar.masksToBounds = true
+                layer?.addSublayer(bar)
+            }
+        }
+
+        required init?(coder: NSCoder) {
+            nil
+        }
+
+        override func layout() {
+            super.layout()
+            let barWidth: CGFloat = 2
+            let spacing: CGFloat = 2
+            let totalWidth = barWidth * CGFloat(bars.count)
+                + spacing * CGFloat(bars.count - 1)
+            let startX = (bounds.width - totalWidth) / 2
+
+            for (index, bar) in bars.enumerated() {
+                let height = min(bounds.height, 18) * heights[index]
+                bar.frame = CGRect(
+                    x: startX + CGFloat(index) * (barWidth + spacing),
+                    y: (bounds.height - height) / 2,
+                    width: barWidth,
+                    height: height
+                )
+            }
+        }
+
+        func update(colors: [NSColor], isAnimating: Bool, framesPerSecond: Double) {
+            let gradientColors = colors.compactMap(\.cgColor)
+            bars.forEach { $0.colors = gradientColors }
+
+            guard isAnimating else {
+                animatedFramesPerSecond = nil
+                bars.forEach {
+                    $0.removeAnimation(forKey: "waveformScale")
+                    $0.setValue(0.45, forKeyPath: "transform.scale.y")
+                }
+                return
+            }
+
+            guard animatedFramesPerSecond != framesPerSecond else { return }
+            animatedFramesPerSecond = framesPerSecond
+            for (index, bar) in bars.enumerated() {
+                bar.removeAnimation(forKey: "waveformScale")
+                startAnimation(on: bar, index: index, framesPerSecond: framesPerSecond)
+            }
+        }
+
+        private func startAnimation(
+            on bar: CALayer,
+            index: Int,
+            framesPerSecond: Double
+        ) {
+            let duration = 2.0
+            let frameCount = max(2, Int(framesPerSecond * duration))
+            var values = (0..<frameCount).map { frame in
+                let time = Double(frame) / framesPerSecond
+                let phase = time / duration * .pi * 4 + Double(index) * 0.9
+                return 0.55 + (sin(phase) + 1) / 2 * 0.45
+            }
+            values.append(values[0])
+            assert(values.first == values.last)
+
+            let animation = CAKeyframeAnimation(keyPath: "transform.scale.y")
+            animation.values = values
+            animation.duration = duration
+            animation.repeatCount = .infinity
+            animation.calculationMode = .discrete
+            bar.add(animation, forKey: "waveformScale")
+        }
     }
 }
 

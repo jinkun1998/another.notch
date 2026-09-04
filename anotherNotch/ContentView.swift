@@ -50,7 +50,6 @@ struct ContentView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     @Default(.useMusicVisualizer) var useMusicVisualizer
-    @Default(.rotateAlbumArt) var rotateAlbumArt
 
     @Default(.showNotHumanFace) var showNotHumanFace
     @Default(.notchTransparency) var notchTransparency
@@ -170,10 +169,6 @@ struct ContentView: View {
             return interpolate(closedNotchShellSize, closingNotchSize)
         }
         return closedNotchShellSize
-    }
-
-    private var shouldRotateClosedAlbumArt: Bool {
-        rotateAlbumArt && musicManager.isPlaying && !reduceMotion
     }
 
     private var notchBackground: some View {
@@ -657,7 +652,7 @@ struct ContentView: View {
                 }
             }
             .zIndex(2)
-            if vm.notchState == .open || isClosingShellActive {
+            if isExpandedContentVisible && (vm.notchState == .open || isClosingShellActive) {
                 ZStack(alignment: .top) {
                     if let outgoingExpandedModule {
                         expandedModuleView(outgoingExpandedModule)
@@ -681,10 +676,10 @@ struct ContentView: View {
                     maxHeight: expandedContentHeight,
                     alignment: .top
                 )
-                .opacity(isExpandedContentVisible ? shellExpansion : 0)
-                .scaleEffect(isExpandedContentVisible ? 1 : 0.96, anchor: .top)
+                .opacity(shellExpansion)
+                .transition(.opacity.combined(with: .scale(scale: 0.96, anchor: .top)))
                 .zIndex(1)
-                .allowsHitTesting(vm.notchState == .open && isExpandedContentVisible)
+                .allowsHitTesting(vm.notchState == .open)
                 .opacity(
                     gestureProgress != 0 ? 1.0 - min(abs(gestureProgress) * 0.1, 0.3) : 1.0
                 )
@@ -883,17 +878,7 @@ struct ContentView: View {
         let compactMediaSize = max(0, vm.effectiveClosedNotchHeight - 12)
 
         HStack(spacing: 4) {
-            if shouldRotateClosedAlbumArt {
-                TimelineView(.animation(minimumInterval: 1 / 24)) { timeline in
-                    closedAlbumArt(
-                        size: compactMediaSize,
-                        rotation: timeline.date.timeIntervalSinceReferenceDate
-                            .truncatingRemainder(dividingBy: 8) / 8 * 360
-                    )
-                }
-            } else {
-                closedAlbumArt(size: compactMediaSize, rotation: 0)
-            }
+            closedAlbumArt(size: compactMediaSize, rotation: 0)
 
             Rectangle()
                 .fill(.black)
@@ -944,7 +929,10 @@ struct ContentView: View {
 
             HStack {
                 if useMusicVisualizer {
-                    DynamicIslandWaveform(isPlaying: musicManager.isPlaying)
+                    DynamicIslandWaveform(
+                        isPlaying: musicManager.isPlaying,
+                        framesPerSecond: 6
+                    )
                         .scaleEffect(0.68)
                         .frame(
                             width: compactMediaSize,

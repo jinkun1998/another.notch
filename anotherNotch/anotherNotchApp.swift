@@ -605,7 +605,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             }
 
             vm.screenUUID = selectedScreen.displayUUID
-            vm.notchSize = getClosedNotchSize(screenUUID: selectedScreen.displayUUID)
+            let closedSize = getClosedNotchSize(screenUUID: selectedScreen.displayUUID)
+            if vm.notchState == .closed {
+                vm.closedNotchSize = closedSize
+                vm.closedViewportSize = closedSize
+                vm.notchSize = closedSize
+            }
 
             if window == nil {
                 window = createAnotherNotchWindow(for: selectedScreen, with: vm)
