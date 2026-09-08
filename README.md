@@ -102,7 +102,7 @@ Homebrew support is coming soon. Until then, install manually using the release 
 - [x] System HUD replacements (volume, brightness, backlight)
 - [x] Bluetooth device live activity
 - [x] Searchable clipboard manager
-- [ ] Fan controls
+- [ ] Fans control
 - [ ] Lock screen widgets
 - [ ] Extension system
 
