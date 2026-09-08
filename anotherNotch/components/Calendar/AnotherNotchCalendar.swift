@@ -240,8 +240,11 @@ struct CalendarView: View {
 }
 
 private struct MonthCalendarGrid: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Binding var selectedDate: Date
     @Binding var displayedMonth: Date
+    @State private var haptics = false
+    @State private var movingForward = true
 
     private let calendar = Calendar.autoupdatingCurrent
 
@@ -286,6 +289,7 @@ private struct MonthCalendarGrid: View {
                     .font(.system(size: 12, weight: .semibold))
                     .lineLimit(1)
                     .frame(maxWidth: .infinity)
+                    .contentTransition(.opacity)
 
                 Button {
                     moveMonth(by: 1)
@@ -297,23 +301,42 @@ private struct MonthCalendarGrid: View {
             .foregroundStyle(.white)
             .font(.system(size: 10, weight: .semibold))
 
-            LazyVGrid(
-                columns: Array(repeating: GridItem(.flexible(), spacing: 2), count: 7),
-                spacing: 2
-            ) {
-                ForEach(Array(weekdaySymbols.enumerated()), id: \.offset) { _, symbol in
-                    Text(symbol)
-                        .font(.system(size: 9, weight: .medium))
-                        .foregroundStyle(Color.white.opacity(0.5))
-                        .frame(height: 14)
-                }
+            ZStack {
+                LazyVGrid(
+                    columns: Array(repeating: GridItem(.flexible(), spacing: 2), count: 7),
+                    spacing: 2
+                ) {
+                    ForEach(Array(weekdaySymbols.enumerated()), id: \.offset) { _, symbol in
+                        Text(symbol)
+                            .font(.system(size: 9, weight: .medium))
+                            .foregroundStyle(Color.white.opacity(0.5))
+                            .frame(height: 14)
+                    }
 
-                ForEach(Array(monthDays.enumerated()), id: \.offset) { _, date in
-                    dayCell(date)
+                    ForEach(Array(monthDays.enumerated()), id: \.offset) { _, date in
+                        dayCell(date)
+                    }
                 }
+                .id(monthStart)
+                .transition(reduceMotion ? .opacity : .asymmetric(
+                    insertion: .offset(x: movingForward ? 32 : -32).combined(with: .opacity),
+                    removal: .identity
+                ))
             }
+            .clipped()
         }
         .frame(width: 216, alignment: .top)
+        .panGesture(direction: .left, threshold: 40) { _, phase in
+            guard phase == .began else { return }
+            moveMonth(by: 1)
+            triggerHaptic()
+        }
+        .panGesture(direction: .right, threshold: 40) { _, phase in
+            guard phase == .began else { return }
+            moveMonth(by: -1)
+            triggerHaptic()
+        }
+        .sensoryFeedback(.alignment, trigger: haptics)
     }
 
     @ViewBuilder
@@ -348,7 +371,15 @@ private struct MonthCalendarGrid: View {
         guard let month = calendar.date(byAdding: .month, value: value, to: displayedMonth) else {
             return
         }
-        displayedMonth = month
+        movingForward = value > 0
+        withAnimation(reduceMotion ? .easeInOut(duration: 0.12) : .smooth(duration: 0.38)) {
+            displayedMonth = month
+        }
+    }
+
+    private func triggerHaptic() {
+        guard Defaults[.enableHaptics] else { return }
+        haptics.toggle()
     }
 }
 
