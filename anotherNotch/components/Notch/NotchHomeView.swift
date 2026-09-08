@@ -151,7 +151,7 @@ struct MusicControlsView: View {
                         isPlaying: musicManager.isPlaying && isExpandedAndVisible,
                         framesPerSecond: 15
                     )
-                        .frame(width: 28, height: 18)
+                        .frame(width: 28, height: 14)
                         .padding(.leading, 10)
                 }
             }
