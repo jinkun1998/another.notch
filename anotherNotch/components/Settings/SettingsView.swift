@@ -646,6 +646,8 @@ struct GeneralSettings: View {
     @Default(.automaticallySwitchDisplay) var automaticallySwitchDisplay
     @Default(.enableGestures) var enableGestures
     @Default(.openNotchOnHover) var openNotchOnHover
+    @Default(.enableHaptics) var enableHaptics
+    @Default(.hapticFeedbackLevel) var hapticFeedbackLevel
     
 
     var body: some View {
@@ -829,7 +831,17 @@ struct GeneralSettings: View {
                 Text("Open notch on hover")
             }
             Defaults.Toggle(key: .enableHaptics) {
-                    Text("Enable haptic feedback")
+                Text("Enable haptic feedback")
+            }
+            if enableHaptics {
+                LiquidGlassSegmentedPicker(
+                    "Haptic level",
+                    selection: $hapticFeedbackLevel,
+                    items: HapticFeedbackLevel.allCases
+                ) { $0.rawValue }
+                .onChange(of: hapticFeedbackLevel) { _, newLevel in
+                    HapticFeedback.perform(for: newLevel)
+                }
             }
             Toggle("Remember last tab", isOn: $coordinator.openLastTabByDefault)
             if openNotchOnHover {
