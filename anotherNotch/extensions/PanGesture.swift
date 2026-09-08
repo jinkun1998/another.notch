@@ -87,7 +87,9 @@ private struct ScrollMonitor: NSViewRepresentable {
         func installMonitor(on view: NSView) {
             removeMonitor()
             monitor = NSEvent.addLocalMonitorForEvents(matching: [.scrollWheel]) { [weak self, weak view] event in
-                guard let self = self, event.window === view?.window else { return event }
+                guard let self, let view, event.window === view.window,
+                      view.bounds.contains(view.convert(event.locationInWindow, from: nil))
+                else { return event }
                 self.handleScroll(event)
                 return event
             }
