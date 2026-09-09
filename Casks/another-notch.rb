@@ -8,7 +8,7 @@ cask "another-notch" do
   homepage "https://github.com/jinkun1998/another.notch"
 
   auto_updates true
-  depends_on macos: ">= :sonoma"
+  depends_on macos: :sonoma
 
   app "anotherNotch.app"
 end
