@@ -59,7 +59,19 @@ Then open the app normally.
 
 ### Homebrew
 
-Homebrew support is coming soon. Until then, install manually using the release above.
+Install the cask from this repository:
+
+```bash
+brew trust --tap https://github.com/jinkun1998/another.notch
+brew tap jinkun1998/another.notch https://github.com/jinkun1998/another.notch
+brew install --cask another-notch
+```
+
+To update through Homebrew later:
+
+```bash
+brew upgrade --cask another-notch
+```
 
 ## Usage
 

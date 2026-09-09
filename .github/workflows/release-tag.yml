@@ -194,3 +194,55 @@ jobs:
           git add updater/appcast.xml
           git commit -m "Update appcast for ${TAG}" || true
           git push origin main
+
+  update-homebrew-cask:
+    name: Update Homebrew Cask
+    needs: [validate_tag, publish]
+    if: ${{ needs.validate_tag.outputs.is_prerelease == 'false' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          fetch-depth: 0
+          token: ${{ secrets.RELEASE_TOKEN }}
+
+      - name: Update Cask version and checksum
+        env:
+          TAG: ${{ needs.validate_tag.outputs.tag }}
+          VERSION: ${{ needs.validate_tag.outputs.version }}
+          DMG_URL: ${{ github.server_url }}/${{ github.repository }}/releases/download/${{ needs.validate_tag.outputs.tag }}/anotherNotch.dmg
+        run: |
+          set -euo pipefail
+          SHA256="$(curl --fail --location --retry 5 --retry-all-errors --silent --show-error "$DMG_URL" | shasum -a 256 | awk '{print $1}')"
+          [[ -n "$SHA256" ]] || { echo "::error::Failed to calculate DMG checksum"; exit 1; }
+
+          cat > Casks/another-notch.rb <<EOF
+          cask "another-notch" do
+            version "$VERSION"
+            sha256 "$SHA256"
+
+            url "https://github.com/jinkun1998/another.notch/releases/download/v#{version}/anotherNotch.dmg"
+            name "anotherNotch"
+            desc "Another Notch app for macOS"
+            homepage "https://github.com/jinkun1998/another.notch"
+
+            auto_updates true
+            depends_on macos: :sonoma
+
+            app "anotherNotch.app"
+          end
+          EOF
+
+      - name: Commit Cask
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+          TAG: ${{ needs.validate_tag.outputs.tag }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Casks/another-notch.rb
+          git diff --cached --quiet && exit 0
+          git commit -m "Update Homebrew Cask for ${TAG}"
+          git push origin main

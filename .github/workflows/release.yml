@@ -393,104 +393,60 @@ jobs:
             --notes "$NOTES" \
             "${RELEASE_FLAGS[@]}"
 
-  upgrade-brew:
-    name: Update Homebrew cask
-    if: ${{ vars.HOMEBREW_TAP_REPOSITORY != '' }}
+  update-homebrew-cask:
+    name: Update Homebrew Cask
+    if: ${{ needs.preparation.outputs.is_beta == 'false' }}
     needs: [preparation, publish]
     runs-on: ubuntu-latest
     env:
       VERSION: ${{ needs.preparation.outputs.version }}
-      IS_BETA: ${{ needs.preparation.outputs.is_beta }}
     steps:
-      - name: Generate cask files
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          fetch-depth: 0
+          token: ${{ secrets.RELEASE_TOKEN }}
+
+      - name: Update Cask version and checksum
         run: |
           set -euo pipefail
           DMG_URL="${{ github.server_url }}/${{ github.repository }}/releases/download/v${VERSION}/anotherNotch.dmg"
+          SHA256="$(curl --fail --location --retry 5 --retry-all-errors --silent --show-error "$DMG_URL" | shasum -a 256 | awk '{print $1}')"
+          [[ -n "$SHA256" ]] || { echo "::error::Failed to calculate DMG checksum"; exit 1; }
 
-          # Retry SHA calculation (release may need a moment to propagate)
-          for attempt in 1 2 3; do
-            if SHA256=$(curl -sL --fail "$DMG_URL" | shasum -a 256 | cut -d' ' -f1); then break; fi
-            echo "Attempt $attempt failed, retrying in 10s..."; sleep 10
-          done
-          [[ -n "${SHA256:-}" ]] || { echo "::error::Failed to download DMG for SHA256"; exit 1; }
-
-          write_cask() {
-            local CASK_NAME="$1" DISPLAY_NAME="$2" DESC="$3"
-            cat <<CASK
-          cask "${CASK_NAME}" do
+          cat > Casks/another-notch.rb <<EOF
+          cask "another-notch" do
             version "${VERSION}"
             sha256 "${SHA256}"
-            url "${DMG_URL}"
-            name "${DISPLAY_NAME}"
-            desc "${DESC}"
-            homepage "${{ github.server_url }}/${{ github.repository }}"
-            livecheck do
-              url :url
-              strategy :github_latest
-            end
+
+            url "https://github.com/jinkun1998/another.notch/releases/download/v#{version}/anotherNotch.dmg"
+            name "anotherNotch"
+            desc "Another Notch app for macOS"
+            homepage "https://github.com/jinkun1998/another.notch"
+
             auto_updates true
             depends_on macos: :sonoma
+
             app "anotherNotch.app"
-            
-            postflight do
-              app_path = appdir/"anotherNotch.app"
-              next unless app_path.exist?
-              system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", app_path]
-            end
-
-            uninstall quit: "com.jinkun1998.anothernotch"
-
-            zap trash: [
-              "~/Library/Application Scripts/com.jinkun1998.anothernotch/",
-              "~/Library/Containers/com.jinkun1998.anothernotch/",
-            ]
           end
-          CASK
-          }
+          EOF
 
-          write_cask "another-notch@rc" "Another Notch RC" \
-            "Not so another notch That Rocks (Release Candidate)" > another-notch@rc.rb
-          if [[ "${IS_BETA}" == "false" ]]; then
-            write_cask "another-notch" "Another Notch" \
-              "Another notch utility" > another-notch.rb
-          fi
-
-      - name: Upload cask artifacts
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: homebrew-cask-${{ env.VERSION }}
-          path: another-notch*.rb
-
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          repository: ${{ vars.HOMEBREW_TAP_REPOSITORY }}
-          token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
-          path: homebrew-tap
-
-      - name: Update casks in tap
+      - name: Commit Cask
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         run: |
           set -euo pipefail
-          cp another-notch@rc.rb homebrew-tap/Casks/another-notch@rc.rb
-          COMMIT_MSG="Update another-notch@rc to v${VERSION}"
-          if [[ "${IS_BETA}" == "false" ]]; then
-            cp another-notch.rb homebrew-tap/Casks/another-notch.rb
-            COMMIT_MSG="Update another-notch and another-notch@rc to v${VERSION}"
-          fi
-          cd homebrew-tap
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add Casks/
-          if git diff --cached --quiet; then
-            echo "No changes to commit"
-          else
-            git commit -m "$COMMIT_MSG"
-            git push
-          fi
+          git add Casks/another-notch.rb
+          git diff --cached --quiet && exit 0
+          git commit -m "Update Homebrew Cask for v${VERSION}"
+          git push origin main
 
   ending:
     name: Finalize
     if: ${{ always() && needs.preparation.result != 'skipped' && needs.check_release.outputs.is_release == 'true' }}
-    needs: [check_release, preparation, build, publish, upgrade-brew]
+    needs: [check_release, preparation, build, publish, update-homebrew-cask]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -551,7 +507,9 @@ jobs:
           {
             if [[ "${RELEASE_SUCCEEDED}" == "true" ]]; then
               echo "✅ Released Another Notch v${VERSION} (${BUILD_TYPE} build ${BUILD_NUMBER})"
-              echo "🍺 Homebrew cask updated"
+              if [[ "${IS_BETA}" == "false" ]]; then
+                echo "🍺 Homebrew cask updated"
+              fi
               echo "📱 Sparkle appcast updated"
             else
               echo "❌ Release failed${VERSION:+ for Another Notch v${VERSION}}"
