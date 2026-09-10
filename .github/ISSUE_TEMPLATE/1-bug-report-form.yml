@@ -36,6 +36,7 @@ body:
         Settings > About)
       options:
         - Select a version
+        - v1.1.0
         - v1.0.0
         - v1.0.1-beta.5
         - v1.0.1-beta.4
