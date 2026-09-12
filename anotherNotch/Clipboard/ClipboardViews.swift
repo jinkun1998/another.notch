@@ -52,6 +52,7 @@ struct ClipboardHistoryView: View {
                                         guard !Task.isCancelled else { return }
                                     }
                                     guard vm.notchState == .closed else { return }
+                                    store.promote(entry)
                                     await store.paste(entry, into: pasteTarget)
                                 }
                             }

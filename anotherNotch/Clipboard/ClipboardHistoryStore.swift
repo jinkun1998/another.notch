@@ -255,6 +255,16 @@ final class ClipboardHistoryStore: ObservableObject {
         keyUp.post(tap: .cgSessionEventTap)
     }
 
+    func promote(_ entry: ClipboardEntry) {
+        guard let index = entries.firstIndex(where: { $0.id == entry.id }) else { return }
+        let insertionIndex = entry.isPinned ? 0 : entries.prefix { $0.isPinned }.count
+        guard index != insertionIndex else { return }
+
+        entries.remove(at: index)
+        entries.insert(entry, at: insertionIndex)
+        persist()
+    }
+
     private func insertText(_ entry: ClipboardEntry) -> Bool {
         guard entry.kind != .image, let value = entry.value else { return false }
 
