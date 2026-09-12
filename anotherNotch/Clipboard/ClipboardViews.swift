@@ -39,9 +39,23 @@ struct ClipboardHistoryView: View {
                                 }
                                 store.copy(entry)
                                 Task { @MainActor in
-                                    try? await Task.sleep(for: .milliseconds(160))
+                                    do {
+                                        try await Task.sleep(for: .milliseconds(160))
+                                    } catch {
+                                        return
+                                    }
                                     guard selectedEntryID == entry.id else { return }
                                     vm.close()
+
+                                    while vm.isClosingTransition {
+                                        do {
+                                            try await Task.sleep(for: .milliseconds(16))
+                                        } catch {
+                                            return
+                                        }
+                                    }
+                                    guard selectedEntryID == entry.id, vm.notchState == .closed else { return }
+                                    store.promote(entry)
                                 }
                             }
                         }

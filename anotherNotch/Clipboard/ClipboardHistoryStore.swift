@@ -194,6 +194,17 @@ final class ClipboardHistoryStore: ObservableObject {
         copySound?.play()
     }
 
+    func promote(_ entry: ClipboardEntry) {
+        if let index = entries.firstIndex(where: { $0.id == entry.id }) {
+            let insertionIndex = entry.isPinned ? 0 : entries.prefix { $0.isPinned }.count
+            if index != insertionIndex {
+                entries.remove(at: index)
+                entries.insert(entry, at: insertionIndex)
+                persist()
+            }
+        }
+    }
+
     func delete(_ entry: ClipboardEntry) {
         entries.removeAll { $0.id == entry.id }
         removeImageFile(for: entry)

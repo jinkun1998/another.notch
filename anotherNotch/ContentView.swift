@@ -594,7 +594,7 @@ struct ContentView: View {
 
                         isClosingShell = false
                         closingNotchSize = nil
-                        vm.isClosingTransition = false
+                        vm.finishClose()
                         updateClosedNotchViewport()
                     }
                 }
