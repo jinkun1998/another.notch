@@ -1,4 +1,5 @@
 import AppKit
+import ApplicationServices
 import Combine
 import Defaults
 import Fuse
@@ -139,6 +140,7 @@ final class ClipboardHistoryStore: ObservableObject {
     private var lastChangeCount = NSPasteboard.general.changeCount
     private var hudTask: Task<Void, Never>?
     private var selfWriteSuppressionDeadline = Date.distantPast
+    private var lastExternalApplication: NSRunningApplication?
 
     private var directory: URL {
         let appSupport = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
@@ -153,6 +155,18 @@ final class ClipboardHistoryStore: ObservableObject {
     private init() {
         createDirectory()
         load()
+        lastExternalApplication = nonApp(NSWorkspace.shared.frontmostApplication)
+        NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.didActivateApplicationNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] notification in
+            let application = notification.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication
+            Task { @MainActor in
+                guard let self, let application = self.nonApp(application) else { return }
+                self.lastExternalApplication = application
+            }
+        }
     }
 
     func startMonitoring() {
@@ -192,6 +206,81 @@ final class ClipboardHistoryStore: ObservableObject {
 
         lastChangeCount = pasteboard.changeCount
         copySound?.play()
+    }
+
+    func pasteTarget() -> NSRunningApplication? {
+        nonApp(NSWorkspace.shared.frontmostApplication) ?? lastExternalApplication
+    }
+
+    func paste(_ entry: ClipboardEntry, into application: NSRunningApplication?) async {
+        guard let application,
+              !application.isTerminated,
+              application.bundleIdentifier != Bundle.main.bundleIdentifier
+        else { return }
+        guard await XPCHelperClient.shared.ensureAccessibilityAuthorization(promptIfNeeded: false) else { return }
+
+        NSApp.keyWindow?.resignKey()
+        application.activate()
+        for _ in 0..<10 {
+            guard !Task.isCancelled else { return }
+            if NSWorkspace.shared.frontmostApplication?.processIdentifier == application.processIdentifier {
+                break
+            }
+            try? await Task.sleep(for: .milliseconds(50))
+        }
+        guard !Task.isCancelled,
+              NSWorkspace.shared.frontmostApplication?.processIdentifier == application.processIdentifier,
+              let eventSource = CGEventSource(stateID: .combinedSessionState),
+              let keyDown = CGEvent(keyboardEventSource: eventSource, virtualKey: 9, keyDown: true),
+              let keyUp = CGEvent(keyboardEventSource: eventSource, virtualKey: 9, keyDown: false)
+        else { return }
+
+        do {
+            try await Task.sleep(for: .milliseconds(80))
+        } catch {
+            return
+        }
+        guard NSWorkspace.shared.frontmostApplication?.processIdentifier == application.processIdentifier else { return }
+
+        if insertText(entry) { return }
+
+        eventSource.setLocalEventsFilterDuringSuppressionState(
+            [.permitLocalMouseEvents, .permitSystemDefinedEvents],
+            state: .eventSuppressionStateSuppressionInterval
+        )
+        let commandFlags = CGEventFlags(rawValue: CGEventFlags.maskCommand.rawValue | 0x000008)
+        keyDown.flags = commandFlags
+        keyUp.flags = commandFlags
+        keyDown.post(tap: .cgSessionEventTap)
+        keyUp.post(tap: .cgSessionEventTap)
+    }
+
+    private func insertText(_ entry: ClipboardEntry) -> Bool {
+        guard entry.kind != .image, let value = entry.value else { return false }
+
+        let systemWideElement = AXUIElementCreateSystemWide()
+        var focusedElement: CFTypeRef?
+        guard AXUIElementCopyAttributeValue(
+            systemWideElement,
+            kAXFocusedUIElementAttribute as CFString,
+            &focusedElement
+        ) == .success,
+              let focusedElement
+        else { return false }
+
+        return AXUIElementSetAttributeValue(
+            focusedElement as! AXUIElement,
+            kAXSelectedTextAttribute as CFString,
+            value as CFTypeRef
+        ) == .success
+    }
+
+    private func nonApp(_ application: NSRunningApplication?) -> NSRunningApplication? {
+        guard let application,
+              !application.isTerminated,
+              application.processIdentifier != ProcessInfo.processInfo.processIdentifier
+        else { return nil }
+        return application
     }
 
     func delete(_ entry: ClipboardEntry) {

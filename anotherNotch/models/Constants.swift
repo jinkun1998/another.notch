@@ -135,6 +135,7 @@ extension Defaults.Keys {
     static let clipboardImageLimitMB = Key<Int>("clipboardImageLimitMB", default: 10)
     static let clipboardOCREnabled = Key<Bool>("clipboardOCREnabled", default: true)
     static let clipboardSearchMode = Key<ClipboardSearchMode>("clipboardSearchMode", default: .exact)
+    static let clipboardPasteOnClick = Key<Bool>("clipboardPasteOnClick", default: false)
 
     // MARK: Appearance
     static let showEmojis = Key<Bool>("showEmojis", default: false)
