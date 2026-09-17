@@ -1147,6 +1147,19 @@ struct HUD: View {
                     }
                 }
             }
+
+            Section("System HUDs") {
+                Defaults.Toggle(key: .replaceVolumeHUD) {
+                    Text("Volume")
+                }
+                Defaults.Toggle(key: .replaceDisplayBrightnessHUD) {
+                    Text("Display brightness")
+                }
+                Defaults.Toggle(key: .replaceKeyboardBrightnessHUD) {
+                    Text("Keyboard brightness")
+                }
+            }
+            .disabled(!hudReplacement)
             
             Section {
                 LiquidGlassSegmentedPicker(
