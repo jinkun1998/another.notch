@@ -742,14 +742,14 @@ struct GeneralSettings: View {
                     "Notch height on non-notch displays",
                     selection: $nonNotchHeightMode,
                     items: [
-                        WindowHeightMode.matchMenuBar,
                         WindowHeightMode.matchRealNotchSize,
+                        WindowHeightMode.matchMenuBar,
                         WindowHeightMode.custom
                     ]
                 ) { mode in
                     switch mode {
-                    case .matchMenuBar: return "Menu Bar"
                     case .matchRealNotchSize: return "Real Notch"
+                    case .matchMenuBar: return "Menu Bar"
                     case .custom: return "Custom"
                     }
                 }
