@@ -182,7 +182,11 @@ class AnotherNotchViewModel: NSObject, ObservableObject {
         self.notchSize = closedSize
         self.isBatteryPopoverActive = false
         self.edgeAutoOpenActive = false
+    }
 
+    func finishClose() {
+        guard notchState == .closed else { return }
+        isClosingTransition = false
         if !coordinator.openLastTabByDefault {
             coordinator.currentView = .home
         } else if FeatureModuleRegistry.shared.isAvailable(.shelf),
