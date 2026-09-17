@@ -181,6 +181,7 @@ struct WheelPicker: View {
 struct CalendarView: View {
     @EnvironmentObject var vm: AnotherNotchViewModel
     @ObservedObject private var calendarManager = CalendarManager.shared
+    @Default(.showLunarCalendar) private var showLunarCalendar
     @State private var selectedDate = Date()
     @State private var displayedMonth = Date()
 
@@ -204,6 +205,12 @@ struct CalendarView: View {
                 Text(selectedDate.formatted(.dateTime.weekday(.wide).month(.abbreviated).day()))
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundStyle(.white)
+
+                if showLunarCalendar, let lunarDate = VietnameseLunarCalendar.date(for: selectedDate) {
+                    Text(lunarDate.description)
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(.white.opacity(0.85))
+                }
 
                 if selectedDayEvents.isEmpty {
                     EmptyEventsView(selectedDate: selectedDate)
@@ -241,6 +248,7 @@ struct CalendarView: View {
 
 private struct MonthCalendarGrid: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Default(.showLunarCalendar) private var showLunarCalendar
     @Binding var selectedDate: Date
     @Binding var displayedMonth: Date
     @State private var haptics = false
@@ -348,18 +356,31 @@ private struct MonthCalendarGrid: View {
             Button {
                 selectedDate = date
             } label: {
-                Text(date.formatted(.dateTime.day()))
-                    .font(.system(size: 10, weight: isSelected || isToday ? .semibold : .regular))
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity, minHeight: 18)
-                    .background {
-                        Circle()
-                            .fill(
+                VStack(spacing: -1) {
+                    Text(date.formatted(.dateTime.day()))
+                        .font(.system(size: 10, weight: isSelected || isToday ? .semibold : .regular))
+                        .frame(width: 18, height: 18)
+                        .background {
+                            Circle()
+                                .fill(
+                                    isSelected
+                                        ? Color.effectiveAccent
+                                        : isToday ? Color.white.opacity(0.16) : .clear
+                                )
+                        }
+
+                    if showLunarCalendar, let lunarDate = VietnameseLunarCalendar.date(for: date) {
+                        Text(lunarDate.gridLabel)
+                            .font(.system(size: 8, weight: lunarDate.day == 1 ? .semibold : .regular))
+                            .foregroundStyle(
                                 isSelected
-                                    ? Color.effectiveAccent
-                                    : isToday ? Color.white.opacity(0.16) : .clear
+                                    ? Color.white.opacity(0.85)
+                                    : lunarDate.day == 1 ? Color.effectiveAccent : Color.white.opacity(0.65)
                             )
                     }
+                }
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity, minHeight: showLunarCalendar ? 25 : 18)
             }
             .buttonStyle(.plain)
         } else {

@@ -3,6 +3,21 @@ import Foundation
 import XCTest
 
 final class FeatureModuleAvailabilityTests: XCTestCase {
+    func testVietnameseLunarCalendarConvertsTetAndMidAutumnFestival() {
+        XCTAssertEqual(
+            VietnameseLunarCalendar.date(day: 10, month: 2, year: 2024),
+            VietnameseLunarDate(day: 1, month: 1, year: 2024, isLeapMonth: false)
+        )
+        XCTAssertEqual(
+            VietnameseLunarCalendar.date(day: 17, month: 9, year: 2024),
+            VietnameseLunarDate(day: 15, month: 8, year: 2024, isLeapMonth: false)
+        )
+        XCTAssertEqual(
+            VietnameseLunarCalendar.date(day: 17, month: 2, year: 2026),
+            VietnameseLunarDate(day: 1, month: 1, year: 2026, isLeapMonth: false)
+        )
+    }
+
     func testClosedNotchCPUStaysBelowTenPercent() throws {
         try XCTSkipUnless(
             ProcessInfo.processInfo.environment["RUN_CLOSED_NOTCH_CPU_TEST"] == "1",
