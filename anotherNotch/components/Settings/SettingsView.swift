@@ -154,6 +154,7 @@ private enum SettingsPage: String, CaseIterable, Identifiable {
     case bluetooth = "Bluetooth"
     case shelf = "Shelf"
     case camera = "Camera"
+    case shortcuts = "Shortcuts"
     case advanced = "Advanced"
     case about = "About"
 
@@ -172,6 +173,7 @@ private enum SettingsPage: String, CaseIterable, Identifiable {
         case .bluetooth: "airpodspro"
         case .shelf: "books.vertical"
         case .camera: "web.camera"
+        case .shortcuts: "command"
         case .advanced: "gearshape.2"
         case .about: "info.circle"
         }
@@ -190,6 +192,7 @@ private enum SettingsPage: String, CaseIterable, Identifiable {
         case .bluetooth: "Bluetooth output connection notifications."
         case .shelf: "Drag, drop, and saved Shelf items."
         case .camera: "Camera mirror appearance and access."
+        case .shortcuts: "Global keyboard shortcuts for opening the notch and installed tabs."
         case .advanced: "Accent color, window behavior, and privacy."
         case .about: "Version, updates, and project information."
         }
@@ -259,6 +262,7 @@ struct SettingsView: View {
                 }
 
                 Section("System") {
+                    sidebarRow(.shortcuts)
                     sidebarRow(.advanced)
                 }
 
@@ -319,6 +323,8 @@ struct SettingsView: View {
                     ModuleSettings(moduleID: .camera) {
                         CameraSettings()
                     }
+                    case .shortcuts:
+                    ShortcutSettings()
                     case .advanced:
                     Advanced()
                     case .about:
@@ -1068,6 +1074,32 @@ struct BluetoothDeviceNotifications: View {
 //        .navigationTitle("Downloads")
 //    }
 //}
+
+struct ShortcutSettings: View {
+    @ObservedObject private var modules = FeatureModuleRegistry.shared
+
+    var body: some View {
+        Form {
+            Section("Global shortcuts") {
+                KeyboardShortcuts.Recorder("Toggle notch", name: .toggleNotchOpen)
+                KeyboardShortcuts.Recorder("Open Home", name: .openHome)
+                if modules.isInstalled(.clipboard) {
+                    KeyboardShortcuts.Recorder("Open Clipboard", name: .openClipboard)
+                }
+                if modules.isInstalled(.shelf) {
+                    KeyboardShortcuts.Recorder("Open Shelf", name: .openShelf)
+                }
+                if modules.isInstalled(.calendar) {
+                    KeyboardShortcuts.Recorder("Open Calendar", name: .openCalendar)
+                }
+                if modules.isInstalled(.camera) {
+                    KeyboardShortcuts.Recorder("Open Camera", name: .openCamera)
+                }
+            }
+        }
+        .accentColor(.effectiveAccent)
+    }
+}
 
 struct HUD: View {
     @EnvironmentObject var vm: AnotherNotchViewModel

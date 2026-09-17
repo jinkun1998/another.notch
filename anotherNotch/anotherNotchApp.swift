@@ -73,6 +73,29 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var isScreenLocked: Bool = false
     private var windowScreenDidChangeObserver: Any?
     private var dragDetectors: [String: DragDetector] = [:] // UUID -> DragDetector
+
+    private func openNotch(_ module: FeatureModuleID) {
+        Task { @MainActor [weak self] in
+            guard let self, FeatureModuleRegistry.shared.isAvailable(module) else { return }
+
+            let mouseLocation = NSEvent.mouseLocation
+            var viewModel = self.vm
+            if Defaults[.showOnAllDisplays] {
+                for screen in NSScreen.screens where screen.frame.contains(mouseLocation) {
+                    if let uuid = screen.displayUUID, let screenViewModel = self.viewModels[uuid] {
+                        viewModel = screenViewModel
+                    }
+                    break
+                }
+            }
+
+            self.closeNotchTask?.cancel()
+            self.closeNotchTask = nil
+            self.coordinator.currentView = module
+            viewModel.open()
+        }
+    }
+
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
         return false
     }
@@ -485,6 +508,22 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     }
                 }
             }
+        }
+
+        KeyboardShortcuts.onKeyDown(for: .openHome) { [weak self] in
+            self?.openNotch(.home)
+        }
+        KeyboardShortcuts.onKeyDown(for: .openClipboard) { [weak self] in
+            self?.openNotch(.clipboard)
+        }
+        KeyboardShortcuts.onKeyDown(for: .openShelf) { [weak self] in
+            self?.openNotch(.shelf)
+        }
+        KeyboardShortcuts.onKeyDown(for: .openCalendar) { [weak self] in
+            self?.openNotch(.calendar)
+        }
+        KeyboardShortcuts.onKeyDown(for: .openCamera) { [weak self] in
+            self?.openNotch(.camera)
         }
 
         if !Defaults[.showOnAllDisplays] {
