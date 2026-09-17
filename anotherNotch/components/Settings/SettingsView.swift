@@ -1453,6 +1453,9 @@ struct CalendarSettings: View {
             }
 
             Section("General") {
+                Defaults.Toggle(key: .showLunarCalendar) {
+                    Text("Show Vietnamese lunar dates")
+                }
                 Defaults.Toggle(key: .hideCompletedReminders) {
                     Text("Hide completed reminders")
                 }

@@ -20,7 +20,7 @@ let moduleTabNotchGap: CGFloat = 10
 let notchOuterHorizontalPadding: CGFloat = 19 + 12
 let openNotchHeaderHeight: CGFloat = 30
 let minimumExpandedContentInset: CGFloat = 16
-let calendarContentSize: CGSize = .init(width: 504, height: 160)
+let calendarContentSize: CGSize = .init(width: 504, height: 205)
 let calendarOpenNotchSize: CGSize = .init(
     width: calendarContentSize.width + 72,
     height: max(190, calendarContentSize.height + 12)
