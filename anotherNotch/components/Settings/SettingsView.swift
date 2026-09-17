@@ -1673,6 +1673,7 @@ struct ClipboardSettings: View {
     @Default(.clipboardImageLimitMB) private var imageLimitMB
     @Default(.clipboardOCREnabled) private var ocrEnabled
     @Default(.clipboardSearchMode) private var searchMode
+    @Default(.clipboardPasteOnClick) private var pasteOnClick
 
     var body: some View {
         Form {
@@ -1715,6 +1716,23 @@ struct ClipboardSettings: View {
                     selection: $searchMode,
                     items: ClipboardSearchMode.allCases
                 ) { $0.rawValue }
+            }
+            .disabled(!enabled)
+
+            Section("Paste") {
+                Toggle("Paste into the previously active app when selecting history item", isOn: $pasteOnClick)
+                    .onChange(of: pasteOnClick) { _, isEnabled in
+                        guard isEnabled else { return }
+                        Task { @MainActor in
+                            guard await XPCHelperClient.shared.ensureAccessibilityAuthorization(promptIfNeeded: true) else {
+                                pasteOnClick = false
+                                return
+                            }
+                        }
+                    }
+                Text("Requires Accessibility permission to send Command-V after the notch closes.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
             .disabled(!enabled)
 

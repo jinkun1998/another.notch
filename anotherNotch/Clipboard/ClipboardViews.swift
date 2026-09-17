@@ -5,6 +5,7 @@ struct ClipboardHistoryView: View {
     @ObservedObject private var store = ClipboardHistoryStore.shared
     @EnvironmentObject var vm: AnotherNotchViewModel
     @Default(.clipboardSearchMode) private var searchMode
+    @Default(.clipboardPasteOnClick) private var pasteOnClick
     @State private var searchQuery = ""
     @State private var selectedEntryID: ClipboardEntry.ID?
 
@@ -37,11 +38,21 @@ struct ClipboardHistoryView: View {
                                 withAnimation(.easeOut(duration: 0.12)) {
                                     selectedEntryID = entry.id
                                 }
+                                let shouldPaste = pasteOnClick
+                                let pasteTarget = shouldPaste ? store.pasteTarget() : nil
                                 store.copy(entry)
                                 Task { @MainActor in
                                     try? await Task.sleep(for: .milliseconds(160))
                                     guard selectedEntryID == entry.id else { return }
                                     vm.close()
+
+                                    guard shouldPaste else { return }
+                                    while vm.isClosingTransition {
+                                        try? await Task.sleep(for: .milliseconds(16))
+                                        guard !Task.isCancelled else { return }
+                                    }
+                                    guard vm.notchState == .closed else { return }
+                                    await store.paste(entry, into: pasteTarget)
                                 }
                             }
                         }
