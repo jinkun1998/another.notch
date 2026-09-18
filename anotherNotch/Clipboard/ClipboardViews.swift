@@ -46,13 +46,14 @@ struct ClipboardHistoryView: View {
                                     guard selectedEntryID == entry.id else { return }
                                     vm.close()
 
-                                    guard shouldPaste else { return }
                                     while vm.isClosingTransition {
                                         try? await Task.sleep(for: .milliseconds(16))
                                         guard !Task.isCancelled else { return }
                                     }
                                     guard vm.notchState == .closed else { return }
                                     store.promote(entry)
+
+                                    guard shouldPaste else { return }
                                     await store.paste(entry, into: pasteTarget)
                                 }
                             }
