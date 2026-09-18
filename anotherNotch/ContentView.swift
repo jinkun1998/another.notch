@@ -58,6 +58,7 @@ struct ContentView: View {
     @Default(.notchGradientBlackCoverage) var notchGradientBlackCoverage
     @Default(.bottomCornerRadius) var bottomCornerRadius
     @Default(.notchMotionStyle) var notchMotionStyle
+    @Default(.enableLyrics) var enableLyrics
 
     private var motion: NotchMotionPolicy {
         .init(reduceMotion: reduceMotion, style: notchMotionStyle)
@@ -505,6 +506,18 @@ struct ContentView: View {
                             screenUUID: vm.screenUUID
                         )
                     }
+                    .onChange(of: enableLyrics) { _, _ in
+                        guard vm.notchState == .open, coordinator.currentView == .home else { return }
+                        withAnimation(resizeAnimation) {
+                            vm.notchSize = openNotchSize(for: .home, screenUUID: vm.screenUUID)
+                        }
+                    }
+                    .onChange(of: musicManager.currentLyrics) { _, _ in
+                        guard vm.notchState == .open, coordinator.currentView == .home else { return }
+                        withAnimation(resizeAnimation) {
+                            vm.notchSize = openNotchSize(for: .home, screenUUID: vm.screenUUID)
+                        }
+                    }
                     .onReceive(clipboardHistory.$entries) { _ in
                         guard vm.notchState == .open, coordinator.currentView == .clipboard else { return }
                         vm.notchSize = openNotchSize(for: .clipboard, screenUUID: vm.screenUUID)
@@ -844,7 +857,7 @@ struct ContentView: View {
         case .home:
             NotchHomeView()
                 .frame(maxWidth: .infinity)
-                .frame(height: musicContentSize.height)
+                .frame(height: musicContentSize.height, alignment: .top)
         case .clipboard:
             ClipboardHistoryView()
                 .frame(maxWidth: .infinity)

@@ -16,14 +16,30 @@ import SwiftUI
 
 struct MusicPlayerView: View {
     @EnvironmentObject var vm: AnotherNotchViewModel
+    @ObservedObject var musicManager = MusicManager.shared
+    @Default(.enableLyrics) private var enableLyrics
 
     var body: some View {
-        HStack(alignment: .top, spacing: 18) {
-            AlbumArtView()
-                .frame(width: 100, height: 100)
-                .zIndex(3)
-            MusicControlsView()
-                .frame(maxWidth: .infinity, alignment: .leading)
+        VStack(spacing: 6) {
+            HStack(alignment: .top, spacing: 18) {
+                AlbumArtView()
+                    .frame(width: 100, height: 100)
+                    .zIndex(3)
+                MusicControlsView()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .frame(height: 100, alignment: .top)
+
+            if enableLyrics && musicManager.hasLyrics {
+                VStack(spacing: 8) {
+                    Capsule()
+                        .fill(.white.opacity(0.22))
+                        .frame(width: 32, height: 2)
+                    LyricsStripView()
+                }
+                .padding(.top, 10)
+                .padding(.bottom, 8)
+            }
         }
     }
 }
@@ -33,6 +49,7 @@ struct AlbumArtView: View {
     @ObservedObject var musicManager = MusicManager.shared
     @Default(.rotateAlbumArt) private var rotateAlbumArt
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
             if Defaults[.lightingEffect] {
@@ -56,7 +73,7 @@ struct AlbumArtView: View {
             .aspectRatio(1, contentMode: .fit)
             .scaleEffect(x: 1.3, y: 1.4)
             .rotationEffect(.degrees(92))
-            .blur(radius: 40)
+            .blur(radius: 28)
             .opacity(musicManager.isPlaying ? 0.5 : 0)
     }
 
@@ -65,8 +82,7 @@ struct AlbumArtView: View {
     }
 
     private func rotation(at date: Date) -> Double {
-        guard shouldRotate else { return 0 }
-        return date.timeIntervalSinceReferenceDate
+        date.timeIntervalSinceReferenceDate
             .truncatingRemainder(dividingBy: 8) / 8 * 360
     }
 
@@ -90,6 +106,72 @@ struct AlbumArtView: View {
             .clipShape(Circle())
     }
 
+}
+
+struct LyricsStripView: View {
+    @EnvironmentObject var vm: AnotherNotchViewModel
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @ObservedObject var musicManager = MusicManager.shared
+
+    private var isExpandedAndVisible: Bool {
+        vm.notchState == .open
+    }
+
+    var body: some View {
+        Group {
+            if hasActiveSyncedLyrics {
+                TimelineView(.animation(minimumInterval: 0.25)) { timeline in
+                    lyricContent(at: currentElapsed(at: timeline.date))
+                }
+            } else {
+                lyricContent(at: musicManager.elapsedTime)
+            }
+        }
+    }
+
+    private var hasActiveSyncedLyrics: Bool {
+        isExpandedAndVisible && musicManager.isPlaying && !musicManager.syncedLyrics.isEmpty
+    }
+
+    private func lyricContent(at elapsed: Double) -> some View {
+        let context = musicManager.lyricContext(at: elapsed)
+
+        return VStack(spacing: 3) {
+            lyricText(context.previous ?? " ", font: .system(size: 11, weight: .medium), color: .secondary.opacity(0.5))
+            ZStack {
+                lyricText(context.current, font: .system(size: 18, weight: .bold, design: .rounded), color: .white)
+                    .shadow(color: .white.opacity(reduceMotion ? 0 : 0.3), radius: 7)
+                    .id(context.current)
+                    .transition(
+                        reduceMotion
+                            ? .opacity
+                            : .asymmetric(
+                                insertion: .opacity.combined(with: .scale(scale: 0.9)).combined(with: .move(edge: .bottom)),
+                                removal: .opacity.combined(with: .scale(scale: 1.08)).combined(with: .move(edge: .top))
+                            )
+                    )
+            }
+            .frame(height: 24)
+            lyricText(context.next ?? " ", font: .system(size: 11, weight: .medium), color: .secondary.opacity(0.5))
+        }
+        .frame(maxWidth: .infinity, minHeight: 58)
+        .clipped()
+        .animation(reduceMotion ? nil : .spring(response: 0.38, dampingFraction: 0.78), value: context.current)
+    }
+
+    private func currentElapsed(at date: Date) -> Double {
+        guard musicManager.isPlaying else { return musicManager.elapsedTime }
+        let elapsed = musicManager.elapsedTime + date.timeIntervalSince(musicManager.timestampDate) * musicManager.playbackRate
+        return min(max(elapsed, 0), musicManager.songDuration)
+    }
+
+    private func lyricText(_ text: String, font: Font, color: Color) -> some View {
+        Text(text)
+            .font(font)
+            .foregroundStyle(color)
+            .lineLimit(1)
+            .frame(maxWidth: .infinity)
+    }
 }
 
 struct MusicControlsView: View {
@@ -149,50 +231,17 @@ struct MusicControlsView: View {
                 if useMusicVisualizer {
                     DynamicIslandWaveform(
                         isPlaying: musicManager.isPlaying && isExpandedAndVisible,
-                        framesPerSecond: 15
+                        framesPerSecond: 10
                     )
                         .frame(width: 28, height: 14)
                         .padding(.leading, 10)
-                }
-            }
-            if Defaults[.enableLyrics] {
-                TimelineView(.animation(minimumInterval: 0.25, paused: !isExpandedAndVisible || !musicManager.isPlaying)) { timeline in
-                    let currentElapsed: Double = {
-                        guard musicManager.isPlaying else { return musicManager.elapsedTime }
-                        let delta = timeline.date.timeIntervalSince(musicManager.timestampDate)
-                        let progressed = musicManager.elapsedTime + (delta * musicManager.playbackRate)
-                        return min(max(progressed, 0), musicManager.songDuration)
-                    }()
-                    let line: String = {
-                        if musicManager.isFetchingLyrics { return "Loading lyrics…" }
-                        if !musicManager.syncedLyrics.isEmpty {
-                            return musicManager.lyricLine(at: currentElapsed)
-                        }
-                        let trimmed = musicManager.currentLyrics.trimmingCharacters(in: .whitespacesAndNewlines)
-                        return trimmed.isEmpty ? "No lyrics found" : trimmed.replacingOccurrences(of: "\n", with: " ")
-                    }()
-                    let isPersian = line.unicodeScalars.contains { scalar in
-                        let v = scalar.value
-                        return v >= 0x0600 && v <= 0x06FF
-                    }
-                    MarqueeText(
-                        .constant(line),
-                        font: .subheadline,
-                        nsFont: .subheadline,
-                        textColor: musicManager.isFetchingLyrics ? .gray.opacity(0.7) : .gray,
-                        frameWidth: 400
-                    )
-                    .font(isPersian ? .custom("Vazirmatn-Regular", size: NSFont.preferredFont(forTextStyle: .subheadline).pointSize) : .subheadline)
-                    .lineLimit(1)
-                    .opacity(musicManager.isPlaying ? 1 : 0)
-                    .transition(.opacity.combined(with: .move(edge: .top)))
                 }
             }
         }
     }
 
     private var musicSlider: some View {
-        TimelineView(.animation(minimumInterval: (musicManager.playbackRate > 0 && isExpandedAndVisible) ? 0.1 : nil, paused: !isExpandedAndVisible || !musicManager.isPlaying)) { timeline in
+        TimelineView(.animation(minimumInterval: (musicManager.playbackRate > 0 && isExpandedAndVisible) ? 0.2 : nil, paused: !isExpandedAndVisible || !musicManager.isPlaying)) { timeline in
             MusicSliderView(
                 sliderValue: $sliderValue,
                 duration: $musicManager.songDuration,
@@ -449,6 +498,8 @@ private struct CoreAnimatedWaveform: NSViewRepresentable {
             }
             values.append(values[0])
             assert(values.first == values.last)
+
+            bar.setValue(values[0], forKeyPath: "transform.scale.y")
 
             let animation = CAKeyframeAnimation(keyPath: "transform.scale.y")
             animation.values = values
