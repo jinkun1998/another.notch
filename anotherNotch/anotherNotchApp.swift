@@ -35,9 +35,7 @@ struct DynamicNotchApp: App {
             }
             .keyboardShortcut(KeyEquivalent(","), modifiers: .command)
             Divider()
-            Button("Restart anotherNotch") {
-                ApplicationRelauncher.restart()
-            }
+            CheckForUpdatesView(updater: updaterController.updater)
             Button("Quit", role: .destructive) {
                 NSApplication.shared.terminate(self)
             }
