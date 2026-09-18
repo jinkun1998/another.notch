@@ -1,6 +1,6 @@
 cask "another-notch" do
-  version "1.1.0"
-  sha256 "deb90cea4a37e970da0f90af3d5cae63581114475625d87244c65c507e66a67c"
+  version "1.2.0"
+  sha256 "28168f121d2ba3eb07196b3a4b8825cf53ccf88881fa81b6331fc94fb68625de"
 
   url "https://github.com/jinkun1998/another.notch/releases/download/v#{version}/anotherNotch.dmg"
   name "anotherNotch"
