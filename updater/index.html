@@ -28,8 +28,8 @@
     .text-link { color: inherit; text-decoration: none; }
     .text-link:hover { color: #fff; }
     .hero { position: relative; display: grid; min-height: 100svh; place-items: center; scroll-snap-align: start; scroll-snap-stop: always; text-align: center; }
-    .hero::after { position: fixed; z-index: 0; inset: 0; background: #050506; content: ""; opacity: var(--background-fade-opacity, .55); pointer-events: none; }
-    .hero-video { position: fixed; top: 0; left: 50%; z-index: 0; width: 100vw; height: 100vh; transform: translateX(-50%); object-fit: cover; object-position: center top; opacity: var(--hero-video-opacity, .38); pointer-events: none; }
+    .hero::after { position: fixed; z-index: 0; inset: 0; background: #050506; content: ""; opacity: var(--background-fade-opacity, .4); pointer-events: none; }
+    .hero-video { position: fixed; top: 0; left: 50%; z-index: 0; width: 100vw; height: 100vh; transform: translateX(-50%); object-fit: cover; object-position: center top; opacity: 1; pointer-events: none; }
     .hero-content { position: relative; z-index: 1; width: min(100% - 40px, 700px); padding: 72px 0; }
     .eyebrow { margin: 0 0 14px; color: #b7d1ff; font-size: 14px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
     h1, h2, h3, p { margin-top: 0; }
@@ -73,7 +73,7 @@
     .carousel-indicator { width: 9px; height: 9px; padding: 0; border: 0; border-radius: 50%; background: #ffffff35; cursor: pointer; }
     .carousel-indicator[aria-current="true"] { width: 28px; border-radius: 999px; background: #fff; }
     .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
-    @media (max-width: 760px) { .hero-content { width: min(100% - 28px, 620px); } .hero { min-height: 760px; } .hero-video { display: none; } .features { width: min(100% - 28px, 1120px); padding: 76px 0 88px; } .feature-slide { grid-template-columns: 1fr; min-height: 0; } .feature-copy { order: -1; } .carousel-control { top: auto; bottom: 20px; transform: none; } .carousel-control.previous { left: 20px; } .carousel-control.next { right: 20px; } .carousel-footer { min-height: 64px; } }
+    @media (max-width: 760px) { .hero-content { width: min(100% - 28px, 620px); } .hero { min-height: 100svh; } .hero-video { display: none; } .features { width: min(100% - 28px, 1120px); padding: 76px 0 88px; } .feature-slide { grid-template-columns: 1fr; min-height: 0; } .feature-copy { order: -1; } .carousel-control { top: auto; bottom: 20px; transform: none; } .carousel-control.previous { left: 20px; } .carousel-control.next { right: 20px; } .carousel-footer { min-height: 64px; } }
     @media (max-width: 480px) { .hero-content { padding-bottom: 88px; } h1 { font-size: clamp(42px, 14vw, 58px); } .lede { margin: 18px auto 26px; font-size: 17px; } .button { padding: 13px 20px; } .github-link { width: 108px; min-height: 47px; } .feature-carousel { border-radius: 22px; } .feature-slide { gap: 28px; padding: 22px 18px 78px; } .feature-copy p { font-size: 16px; } }
     @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .hero-video { display: none; } }
   </style>
@@ -180,7 +180,7 @@
       });
       const fadeBackground = () => {
         const progress = Math.min(1, window.scrollY / Math.max(features.offsetTop, 1));
-        document.documentElement.style.setProperty('--background-fade-opacity', String(.55 + (.45 * progress)));
+        document.documentElement.style.setProperty('--background-fade-opacity', String(.4 + (.6 * progress)));
       };
       const updateScrollState = () => {
         fadeBackground();
