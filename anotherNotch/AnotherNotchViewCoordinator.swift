@@ -19,6 +19,19 @@ enum SneakContentType {
     case battery
     case download
     case bluetoothDevice
+
+    var isSystemHUDReplacementEnabled: Bool {
+        switch self {
+        case .volume:
+            return Defaults[.replaceVolumeHUD]
+        case .brightness:
+            return Defaults[.replaceDisplayBrightnessHUD]
+        case .backlight:
+            return Defaults[.replaceKeyboardBrightnessHUD]
+        default:
+            return true
+        }
+    }
 }
 
 struct sneakPeek {
@@ -232,7 +245,7 @@ class AnotherNotchViewCoordinator: ObservableObject {
     ) {
         sneakPeekDuration = type == .music ? Defaults[.sneakPeekDuration] : duration
         if type != .music {
-            if !Defaults[.hudReplacement] {
+            if !Defaults[.hudReplacement] || !type.isSystemHUDReplacementEnabled {
                 return
             }
         }

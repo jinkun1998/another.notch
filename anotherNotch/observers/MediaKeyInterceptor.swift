@@ -129,6 +129,10 @@ final class MediaKeyInterceptor {
         let option = flags.contains(.option)
         let shift = flags.contains(.shift)
         let command = flags.contains(.command)
+
+        guard systemHUDType(for: keyType, command: command).isSystemHUDReplacementEnabled else {
+            return Unmanaged.passRetained(cgEvent)
+        }
         
         // Handle option key action (without shift)
         if option && !shift {
@@ -234,6 +238,17 @@ final class MediaKeyInterceptor {
             } else {
                 BrightnessManager.shared.setRelative(delta: delta)
             }
+        }
+    }
+
+    private func systemHUDType(for keyType: NXKeyType, command: Bool) -> SneakContentType {
+        switch keyType {
+        case .soundUp, .soundDown, .mute:
+            return .volume
+        case .brightnessUp, .brightnessDown:
+            return command ? .backlight : .brightness
+        case .keyboardBrightnessUp, .keyboardBrightnessDown:
+            return .backlight
         }
     }
     

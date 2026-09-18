@@ -206,6 +206,9 @@ extension Defaults.Keys {
     
     // MARK: HUD
     static let hudReplacement = Key<Bool>("hudReplacement", default: false)
+    static let replaceVolumeHUD = Key<Bool>("replaceVolumeHUD", default: true)
+    static let replaceDisplayBrightnessHUD = Key<Bool>("replaceDisplayBrightnessHUD", default: true)
+    static let replaceKeyboardBrightnessHUD = Key<Bool>("replaceKeyboardBrightnessHUD", default: true)
     static let closedHUDRows = Key<ClosedHUDRows>("closedHUDRows", default: .one)
     static let enableGradient = Key<Bool>("enableGradient", default: false)
     static let systemEventIndicatorShadow = Key<Bool>("systemEventIndicatorShadow", default: true)
