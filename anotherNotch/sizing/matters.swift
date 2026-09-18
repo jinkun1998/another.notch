@@ -225,5 +225,5 @@ enum MusicPlayerImageSizes {
     return .init(width: notchWidth, height: notchHeight - 0.2)
 }
 var musicContentSize: CGSize {
-    .init(width: 504, height: Defaults[.enableLyrics] && MusicManager.shared.hasLyrics ? 192 : 120)
+    .init(width: 504, height: Defaults[.enableLyrics] && MusicManager.shared.hasLyrics ? 214 : 120)
 }
