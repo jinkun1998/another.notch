@@ -139,7 +139,7 @@ struct LyricsStripView: View {
         return VStack(spacing: 3) {
             lyricText(context.previous ?? " ", font: .system(size: 11, weight: .medium), color: .secondary.opacity(0.5))
             ZStack {
-                lyricText(context.current, font: .system(size: 18, weight: .bold, design: .rounded), color: .white)
+                activeLyricText(context.current)
                     .shadow(color: .white.opacity(reduceMotion ? 0 : 0.3), radius: 7)
                     .id(context.current)
                     .transition(
@@ -151,10 +151,10 @@ struct LyricsStripView: View {
                             )
                     )
             }
-            .frame(height: 24)
+            .frame(height: 46)
             lyricText(context.next ?? " ", font: .system(size: 11, weight: .medium), color: .secondary.opacity(0.5))
         }
-        .frame(maxWidth: .infinity, minHeight: 58)
+        .frame(maxWidth: .infinity, minHeight: 80)
         .clipped()
         .animation(reduceMotion ? nil : .spring(response: 0.38, dampingFraction: 0.78), value: context.current)
     }
@@ -170,6 +170,15 @@ struct LyricsStripView: View {
             .font(font)
             .foregroundStyle(color)
             .lineLimit(1)
+            .frame(maxWidth: .infinity)
+    }
+
+    private func activeLyricText(_ text: String) -> some View {
+        Text(text)
+            .font(.system(size: 18, weight: .bold, design: .rounded))
+            .foregroundStyle(.white)
+            .lineLimit(2)
+            .multilineTextAlignment(.center)
             .frame(maxWidth: .infinity)
     }
 }
@@ -453,7 +462,7 @@ private struct CoreAnimatedWaveform: NSViewRepresentable {
             let startX = (bounds.width - totalWidth) / 2
 
             for (index, bar) in bars.enumerated() {
-                let height = min(bounds.height, 18) * heights[index]
+                let height = min(bounds.height, 10) * heights[index]
                 bar.frame = CGRect(
                     x: startX + CGFloat(index) * (barWidth + spacing),
                     y: (bounds.height - height) / 2,
