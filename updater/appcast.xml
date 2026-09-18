@@ -5,6 +5,31 @@
         <link>https://github.com/jinkun1998/another.notch/releases</link>
         <description>anotherNotch updates</description>
         <item>
+            <title>1.2.0-beta.2</title>
+            <pubDate>Fri, 18 Sep 2026 04:40:19 +0000</pubDate>
+            <link>https://github.com/jinkun1998/another.notch/releases</link>
+            <sparkle:channel>beta</sparkle:channel>
+            <sparkle:version>31</sparkle:version>
+            <sparkle:shortVersionString>1.2.0-beta.2</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <description><![CDATA[<div class="markdown-heading"><h2 class="heading-element">What's Changed</h2><a id="user-content-whats-changed" class="anchor" aria-label="Permalink: What's Changed" href="#whats-changed"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
+<ul>
+<li>Expand long clipboard previews by @jinkun1998 in <a href="https://github.com/jinkun1998/another.notch/pull/68">https://github.com/jinkun1998/another.notch/pull/68</a>
+</li>
+<li>Choose system HUD replacements by @jinkun1998 in <a href="https://github.com/jinkun1998/another.notch/pull/70">https://github.com/jinkun1998/another.notch/pull/70</a>
+</li>
+<li>Add synchronized music lyrics by @jinkun1998 in <a href="https://github.com/jinkun1998/another.notch/pull/71">https://github.com/jinkun1998/another.notch/pull/71</a>
+</li>
+<li>Refine music lyric presentation by @jinkun1998 in <a href="https://github.com/jinkun1998/another.notch/pull/72">https://github.com/jinkun1998/another.notch/pull/72</a>
+</li>
+<li>Align notch sizing option order by @jinkun1998 in <a href="https://github.com/jinkun1998/another.notch/pull/69">https://github.com/jinkun1998/another.notch/pull/69</a>
+</li>
+</ul>
+<p><strong>Full Changelog</strong>: <a href="https://github.com/jinkun1998/another.notch/compare/v1.2.0-beta.1...v1.2.0-beta.2">https://github.com/jinkun1998/another.notch/compare/v1.2.0-beta.1...v1.2.0-beta.2</a></p>
+]]></description>
+            <enclosure url="https://github.com/jinkun1998/another.notch/releases/download/v1.2.0-beta.2/anotherNotch.dmg" length="9098357" type="application/octet-stream" sparkle:edSignature="6O4XYLb3B545dVIS0SnyCSuusJkR0RyEzYkjTu7/s41Z/FiErebxnmvK+K18fj6ijnBPIPrciOFkkOj+YWSmDA=="/>
+        </item>
+        <item>
             <title>1.2.0-beta.1</title>
             <pubDate>Thu, 17 Sep 2026 09:49:27 +0000</pubDate>
             <link>https://github.com/jinkun1998/another.notch/releases</link>
@@ -47,26 +72,6 @@
 <p>Full Changelog: <a href="https://github.com/jinkun1998/another.notch/compare/v1.0.1-beta.4...v1.0.1-beta.5">https://github.com/jinkun1998/another.notch/compare/v1.0.1-beta.4...v1.0.1-beta.5</a></p>
 ]]></description>
             <enclosure url="https://github.com/jinkun1998/another.notch/releases/download/v1.0.1-beta.5/anotherNotch.dmg" length="9029008" type="application/octet-stream" sparkle:edSignature="syBs6WdBbdeZsGSt6ynimarFBPiZs4LnPPZ7UV+KuZ0fAwTXsYWnhhdLMrFlhsQ9rM70hK5lkJl0lHAUgLtQDQ=="/>
-        </item>
-        <item>
-            <title>1.0.1-beta.4</title>
-            <pubDate>Fri, 04 Sep 2026 09:46:10 +0000</pubDate>
-            <link>https://github.com/jinkun1998/another.notch/releases</link>
-            <sparkle:channel>beta</sparkle:channel>
-            <sparkle:version>27</sparkle:version>
-            <sparkle:shortVersionString>1.0.1-beta.4</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-            <description><![CDATA[<div class="markdown-heading"><h2 class="heading-element">Improvements</h2><a id="user-content-improvements" class="anchor" aria-label="Permalink: Improvements" href="#improvements"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
-<ul>
-<li>Notch motion profiles: added Polished, Spring, and Minimal styles under Appearance. Respects system Reduce Motion.</li>
-<li>Notch edge gradient: masked to expanding and open states only. Fixes transition flash near physical notch.</li>
-<li>Segmented pickers: converted settings comboboxes to sliding segmented controls.</li>
-<li>Action buttons: styled destructive and reset actions red. Standard buttons use configured accent color.</li>
-<li>Performance: stopped spectrogram timeline updates during idle audio to minimize closed-notch CPU usage.</li>
-</ul>
-<p>Full Changelog: <a href="https://github.com/jinkun1998/another.notch/compare/v1.0.1-beta.3...v1.0.1-beta.4">https://github.com/jinkun1998/another.notch/compare/v1.0.1-beta.3...v1.0.1-beta.4</a></p>
-]]></description>
-            <enclosure url="https://github.com/jinkun1998/another.notch/releases/download/v1.0.1-beta.4/anotherNotch.dmg" length="8990004" type="application/octet-stream" sparkle:edSignature="sY7KmKkAgaSp1i8s+Gwja+Zvasrwm+ep5Hpl5dG4XABM0u4T6vqARbpnIJb8mk3lJcLgLiRMu765zfhLpYiFBQ=="/>
         </item>
     </channel>
 </rss>
