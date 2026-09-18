@@ -108,6 +108,7 @@ private struct ClipboardEntryRow: View {
     let isSelected: Bool
     let onSelect: () -> Void
     @State private var isHovering = false
+    @State private var isDetailExpanded = false
 
     var body: some View {
         HStack(spacing: 12) {
@@ -134,10 +135,11 @@ private struct ClipboardEntryRow: View {
                                 .foregroundStyle(.secondary.opacity(0.8))
                         }
                         Text(detail)
-                            .lineLimit(2)
+                            .lineLimit(canExpandDetail && !isDetailExpanded ? 2 : nil)
                             .font(.system(size: 12))
                             .foregroundStyle(.white)
                             .multilineTextAlignment(.leading)
+                            .fixedSize(horizontal: false, vertical: isDetailExpanded)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -151,6 +153,22 @@ private struct ClipboardEntryRow: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
+
+            if canExpandDetail {
+                Button {
+                    withAnimation(.easeOut(duration: 0.16)) {
+                        isDetailExpanded.toggle()
+                    }
+                } label: {
+                    Label(isDetailExpanded ? "Less" : "More", systemImage: isDetailExpanded ? "chevron.up" : "chevron.down")
+                        .font(.system(size: 11, weight: .semibold))
+                        .frame(minWidth: 56, minHeight: 28)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(Color.effectiveAccent)
+                .accessibilityLabel(isDetailExpanded ? "Collapse clipboard preview" : "Expand clipboard preview")
+            }
 
             Button {
                 withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
@@ -226,6 +244,10 @@ private struct ClipboardEntryRow: View {
               let image = NSImage(data: data)
         else { return entry.preview }
         return "\(Int(image.size.width)) × \(Int(image.size.height)) · \(ByteCountFormatter.string(fromByteCount: Int64(data.count), countStyle: .file))"
+    }
+
+    private var canExpandDetail: Bool {
+        detail.count > 80 || detail.contains(where: \.isNewline)
     }
 
     @ViewBuilder
