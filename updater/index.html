@@ -20,51 +20,188 @@
   <style>
     :root { color-scheme: dark; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif; background: #050506; color: #f5f5f7; }
     * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-snap-type: y mandatory; }
+    html.features-visible { scroll-snap-type: none; }
     body { margin: 0; min-width: 320px; background: radial-gradient(circle at 50% -18%, #3a4557 0, #121419 30%, #050506 62%); }
-    main { width: min(100% - 40px, 920px); margin: auto; }
+    button, a { font: inherit; }
+    button:focus-visible, a:focus-visible { outline: 3px solid #8ab4ff; outline-offset: 4px; }
     .text-link { color: inherit; text-decoration: none; }
     .text-link:hover { color: #fff; }
-    .github-link { display: inline-flex; align-items: center; justify-content: center; width: 112px; min-height: 49px; border: 1px solid #ffffff20; border-radius: 999px; color: #fff; background: #ffffff12; }
-    .github-link svg { width: 20px; height: 20px; fill: currentColor; }
-    .hero { position: relative; min-height: 100vh; display: grid; place-items: center; text-align: center; padding: 96px 0; }
-    .hero-video { position: fixed; top: 0; left: 50%; z-index: 0; width: 100vw; height: 100vh; transform: translateX(-50%); object-fit: cover; object-position: center top; opacity: .38; pointer-events: none; }
-    .hero-content { position: relative; z-index: 1; width: min(100%, 680px); padding: 24px; }
-    .notch { width: min(88vw, 430px); height: 80px; border-radius: 0 0 34px 34px; background: linear-gradient(135deg, #000, #242426 56%, #050506); box-shadow: 0 22px 56px #0009, inset 0 -1px #ffffff1c; margin-bottom: 52px; }
-    .eyebrow { margin: 0 0 14px; color: #8ab4ff; font-size: 14px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
-    h1 { max-width: 760px; margin: 0; font-size: clamp(48px, 9vw, 92px); line-height: .98; letter-spacing: -.07em; }
-    .lede { max-width: 590px; margin: 24px auto 32px; color: #a1a1a6; font-size: clamp(18px, 2.4vw, 22px); line-height: 1.45; }
+    .hero { position: relative; display: grid; min-height: 100svh; place-items: center; scroll-snap-align: start; scroll-snap-stop: always; text-align: center; }
+    .hero::after { position: fixed; z-index: 0; inset: 0; background: #050506; content: ""; opacity: var(--background-fade-opacity, .4); pointer-events: none; }
+    .hero-video { position: fixed; top: 0; left: 50%; z-index: 0; width: 100vw; height: 100vh; transform: translateX(-50%); object-fit: cover; object-position: center top; opacity: var(--hero-video-opacity, .38); pointer-events: none; }
+    .hero-content { position: relative; z-index: 1; width: min(100% - 40px, 700px); padding: 72px 0; }
+    .eyebrow { margin: 0 0 14px; color: #b7d1ff; font-size: 14px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 { margin-bottom: 0; font-size: clamp(48px, 9vw, 92px); line-height: .98; letter-spacing: -.07em; }
+    .lede { max-width: 590px; margin: 24px auto 32px; color: #e1e1e6; font-size: clamp(18px, 2.4vw, 22px); line-height: 1.45; }
     .actions { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
-    .button { display: inline-block; padding: 14px 21px; border: 1px solid #ffffff20; border-radius: 999px; color: #fff; background: #ffffff12; font-weight: 650; text-decoration: none; }
-    .button.primary { background: #fff; border-color: #fff; color: #111; }
+    .button, .github-link { display: inline-flex; align-items: center; justify-content: center; min-height: 49px; border: 1px solid #ffffff20; border-radius: 999px; color: #fff; background: #ffffff12; font-weight: 650; text-decoration: none; transition: transform .18s ease, filter .18s ease; }
+    .button { padding: 14px 21px; }
+    .button.primary { border-color: #fff; background: #fff; color: #111; }
+    .github-link { width: 112px; }
+    .github-link svg { width: 20px; height: 20px; fill: currentColor; }
     .button:hover, .github-link:hover { transform: translateY(-1px); filter: brightness(1.08); }
-    .release-notes { display: inline-block; margin-top: 18px; color: #a1a1a6; font-size: 14px; }
-    .demo-portrait { display: none; }
-    @media (orientation: portrait) { .hero { display: block; min-height: auto; padding: 92px 14px 32px; } .hero-video { display: none; } .demo-portrait { display: block; width: min(calc(100% - 28px), 360px); margin: 0 auto 32px; border: 1px solid #ffffff18; border-radius: 20px; box-shadow: 0 28px 70px #0008; } }
-    @media (max-width: 620px) { main { width: 100%; } .github-link { width: 108px; min-height: 47px; } .hero-content { padding: 16px; } h1 { font-size: clamp(42px, 14vw, 58px); } .lede { margin: 18px auto 26px; font-size: 17px; } .button { padding: 13px 20px; } .notch { height: 58px; border-radius: 0 0 26px 26px; margin-bottom: 42px; } }
+    .scroll-link:hover { transform: translate(-50%, -1px); filter: brightness(1.08); }
+    .release-notes { display: inline-block; margin-top: 18px; color: #d0d0d5; font-size: 14px; }
+    .scroll-link { position: absolute; z-index: 1; bottom: 28px; left: 50%; display: inline-flex; align-items: center; gap: 8px; transform: translateX(-50%); color: #f5f5f7; font-size: 14px; text-decoration: none; white-space: nowrap; }
+    .scroll-link::after { content: "↓"; font-size: 18px; }
+    .features { position: relative; z-index: 1; width: min(100% - 40px, 1120px); margin: 0 auto; padding: 104px 0 112px; scroll-snap-align: start; scroll-snap-stop: always; }
+    .section-heading { max-width: 620px; margin-bottom: 34px; }
+    .section-heading .eyebrow { margin-bottom: 10px; }
+    h2 { margin-bottom: 12px; font-size: clamp(34px, 5vw, 56px); line-height: 1; letter-spacing: -.055em; }
+    .section-heading p { margin-bottom: 0; color: #a1a1a6; font-size: 18px; line-height: 1.5; }
+    .carousel-stage { position: relative; }
+    .feature-carousel { display: flex; overflow-x: auto; border: 1px solid #ffffff1a; border-radius: 28px; scroll-snap-type: x mandatory; scrollbar-width: none; background: #101115; box-shadow: 0 30px 80px #0005; }
+    .feature-carousel::-webkit-scrollbar { display: none; }
+    .feature-slide { display: grid; flex: 0 0 100%; grid-template-columns: minmax(0, 1.55fr) minmax(240px, .75fr); align-items: center; gap: clamp(24px, 5vw, 64px); min-height: 520px; padding: clamp(24px, 5vw, 56px); scroll-snap-align: start; scroll-snap-stop: always; }
+    .feature-media { position: relative; overflow: hidden; border: 1px solid #ffffff16; border-radius: 18px; background: #050506; box-shadow: 0 18px 40px #0006; }
+    .feature-media video { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; }
+    .feature-play { position: absolute; right: 16px; bottom: 16px; min-height: 42px; padding: 0 15px; border: 1px solid #ffffff2b; border-radius: 999px; color: #fff; background: #09090bd9; cursor: pointer; font-size: 14px; font-weight: 650; backdrop-filter: blur(10px); }
+    .feature-play:hover { background: #222229; }
+    .feature-copy { align-self: center; }
+    .feature-count { margin-bottom: 16px; color: #8ab4ff; font-size: 14px; font-weight: 700; letter-spacing: .08em; }
+    h3 { margin-bottom: 14px; font-size: clamp(28px, 4vw, 42px); line-height: 1.05; letter-spacing: -.045em; }
+    .feature-copy p { margin-bottom: 0; color: #a1a1a6; font-size: 17px; line-height: 1.5; }
+    .carousel-control { position: absolute; z-index: 1; top: 50%; display: grid; width: 46px; height: 46px; border: 1px solid #ffffff2b; border-radius: 50%; place-items: center; color: #fff; background: #101115e6; cursor: pointer; font-size: 24px; transform: translateY(-50%); }
+    .carousel-control:hover:not(:disabled) { background: #24242a; }
+    .carousel-control:disabled { opacity: .35; cursor: default; }
+    .carousel-control.previous { left: -23px; }
+    .carousel-control.next { right: -23px; }
+    .carousel-footer { display: flex; align-items: center; justify-content: center; min-height: 46px; margin-top: 22px; }
+    .carousel-indicators { display: flex; gap: 9px; }
+    .carousel-indicator { width: 9px; height: 9px; padding: 0; border: 0; border-radius: 50%; background: #ffffff35; cursor: pointer; }
+    .carousel-indicator[aria-current="true"] { width: 28px; border-radius: 999px; background: #fff; }
+    .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
+    @media (max-width: 760px) { .hero-content { width: min(100% - 28px, 620px); } .hero { min-height: 760px; } .hero-video { display: none; } .features { width: min(100% - 28px, 1120px); padding: 76px 0 88px; } .feature-slide { grid-template-columns: 1fr; min-height: 0; } .feature-copy { order: -1; } .carousel-control { top: auto; bottom: 20px; transform: none; } .carousel-control.previous { left: 20px; } .carousel-control.next { right: 20px; } .carousel-footer { min-height: 64px; } }
+    @media (max-width: 480px) { .hero-content { padding-bottom: 88px; } h1 { font-size: clamp(42px, 14vw, 58px); } .lede { margin: 18px auto 26px; font-size: 17px; } .button { padding: 13px 20px; } .github-link { width: 108px; min-height: 47px; } .feature-carousel { border-radius: 22px; } .feature-slide { gap: 28px; padding: 22px 18px 78px; } .feature-copy p { font-size: 16px; } }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .hero-video { display: none; } }
   </style>
 </head>
 <body>
   <main>
-    <section class="hero">
+    <section class="hero" aria-labelledby="hero-title">
+      <video class="hero-video" autoplay muted loop playsinline preload="auto" aria-hidden="true" tabindex="-1">
+        <source src="assets/another-notch-demo.mp4" type="video/mp4">
+      </video>
       <div class="hero-content">
         <p class="eyebrow">Made for macOS</p>
-        <h1>Your notch,<br>now useful.</h1>
-        <p class="lede">Music, calendar, camera, battery, and system controls—one hover away.</p>
+        <h1 id="hero-title">Your notch,<br>now useful.</h1>
+        <p class="lede">Music, calendar, clipboard, and AirDrop—one hover away.</p>
         <div class="actions">
           <a class="button primary" href="https://github.com/jinkun1998/another.notch/releases/latest">Download</a>
-          <a class="github-link" href="https://github.com/jinkun1998/another.notch" aria-label="GitHub">
+          <a class="github-link" href="https://github.com/jinkun1998/another.notch" aria-label="Another Notch on GitHub">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .7a11.3 11.3 0 0 0-3.6 22c.6.1.8-.3.8-.6v-2.2c-3.4.8-4.1-1.4-4.1-1.4-.6-1.4-1.3-1.8-1.3-1.8-1.1-.8.1-.8.1-.8 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.4 1 .1-.8.4-1.3.8-1.6-2.7-.3-5.6-1.4-5.6-6a4.7 4.7 0 0 1 1.2-3.2c-.1-.3-.5-1.6.1-3.2 0 0 1-.3 3.3 1.2a11.4 11.4 0 0 1 6 0c2.3-1.5 3.3-1.2 3.3-1.2.6 1.6.2 2.9.1 3.2a4.7 4.7 0 0 1 1.2 3.2c0 4.7-2.9 5.7-5.6 6 .4.4.8 1.1.8 2.2v3.2c0 .3.2.7.8.6A11.3 11.3 0 0 0 12 .7Z"/></svg>
           </a>
         </div>
         <a class="text-link release-notes" href="https://github.com/jinkun1998/another.notch/releases">Release notes</a>
       </div>
-      <video class="hero-video" autoplay muted loop playsinline aria-hidden="true" tabindex="-1">
-        <source src="assets/another-notch-demo.mp4" type="video/mp4">
-      </video>
+      <a class="scroll-link" href="#features">Explore features</a>
     </section>
-    <video class="demo-portrait" controls autoplay muted loop playsinline aria-label="Another Notch preview">
-      <source src="assets/another-notch-demo-portrait.mp4" type="video/mp4">
-    </video>
+
+    <section class="features" id="features" aria-labelledby="features-title">
+      <div class="section-heading">
+        <p class="eyebrow">Explore features</p>
+        <h2 id="features-title">Everything useful, right where you look.</h2>
+        <p>Browse five quick previews. Each video plays only when you ask it to.</p>
+      </div>
+
+      <div class="carousel-stage">
+        <div class="feature-carousel" data-carousel tabindex="0" aria-label="Feature carousel. Use left and right arrow keys to change slides.">
+          <article class="feature-slide" data-slide aria-label="Slide 1 of 5: Music and Lyrics"><div class="feature-media"><video muted preload="metadata" playsinline poster="assets/features/music-lyrics.jpg"><source src="assets/features/music-lyrics.mp4" type="video/mp4"></video><button class="feature-play" type="button">Play preview</button></div><div class="feature-copy"><p class="feature-count">01 / 05</p><h3>Music &amp; Lyrics</h3><p>See what is playing, jump through a track, and keep your listening controls within a hover.</p></div></article>
+          <article class="feature-slide" data-slide aria-label="Slide 2 of 5: Clipboard"><div class="feature-media"><video muted preload="metadata" playsinline poster="assets/features/clipboard.jpg"><source src="assets/features/clipboard.mp4" type="video/mp4"></video><button class="feature-play" type="button">Play preview</button></div><div class="feature-copy"><p class="feature-count">02 / 05</p><h3>Clipboard</h3><p>Keep recent copies close by, ready to find and paste without breaking your flow.</p></div></article>
+          <article class="feature-slide" data-slide aria-label="Slide 3 of 5: Shelf and AirDrop"><div class="feature-media"><video muted preload="metadata" playsinline poster="assets/features/shelf-airdrop.jpg"><source src="assets/features/shelf-airdrop.mp4" type="video/mp4"></video><button class="feature-play" type="button">Play preview</button></div><div class="feature-copy"><p class="feature-count">03 / 05</p><h3>Shelf &amp; AirDrop</h3><p>Drop a file into the notch, keep it on the shelf, or send it on with AirDrop.</p></div></article>
+          <article class="feature-slide" data-slide aria-label="Slide 4 of 5: Calendar"><div class="feature-media"><video muted preload="metadata" playsinline poster="assets/features/calendar.jpg"><source src="assets/features/calendar.mp4" type="video/mp4"></video><button class="feature-play" type="button">Play preview</button></div><div class="feature-copy"><p class="feature-count">04 / 05</p><h3>Calendar</h3><p>Check today at a glance. Your upcoming events stay visible without opening another window.</p></div></article>
+          <article class="feature-slide" data-slide aria-label="Slide 5 of 5: Sneak Peek"><div class="feature-media"><video muted preload="metadata" playsinline poster="assets/features/sneak-peek.jpg"><source src="assets/features/sneak-peek.mp4" type="video/mp4"></video><button class="feature-play" type="button">Play preview</button></div><div class="feature-copy"><p class="feature-count">05 / 05</p><h3>Sneak Peek</h3><p>Hover over the notch for a compact preview of the tools that are ready when you need them.</p></div></article>
+        </div>
+        <button class="carousel-control previous" type="button" data-previous aria-label="Previous feature">‹</button>
+        <button class="carousel-control next" type="button" data-next aria-label="Next feature">›</button>
+      </div>
+      <div class="carousel-footer">
+        <div class="carousel-indicators" aria-label="Feature slides">
+          <button class="carousel-indicator" type="button" data-indicator="0" aria-label="Show Music and Lyrics" aria-current="true"></button>
+          <button class="carousel-indicator" type="button" data-indicator="1" aria-label="Show Clipboard"></button>
+          <button class="carousel-indicator" type="button" data-indicator="2" aria-label="Show Shelf and AirDrop"></button>
+          <button class="carousel-indicator" type="button" data-indicator="3" aria-label="Show Calendar"></button>
+          <button class="carousel-indicator" type="button" data-indicator="4" aria-label="Show Sneak Peek"></button>
+        </div>
+        <p class="visually-hidden" data-status aria-live="polite">Slide 1 of 5: Music and Lyrics</p>
+      </div>
+    </section>
   </main>
+
+  <script>
+    (() => {
+      const carousel = document.querySelector('[data-carousel]');
+      const slides = [...carousel.querySelectorAll('[data-slide]')];
+      const indicators = [...document.querySelectorAll('[data-indicator]')];
+      const previous = document.querySelector('[data-previous]');
+      const next = document.querySelector('[data-next]');
+      const status = document.querySelector('[data-status]');
+      const features = document.querySelector('.features');
+      let activeIndex = 0;
+      let scrollFrame;
+      let backgroundFrame;
+      const titleFor = index => slides[index].querySelector('h3').textContent;
+      const pause = index => {
+        const video = slides[index]?.querySelector('video');
+        const button = slides[index]?.querySelector('.feature-play');
+        video?.pause();
+        if (button) button.textContent = 'Play preview';
+      };
+      const play = index => {
+        const video = slides[index]?.querySelector('video');
+        video?.play().catch(() => {});
+      };
+      const activate = (index, scroll = false) => {
+        const nextIndex = Math.max(0, Math.min(index, slides.length - 1));
+        const changed = nextIndex !== activeIndex;
+        if (changed) pause(activeIndex);
+        activeIndex = nextIndex;
+        previous.disabled = activeIndex === 0;
+        next.disabled = activeIndex === slides.length - 1;
+        indicators.forEach((indicator, indicatorIndex) => indicator.setAttribute('aria-current', String(indicatorIndex === activeIndex)));
+        status.textContent = `Slide ${activeIndex + 1} of ${slides.length}: ${titleFor(activeIndex)}`;
+        if (scroll) slides[activeIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
+        if (changed) play(activeIndex);
+      };
+      previous.addEventListener('click', () => activate(activeIndex - 1, true));
+      next.addEventListener('click', () => activate(activeIndex + 1, true));
+      indicators.forEach((indicator, index) => indicator.addEventListener('click', () => activate(index, true)));
+      carousel.addEventListener('keydown', event => {
+        const keys = { ArrowLeft: activeIndex - 1, ArrowRight: activeIndex + 1, Home: 0, End: slides.length - 1 };
+        if (!(event.key in keys)) return;
+        event.preventDefault();
+        activate(keys[event.key], true);
+      });
+      carousel.addEventListener('scroll', () => {
+        cancelAnimationFrame(scrollFrame);
+        scrollFrame = requestAnimationFrame(() => activate(Math.round(carousel.scrollLeft / carousel.clientWidth)));
+      });
+      const fadeBackground = () => {
+        const progress = Math.min(1, window.scrollY / Math.max(features.offsetTop, 1));
+        document.documentElement.style.setProperty('--background-fade-opacity', String(.4 + (.6 * progress)));
+      };
+      const updateScrollState = () => {
+        fadeBackground();
+        document.documentElement.classList.toggle('features-visible', window.scrollY >= features.offsetTop - 2);
+      };
+      window.addEventListener('scroll', () => {
+        cancelAnimationFrame(backgroundFrame);
+        backgroundFrame = requestAnimationFrame(updateScrollState);
+      }, { passive: true });
+      window.addEventListener('resize', updateScrollState);
+      slides.forEach(slide => {
+        const video = slide.querySelector('video');
+        const button = slide.querySelector('.feature-play');
+        button.addEventListener('click', () => { if (video.paused) video.play(); else video.pause(); });
+        video.addEventListener('play', () => { button.textContent = 'Pause preview'; });
+        video.addEventListener('pause', () => { button.textContent = 'Play preview'; });
+        video.addEventListener('ended', () => { button.textContent = 'Play preview'; });
+      });
+      activate(0);
+      updateScrollState();
+    })();
+  </script>
 </body>
 </html>
