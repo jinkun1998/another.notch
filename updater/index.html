@@ -18,60 +18,66 @@
     {"@context":"https://schema.org","@type":"SoftwareApplication","name":"Another Notch","applicationCategory":"UtilitiesApplication","operatingSystem":"macOS 14 Sonoma or later","description":"A free, open-source macOS menu bar app that turns the MacBook notch into a Dynamic Island-style utility.","downloadUrl":"https://github.com/jinkun1998/another.notch/releases/latest","codeRepository":"https://github.com/jinkun1998/another.notch","license":"https://www.gnu.org/licenses/gpl-3.0.html"}
   </script>
   <style>
-    :root { color-scheme: dark; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif; background: #050506; color: #f5f5f7; }
+    :root { --apple-blue: #2997ff; --surface: #1d1d1f; --stroke: #ffffff1f; color-scheme: dark; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif; background: #000; color: #f5f5f7; }
     * { box-sizing: border-box; }
     html { scroll-behavior: smooth; scroll-snap-type: y mandatory; }
     html.features-visible { scroll-snap-type: none; }
-    body { margin: 0; min-width: 320px; background: radial-gradient(circle at 50% -18%, #3a4557 0, #121419 30%, #050506 62%); }
+    body { margin: 0; min-width: 320px; background: #000; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
     button, a { font: inherit; }
-    button:focus-visible, a:focus-visible { outline: 3px solid #8ab4ff; outline-offset: 4px; }
+    button:focus-visible, a:focus-visible { outline: 3px solid var(--apple-blue); outline-offset: 4px; }
     .text-link { color: inherit; text-decoration: none; }
     .text-link:hover { color: #fff; }
     .hero { position: relative; display: grid; min-height: 100svh; place-items: center; scroll-snap-align: start; scroll-snap-stop: always; text-align: center; }
     .hero::after { position: fixed; z-index: 0; inset: 0; background: #050506; content: ""; opacity: var(--background-fade-opacity, .4); pointer-events: none; }
     .hero-video { position: fixed; top: 0; left: 50%; z-index: 0; width: 100vw; height: 100vh; transform: translateX(-50%); object-fit: cover; object-position: center top; opacity: 1; pointer-events: none; }
     .hero-content { position: relative; z-index: 1; width: min(100% - 40px, 700px); padding: 72px 0; }
-    .eyebrow { margin: 0 0 14px; color: #b7d1ff; font-size: 14px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+    .eyebrow { display: inline-flex; align-items: center; gap: 7px; margin: 0 0 18px; padding: 6px 9px 6px 10px; border: 1px solid #fff; border-radius: 4px; color: #000; background: #fff; box-shadow: 0 5px 18px #0004; font-size: 11px; font-weight: 600; letter-spacing: -.02em; line-height: 1; text-transform: none; transition: box-shadow .2s ease, transform .2s ease; }
+    .eyebrow:hover { box-shadow: 0 10px 28px #0007, 0 0 20px #ffffff42; transform: translateY(-2px) scale(1.03); }
+    .eyebrow span { font-weight: 500; }
+    .eyebrow strong { padding-left: 7px; border-left: 1px solid #8e8e93; font-size: 13px; font-weight: 700; letter-spacing: -.04em; }
     h1, h2, h3, p { margin-top: 0; }
-    h1 { margin-bottom: 0; font-size: clamp(48px, 9vw, 92px); line-height: .98; letter-spacing: -.07em; }
-    .lede { max-width: 590px; margin: 24px auto 32px; color: #e1e1e6; font-size: clamp(18px, 2.4vw, 22px); line-height: 1.45; }
+    h1 { margin-bottom: 0; font-size: clamp(48px, 9vw, 96px); font-weight: 700; line-height: 1; letter-spacing: -.06em; }
+    .lede { max-width: 590px; margin: 24px auto 32px; color: #f5f5f7; font-size: clamp(19px, 2.4vw, 22px); line-height: 1.36; }
     .actions { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
-    .button, .github-link { display: inline-flex; align-items: center; justify-content: center; min-height: 49px; border: 1px solid #ffffff20; border-radius: 999px; color: #fff; background: #ffffff12; font-weight: 650; text-decoration: none; transition: transform .18s ease, filter .18s ease; }
-    .button { padding: 14px 21px; }
-    .button.primary { border-color: #fff; background: #fff; color: #111; }
+    .button, .github-link { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; border: 1px solid #ffffff3d; border-radius: 999px; color: #fff; background: linear-gradient(135deg, #ffffff2e, #ffffff0d 55%, #ffffff1f); box-shadow: inset 0 1px #ffffff52, inset 0 -1px #ffffff12, 0 8px 24px #0004; font-weight: 600; text-decoration: none; transition: background .2s ease, transform .2s ease; -webkit-backdrop-filter: blur(20px) saturate(180%); backdrop-filter: blur(20px) saturate(180%); }
+    .button { padding: 11px 19px; }
+    .button.primary { border-color: #73c1ff; background: linear-gradient(135deg, #46a8ff, #0077ed 56%, #0065d4); box-shadow: inset 0 1px #ffffff73, inset 0 -1px #003e8f, 0 10px 28px #0077ed66; color: #fff; }
     .github-link { width: 112px; }
     .github-link svg { width: 20px; height: 20px; fill: currentColor; }
-    .button:hover, .github-link:hover { transform: translateY(-1px); filter: brightness(1.08); }
-    .scroll-link:hover { transform: translate(-50%, -1px); filter: brightness(1.08); }
-    .release-notes { display: inline-block; margin-top: 18px; color: #d0d0d5; font-size: 14px; }
-    .scroll-link { position: absolute; z-index: 1; bottom: 28px; left: 50%; display: inline-flex; align-items: center; gap: 8px; transform: translateX(-50%); color: #f5f5f7; font-size: 14px; text-decoration: none; white-space: nowrap; }
+    .button:hover, .github-link:hover { background: linear-gradient(135deg, #ffffff45, #ffffff16 55%, #ffffff2c); transform: scale(1.02); }
+    .button.primary:hover { background: linear-gradient(135deg, #65b7ff, #168bff 56%, #0071e3); }
+    .scroll-link:hover { transform: translate(-50%, -1px); color: var(--apple-blue); }
+    .release-notes { display: inline-block; margin-top: 18px; color: var(--apple-blue); font-size: 14px; }
+    .scroll-link { position: absolute; z-index: 1; bottom: 28px; left: 50%; display: inline-flex; align-items: center; gap: 8px; transform: translateX(-50%); color: #f5f5f7; font-size: 14px; font-weight: 600; text-decoration: none; white-space: nowrap; }
     .scroll-link::after { content: "↓"; font-size: 18px; }
     html.features-visible .scroll-link { position: fixed; z-index: 2; top: 28px; bottom: auto; }
     html.features-visible .scroll-link::after { content: "↑"; }
-    .features { position: relative; z-index: 1; width: min(100% - 40px, 1120px); margin: 0 auto; padding: 104px 0 112px; scroll-snap-align: start; scroll-snap-stop: always; }
+    .features { position: relative; z-index: 1; display: flex; flex-direction: column; justify-content: center; min-height: 100svh; width: min(100% - 40px, 1120px); margin: 0 auto; padding: 32px 0; scroll-snap-align: start; scroll-snap-stop: always; }
     .carousel-stage { position: relative; }
-    .feature-carousel { display: flex; overflow-x: auto; border: 1px solid #ffffff1a; border-radius: 28px; scroll-snap-type: x mandatory; scrollbar-width: none; background: #101115; box-shadow: 0 30px 80px #0005; }
+    .feature-carousel { display: flex; overflow-x: auto; border: 1px solid #ffffff3d; border-radius: 32px; scroll-snap-type: x mandatory; scrollbar-width: none; background: radial-gradient(520px circle at var(--pointer-x, 50%) var(--pointer-y, 50%), #ffffff42 0, transparent 58%), linear-gradient(135deg, #ffffff2b, #1d1d1f8c 34%, #ffffff1a); box-shadow: inset 0 1px #ffffff59, inset 0 -1px #ffffff12, 0 24px 80px #0008; -webkit-backdrop-filter: blur(32px) saturate(180%); backdrop-filter: blur(32px) saturate(180%); }
     .feature-carousel::-webkit-scrollbar { display: none; }
     .feature-slide { display: grid; flex: 0 0 100%; grid-template-columns: minmax(0, 1.55fr) minmax(240px, .75fr); align-items: center; gap: clamp(24px, 5vw, 64px); min-height: 520px; padding: clamp(24px, 5vw, 56px); scroll-snap-align: start; scroll-snap-stop: always; }
-    .feature-media { position: relative; overflow: hidden; border: 1px solid #ffffff16; border-radius: 18px; background: #050506; box-shadow: 0 18px 40px #0006; }
+    .feature-media { position: relative; overflow: hidden; border: 1px solid #ffffff38; border-radius: 24px; background: #000; box-shadow: inset 0 1px #ffffff42, 0 18px 40px #0008; }
     .feature-media video { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; }
-    .feature-play { position: absolute; right: 16px; bottom: 16px; min-height: 42px; padding: 0 15px; border: 1px solid #ffffff2b; border-radius: 999px; color: #fff; background: #09090bd9; cursor: pointer; font-size: 14px; font-weight: 650; backdrop-filter: blur(10px); }
-    .feature-play:hover { background: #222229; }
+    .feature-play { position: absolute; right: 18px; bottom: 18px; display: grid; width: 56px; height: 56px; padding: 0; border: 1px solid #ffffff52; border-radius: 50%; place-items: center; color: #fff; background: linear-gradient(135deg, #ffffff45, #ffffff12 55%, #ffffff2b); box-shadow: inset 0 1px #ffffff73, inset 0 -1px #ffffff1c, 0 10px 28px #0007; cursor: pointer; -webkit-backdrop-filter: blur(20px) saturate(180%); backdrop-filter: blur(20px) saturate(180%); transition: background .2s ease, transform .2s ease; }
+    .feature-play::before { width: 0; height: 0; margin-left: 4px; border-top: 10px solid transparent; border-bottom: 10px solid transparent; border-left: 15px solid currentColor; content: ""; }
+    .feature-play.is-playing::before { width: 15px; height: 20px; margin-left: 0; border: 0; background: linear-gradient(90deg, currentColor 0 5px, transparent 5px 10px, currentColor 10px); }
+    .feature-play:hover { background: linear-gradient(135deg, #ffffff61, #ffffff22 55%, #ffffff3b); transform: scale(1.08); }
     .feature-copy { align-self: center; }
-    .feature-count { margin-bottom: 16px; color: #8ab4ff; font-size: 14px; font-weight: 700; letter-spacing: .08em; }
-    h3 { margin-bottom: 14px; font-size: clamp(28px, 4vw, 42px); line-height: 1.05; letter-spacing: -.045em; }
-    .feature-copy p { margin-bottom: 0; color: #a1a1a6; font-size: 17px; line-height: 1.5; }
-    .carousel-control { position: absolute; z-index: 1; top: 50%; display: grid; width: 46px; height: 46px; border: 1px solid #ffffff2b; border-radius: 50%; place-items: center; color: #fff; background: #101115e6; cursor: pointer; font-size: 24px; transform: translateY(-50%); }
-    .carousel-control:hover:not(:disabled) { background: #24242a; }
+    .feature-count { margin-bottom: 16px; color: var(--apple-blue); font-size: 14px; font-weight: 600; letter-spacing: .01em; }
+    h3 { margin-bottom: 14px; font-size: clamp(28px, 4vw, 42px); font-weight: 700; line-height: 1.06; letter-spacing: -.045em; }
+    .feature-copy p { margin-bottom: 0; color: #a1a1a6; font-size: 17px; line-height: 1.45; }
+    .carousel-control { position: absolute; z-index: 1; top: 50%; display: grid; width: 46px; height: 46px; border: 1px solid #ffffff3d; border-radius: 50%; place-items: center; color: #fff; background: linear-gradient(135deg, #ffffff31, #1d1d1fd9); box-shadow: inset 0 1px #ffffff4d, 0 8px 24px #0005; cursor: pointer; font-size: 24px; transform: translateY(-50%); -webkit-backdrop-filter: blur(20px) saturate(180%); backdrop-filter: blur(20px) saturate(180%); }
+    .carousel-control:hover:not(:disabled) { background: linear-gradient(135deg, #ffffff4a, #3a3a3ce6); }
     .carousel-control:disabled { opacity: .35; cursor: default; }
     .carousel-control.previous { left: -23px; }
     .carousel-control.next { right: -23px; }
     .carousel-footer { display: flex; align-items: center; justify-content: center; min-height: 46px; margin-top: 22px; }
     .carousel-indicators { display: flex; gap: 9px; }
     .carousel-indicator { width: 9px; height: 9px; padding: 0; border: 0; border-radius: 50%; background: #ffffff35; cursor: pointer; }
-    .carousel-indicator[aria-current="true"] { width: 28px; border-radius: 999px; background: #fff; }
+    .carousel-indicator[aria-current="true"] { width: 28px; border-radius: 999px; background: var(--apple-blue); }
     .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
-    @media (max-width: 760px) { .hero-content { width: min(100% - 28px, 620px); } .hero { min-height: 100svh; } .hero-video { display: none; } .features { width: min(100% - 28px, 1120px); padding: 76px 0 88px; } .feature-slide { grid-template-columns: 1fr; min-height: 0; } .feature-copy { order: -1; } .carousel-control { top: auto; bottom: 20px; transform: none; } .carousel-control.previous { left: 20px; } .carousel-control.next { right: 20px; } .carousel-footer { min-height: 64px; } }
+    @media (max-width: 760px) { .hero-content { width: min(100% - 28px, 620px); } .hero { min-height: 100svh; } .hero-video { display: none; } .features { width: min(100% - 28px, 1120px); padding: 24px 0; } .feature-slide { grid-template-columns: 1fr; min-height: 0; } .feature-copy { order: -1; } .carousel-control { top: auto; bottom: 20px; transform: none; } .carousel-control.previous { left: 20px; } .carousel-control.next { right: 20px; } .carousel-footer { min-height: 64px; } }
     @media (max-width: 480px) { .hero-content { padding-bottom: 88px; } h1 { font-size: clamp(42px, 14vw, 58px); } .lede { margin: 18px auto 26px; font-size: 17px; } .button { padding: 13px 20px; } .github-link { width: 108px; min-height: 47px; } .feature-carousel { border-radius: 22px; } .feature-slide { gap: 28px; padding: 22px 18px 78px; } .feature-copy p { font-size: 16px; } }
     @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .hero-video { display: none; } }
   </style>
@@ -83,9 +89,9 @@
         <source src="assets/another-notch-demo.mp4" type="video/mp4">
       </video>
       <div class="hero-content">
-        <p class="eyebrow">Made for macOS</p>
-        <h1 id="hero-title">Your notch,<br>now useful.</h1>
-        <p class="lede">Music, calendar, clipboard, and AirDrop—one hover away.</p>
+        <p class="eyebrow"><span>Made for</span><strong>macOS</strong></p>
+        <h1 id="hero-title">anotherNotch</h1>
+        <p class="lede">Another notch app for macOS<br>Music, calendar, clipboard, and AirDrop—one hover away.</p>
         <div class="actions">
           <a class="button primary" href="https://github.com/jinkun1998/another.notch/releases/latest">Download</a>
           <a class="github-link" href="https://github.com/jinkun1998/another.notch" aria-label="Another Notch on GitHub">
@@ -100,11 +106,11 @@
     <section class="features" id="features" aria-label="Explore features">
       <div class="carousel-stage">
         <div class="feature-carousel" data-carousel tabindex="0" aria-label="Feature carousel. Use left and right arrow keys to change slides.">
-          <article class="feature-slide" data-slide aria-label="Slide 1 of 5: Music and Lyrics"><div class="feature-media"><video muted preload="metadata" playsinline poster="assets/features/music-lyrics.jpg"><source src="assets/features/music-lyrics.mp4" type="video/mp4"></video><button class="feature-play" type="button">Play preview</button></div><div class="feature-copy"><p class="feature-count">01 / 05</p><h3>Music &amp; Lyrics</h3><p>See what is playing, jump through a track, and keep your listening controls within a hover.</p></div></article>
-          <article class="feature-slide" data-slide aria-label="Slide 2 of 5: Clipboard"><div class="feature-media"><video muted preload="metadata" playsinline poster="assets/features/clipboard.jpg"><source src="assets/features/clipboard.mp4" type="video/mp4"></video><button class="feature-play" type="button">Play preview</button></div><div class="feature-copy"><p class="feature-count">02 / 05</p><h3>Clipboard</h3><p>Keep recent copies close by, ready to find and paste without breaking your flow.</p></div></article>
-          <article class="feature-slide" data-slide aria-label="Slide 3 of 5: Shelf and AirDrop"><div class="feature-media"><video muted preload="metadata" playsinline poster="assets/features/shelf-airdrop.jpg"><source src="assets/features/shelf-airdrop.mp4" type="video/mp4"></video><button class="feature-play" type="button">Play preview</button></div><div class="feature-copy"><p class="feature-count">03 / 05</p><h3>Shelf &amp; AirDrop</h3><p>Drop a file into the notch, keep it on the shelf, or send it on with AirDrop.</p></div></article>
-          <article class="feature-slide" data-slide aria-label="Slide 4 of 5: Calendar"><div class="feature-media"><video muted preload="metadata" playsinline poster="assets/features/calendar.jpg"><source src="assets/features/calendar.mp4" type="video/mp4"></video><button class="feature-play" type="button">Play preview</button></div><div class="feature-copy"><p class="feature-count">04 / 05</p><h3>Calendar</h3><p>Check today at a glance. Your upcoming events stay visible without opening another window.</p></div></article>
-          <article class="feature-slide" data-slide aria-label="Slide 5 of 5: Sneak Peek"><div class="feature-media"><video muted preload="metadata" playsinline poster="assets/features/sneak-peek.jpg"><source src="assets/features/sneak-peek.mp4" type="video/mp4"></video><button class="feature-play" type="button">Play preview</button></div><div class="feature-copy"><p class="feature-count">05 / 05</p><h3>Sneak Peek</h3><p>Hover over the notch for a compact preview of the tools that are ready when you need them.</p></div></article>
+          <article class="feature-slide" data-slide aria-label="Slide 1 of 5: Music and Lyrics"><div class="feature-media"><video muted preload="metadata" playsinline poster="assets/features/music-lyrics.jpg"><source src="assets/features/music-lyrics.mp4" type="video/mp4"></video><button class="feature-play" type="button" aria-label="Play preview"></button></div><div class="feature-copy"><p class="feature-count">01 / 05</p><h3>Music &amp; Lyrics</h3><p>See what is playing, jump through a track, and keep your listening controls within a hover.</p></div></article>
+          <article class="feature-slide" data-slide aria-label="Slide 2 of 5: Clipboard"><div class="feature-media"><video muted preload="metadata" playsinline poster="assets/features/clipboard.jpg"><source src="assets/features/clipboard.mp4" type="video/mp4"></video><button class="feature-play" type="button" aria-label="Play preview"></button></div><div class="feature-copy"><p class="feature-count">02 / 05</p><h3>Clipboard</h3><p>Keep recent copies close by, ready to find and paste without breaking your flow.</p></div></article>
+          <article class="feature-slide" data-slide aria-label="Slide 3 of 5: Shelf and AirDrop"><div class="feature-media"><video muted preload="metadata" playsinline poster="assets/features/shelf-airdrop.jpg"><source src="assets/features/shelf-airdrop.mp4" type="video/mp4"></video><button class="feature-play" type="button" aria-label="Play preview"></button></div><div class="feature-copy"><p class="feature-count">03 / 05</p><h3>Shelf &amp; AirDrop</h3><p>Drop a file into the notch, keep it on the shelf, or send it on with AirDrop.</p></div></article>
+          <article class="feature-slide" data-slide aria-label="Slide 4 of 5: Calendar"><div class="feature-media"><video muted preload="metadata" playsinline poster="assets/features/calendar.jpg"><source src="assets/features/calendar.mp4" type="video/mp4"></video><button class="feature-play" type="button" aria-label="Play preview"></button></div><div class="feature-copy"><p class="feature-count">04 / 05</p><h3>Calendar</h3><p>Check today at a glance. Your upcoming events stay visible without opening another window.</p></div></article>
+          <article class="feature-slide" data-slide aria-label="Slide 5 of 5: Sneak Peek"><div class="feature-media"><video muted preload="metadata" playsinline poster="assets/features/sneak-peek.jpg"><source src="assets/features/sneak-peek.mp4" type="video/mp4"></video><button class="feature-play" type="button" aria-label="Play preview"></button></div><div class="feature-copy"><p class="feature-count">05 / 05</p><h3>Sneak Peek</h3><p>Hover over the notch for a compact preview of the tools that are ready when you need them.</p></div></article>
         </div>
         <button class="carousel-control previous" type="button" data-previous aria-label="Previous feature">‹</button>
         <button class="carousel-control next" type="button" data-next aria-label="Next feature">›</button>
@@ -141,7 +147,8 @@
         const video = slides[index]?.querySelector('video');
         const button = slides[index]?.querySelector('.feature-play');
         video?.pause();
-        if (button) button.textContent = 'Play preview';
+        button?.classList.remove('is-playing');
+        button?.setAttribute('aria-label', 'Play preview');
       };
       const play = index => {
         const video = slides[index]?.querySelector('video');
@@ -172,6 +179,15 @@
         cancelAnimationFrame(scrollFrame);
         scrollFrame = requestAnimationFrame(() => activate(Math.round(carousel.scrollLeft / carousel.clientWidth)));
       });
+      carousel.addEventListener('pointermove', event => {
+        const bounds = carousel.getBoundingClientRect();
+        carousel.style.setProperty('--pointer-x', `${((event.clientX - bounds.left) / bounds.width) * 100}%`);
+        carousel.style.setProperty('--pointer-y', `${((event.clientY - bounds.top) / bounds.height) * 100}%`);
+      });
+      carousel.addEventListener('pointerleave', () => {
+        carousel.style.removeProperty('--pointer-x');
+        carousel.style.removeProperty('--pointer-y');
+      });
       const fadeBackground = () => {
         const progress = document.documentElement.classList.contains('features-visible') ? 1 : Math.min(1, window.scrollY / Math.max(features.offsetTop, 1));
         document.documentElement.style.setProperty('--background-fade-opacity', String(.4 + (.6 * progress)));
@@ -199,9 +215,9 @@
         const video = slide.querySelector('video');
         const button = slide.querySelector('.feature-play');
         button.addEventListener('click', () => { if (video.paused) video.play(); else video.pause(); });
-        video.addEventListener('play', () => { button.textContent = 'Pause preview'; });
-        video.addEventListener('pause', () => { button.textContent = 'Play preview'; });
-        video.addEventListener('ended', () => { button.textContent = 'Play preview'; });
+        video.addEventListener('play', () => { button.classList.add('is-playing'); button.setAttribute('aria-label', 'Pause preview'); });
+        video.addEventListener('pause', () => { button.classList.remove('is-playing'); button.setAttribute('aria-label', 'Play preview'); });
+        video.addEventListener('ended', () => { button.classList.remove('is-playing'); button.setAttribute('aria-label', 'Play preview'); });
       });
       activate(0);
       updateScrollState();
