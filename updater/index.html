@@ -46,11 +46,9 @@
     .release-notes { display: inline-block; margin-top: 18px; color: #d0d0d5; font-size: 14px; }
     .scroll-link { position: absolute; z-index: 1; bottom: 28px; left: 50%; display: inline-flex; align-items: center; gap: 8px; transform: translateX(-50%); color: #f5f5f7; font-size: 14px; text-decoration: none; white-space: nowrap; }
     .scroll-link::after { content: "↓"; font-size: 18px; }
+    html.features-visible .scroll-link { position: fixed; z-index: 2; top: 28px; bottom: auto; }
+    html.features-visible .scroll-link::after { content: "↑"; }
     .features { position: relative; z-index: 1; width: min(100% - 40px, 1120px); margin: 0 auto; padding: 104px 0 112px; scroll-snap-align: start; scroll-snap-stop: always; }
-    .section-heading { max-width: 620px; margin-bottom: 34px; }
-    .section-heading .eyebrow { margin-bottom: 10px; }
-    h2 { margin-bottom: 12px; font-size: clamp(34px, 5vw, 56px); line-height: 1; letter-spacing: -.055em; }
-    .section-heading p { margin-bottom: 0; color: #a1a1a6; font-size: 18px; line-height: 1.5; }
     .carousel-stage { position: relative; }
     .feature-carousel { display: flex; overflow-x: auto; border: 1px solid #ffffff1a; border-radius: 28px; scroll-snap-type: x mandatory; scrollbar-width: none; background: #101115; box-shadow: 0 30px 80px #0005; }
     .feature-carousel::-webkit-scrollbar { display: none; }
@@ -99,13 +97,7 @@
       <a class="scroll-link" href="#features">Explore features</a>
     </section>
 
-    <section class="features" id="features" aria-labelledby="features-title">
-      <div class="section-heading">
-        <p class="eyebrow">Explore features</p>
-        <h2 id="features-title">Everything useful, right where you look.</h2>
-        <p>Browse five quick previews. Each video plays only when you ask it to.</p>
-      </div>
-
+    <section class="features" id="features" aria-label="Explore features">
       <div class="carousel-stage">
         <div class="feature-carousel" data-carousel tabindex="0" aria-label="Feature carousel. Use left and right arrow keys to change slides.">
           <article class="feature-slide" data-slide aria-label="Slide 1 of 5: Music and Lyrics"><div class="feature-media"><video muted preload="metadata" playsinline poster="assets/features/music-lyrics.jpg"><source src="assets/features/music-lyrics.mp4" type="video/mp4"></video><button class="feature-play" type="button">Play preview</button></div><div class="feature-copy"><p class="feature-count">01 / 05</p><h3>Music &amp; Lyrics</h3><p>See what is playing, jump through a track, and keep your listening controls within a hover.</p></div></article>
@@ -138,7 +130,9 @@
       const previous = document.querySelector('[data-previous]');
       const next = document.querySelector('[data-next]');
       const status = document.querySelector('[data-status]');
+      const scrollLink = document.querySelector('.scroll-link');
       const features = document.querySelector('.features');
+      const carouselStage = document.querySelector('.carousel-stage');
       let activeIndex = 0;
       let scrollFrame;
       let backgroundFrame;
@@ -179,18 +173,28 @@
         scrollFrame = requestAnimationFrame(() => activate(Math.round(carousel.scrollLeft / carousel.clientWidth)));
       });
       const fadeBackground = () => {
-        const progress = Math.min(1, window.scrollY / Math.max(features.offsetTop, 1));
+        const progress = document.documentElement.classList.contains('features-visible') ? 1 : Math.min(1, window.scrollY / Math.max(features.offsetTop, 1));
         document.documentElement.style.setProperty('--background-fade-opacity', String(.4 + (.6 * progress)));
       };
       const updateScrollState = () => {
         fadeBackground();
-        document.documentElement.classList.toggle('features-visible', window.scrollY >= features.offsetTop - 2);
+      };
+      const setFeaturesVisible = atFeatures => {
+        document.documentElement.classList.toggle('features-visible', atFeatures);
+        scrollLink.textContent = atFeatures ? 'Back to top' : 'Explore features';
+        fadeBackground();
       };
       window.addEventListener('scroll', () => {
         cancelAnimationFrame(backgroundFrame);
         backgroundFrame = requestAnimationFrame(updateScrollState);
       }, { passive: true });
       window.addEventListener('resize', updateScrollState);
+      new IntersectionObserver(([entry]) => setFeaturesVisible(entry.isIntersecting), { threshold: .25 }).observe(carouselStage);
+      scrollLink.addEventListener('click', event => {
+        if (!document.documentElement.classList.contains('features-visible')) return;
+        event.preventDefault();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
       slides.forEach(slide => {
         const video = slide.querySelector('video');
         const button = slide.querySelector('.feature-play');
