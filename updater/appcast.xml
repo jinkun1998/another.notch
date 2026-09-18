@@ -5,6 +5,33 @@
         <link>https://github.com/jinkun1998/another.notch/releases</link>
         <description>anotherNotch updates</description>
         <item>
+            <title>1.2.0</title>
+            <pubDate>Fri, 18 Sep 2026 06:47:46 +0000</pubDate>
+            <link>https://github.com/jinkun1998/another.notch/releases</link>
+            <sparkle:version>32</sparkle:version>
+            <sparkle:shortVersionString>1.2.0</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <description><![CDATA[<div class="markdown-heading"><h1 class="heading-element">anotherNotch v1.2.0</h1><a id="user-content-anothernotch-v120" class="anchor" aria-label="Permalink: anotherNotch v1.2.0" href="#anothernotch-v120"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
+<div class="markdown-heading"><h2 class="heading-element">New Features</h2><a id="user-content-new-features" class="anchor" aria-label="Permalink: New Features" href="#new-features"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
+<ul>
+<li>Music lyrics — synced lyrics below music controls, with verified lyric matching.</li>
+<li>Lunar calendar — Vietnamese lunar dates in Calendar.</li>
+<li>Tab shortcuts — global keyboard shortcuts for installed notch modules.</li>
+<li>Clipboard improvements — paste selected records into the active app; preview long content.</li>
+<li>System HUD controls — choose which macOS HUDs anotherNotch replaces.</li>
+<li>Update check — menu bar action to manually check for updates.</li>
+<li>Homebrew Cask — install anotherNotch from Homebrew.</li>
+</ul>
+<div class="markdown-heading"><h2 class="heading-element">Optimizations</h2><a id="user-content-optimizations" class="anchor" aria-label="Permalink: Optimizations" href="#optimizations"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
+<ul>
+<li>Reduced open-notch redraw work for music lyrics, progress, and waveform effects.</li>
+<li>Smoother notch resizing and stable music-control positioning.</li>
+<li>Improved notch sizing options consistency across display types.</li>
+</ul>
+]]></description>
+            <enclosure url="https://github.com/jinkun1998/another.notch/releases/download/v1.2.0/anotherNotch.dmg" length="9098440" type="application/octet-stream" sparkle:edSignature="s8YscFtX1o5bvF51DYbLNsbRDmZ1WOC7/vn8Au2E5Ih1xcEAN7qCJQf7AC0H3BovNvfQwzOWAVpwTo51sJIbDA=="/>
+        </item>
+        <item>
             <title>1.2.0-beta.2</title>
             <pubDate>Fri, 18 Sep 2026 04:40:19 +0000</pubDate>
             <link>https://github.com/jinkun1998/another.notch/releases</link>
@@ -28,50 +55,6 @@
 <p><strong>Full Changelog</strong>: <a href="https://github.com/jinkun1998/another.notch/compare/v1.2.0-beta.1...v1.2.0-beta.2">https://github.com/jinkun1998/another.notch/compare/v1.2.0-beta.1...v1.2.0-beta.2</a></p>
 ]]></description>
             <enclosure url="https://github.com/jinkun1998/another.notch/releases/download/v1.2.0-beta.2/anotherNotch.dmg" length="9098357" type="application/octet-stream" sparkle:edSignature="6O4XYLb3B545dVIS0SnyCSuusJkR0RyEzYkjTu7/s41Z/FiErebxnmvK+K18fj6ijnBPIPrciOFkkOj+YWSmDA=="/>
-        </item>
-        <item>
-            <title>1.2.0-beta.1</title>
-            <pubDate>Thu, 17 Sep 2026 09:49:27 +0000</pubDate>
-            <link>https://github.com/jinkun1998/another.notch/releases</link>
-            <sparkle:channel>beta</sparkle:channel>
-            <sparkle:version>30</sparkle:version>
-            <sparkle:shortVersionString>1.2.0-beta.1</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-            <description><![CDATA[<div class="markdown-heading"><h2 class="heading-element">What's Changed</h2><a id="user-content-whats-changed" class="anchor" aria-label="Permalink: What's Changed" href="#whats-changed"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
-<ul>
-<li>Add clipboard paste on selection by @jinkun1998 in <a href="https://github.com/jinkun1998/another.notch/pull/64">https://github.com/jinkun1998/another.notch/pull/64</a>
-</li>
-<li>Reorder clipboard after notch close by @jinkun1998 in <a href="https://github.com/jinkun1998/another.notch/pull/65">https://github.com/jinkun1998/another.notch/pull/65</a>
-</li>
-<li>Add global shortcuts for notch tabs by @jinkun1998 in <a href="https://github.com/jinkun1998/another.notch/pull/66">https://github.com/jinkun1998/another.notch/pull/66</a>
-</li>
-<li>Add Vietnamese lunar calendar by @jinkun1998 in <a href="https://github.com/jinkun1998/another.notch/pull/67">https://github.com/jinkun1998/another.notch/pull/67</a>
-</li>
-</ul>
-<p><strong>Full Changelog</strong>: <a href="https://github.com/jinkun1998/another.notch/compare/v1.1.0...v1.2.0-beta.1">https://github.com/jinkun1998/another.notch/compare/v1.1.0...v1.2.0-beta.1</a></p>
-]]></description>
-            <enclosure url="https://github.com/jinkun1998/another.notch/releases/download/v1.2.0-beta.1/anotherNotch.dmg" length="9059317" type="application/octet-stream" sparkle:edSignature="dJLKcXVrHK6AH1pOGPlmWuhqk+8zUIfL8Fu5doc3WyCKbjSdFVV/y0XxD2XL+Qzb+kUac1jh7kOg/pIxilxxCw=="/>
-        </item>
-        <item>
-            <title>1.0.1-beta.5</title>
-            <pubDate>Tue, 08 Sep 2026 02:29:37 +0000</pubDate>
-            <link>https://github.com/jinkun1998/another.notch/releases</link>
-            <sparkle:channel>beta</sparkle:channel>
-            <sparkle:version>28</sparkle:version>
-            <sparkle:shortVersionString>1.0.1-beta.5</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-            <description><![CDATA[<div class="markdown-heading"><h2 class="heading-element">Improvements</h2><a id="user-content-improvements" class="anchor" aria-label="Permalink: Improvements" href="#improvements"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
-<ul>
-<li>Clipboard: pin important items to the top; added optional hover haptics.</li>
-<li>Haptics: added Light, Medium, and Strong intensity settings; default is Light. Feedback now focuses on sliders, media scrubbing, drag-and-drop, and clipboard hover.</li>
-<li>Calendar: swipe or horizontally scroll to move between months, with haptic feedback and a smooth transition.</li>
-<li>Onboarding: preserves already installed modules when onboarding runs again.</li>
-<li>Settings: restored the Quick Share service picker; removed the obsolete Shortcuts section.</li>
-<li>Music: reduced opened-notch waveform height for a more balanced layout.</li>
-</ul>
-<p>Full Changelog: <a href="https://github.com/jinkun1998/another.notch/compare/v1.0.1-beta.4...v1.0.1-beta.5">https://github.com/jinkun1998/another.notch/compare/v1.0.1-beta.4...v1.0.1-beta.5</a></p>
-]]></description>
-            <enclosure url="https://github.com/jinkun1998/another.notch/releases/download/v1.0.1-beta.5/anotherNotch.dmg" length="9029008" type="application/octet-stream" sparkle:edSignature="syBs6WdBbdeZsGSt6ynimarFBPiZs4LnPPZ7UV+KuZ0fAwTXsYWnhhdLMrFlhsQ9rM70hK5lkJl0lHAUgLtQDQ=="/>
         </item>
     </channel>
 </rss>
