@@ -861,6 +861,9 @@ struct ContentView: View {
         case .clipboard:
             ClipboardHistoryView()
                 .frame(maxWidth: .infinity)
+        case .quickNotes:
+            QuickNotesView()
+                .frame(width: quickNotesContentSize.width, height: quickNotesContentSize.height)
         case .shelf:
             ShelfView()
         case .calendar:
