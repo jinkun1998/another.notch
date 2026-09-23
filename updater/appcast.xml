@@ -5,6 +5,28 @@
         <link>https://github.com/jinkun1998/another.notch/releases</link>
         <description>anotherNotch updates</description>
         <item>
+            <title>1.3.0-beta1</title>
+            <pubDate>Wed, 23 Sep 2026 09:20:57 +0000</pubDate>
+            <link>https://github.com/jinkun1998/another.notch/releases</link>
+            <sparkle:channel>beta</sparkle:channel>
+            <sparkle:version>33</sparkle:version>
+            <sparkle:shortVersionString>1.3.0-beta1</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <description><![CDATA[<div class="markdown-heading"><h2 class="heading-element">What's Changed</h2><a id="user-content-whats-changed" class="anchor" aria-label="Permalink: What's Changed" href="#whats-changed"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
+<ul>
+<li>Quick Notes: create, edit, persist, select, delete notes directly in the notch. PR #79.
+<ul>
+<li>HUD recovery: notch volume/brightness HUD re-enables after macOS sleep/wake or a long lock-screen period. PR #79.</li>
+<li>Dependencies: Sparkle 2.10.0, KeyboardShortcuts 3.1.0, SwiftSyntax 604.0.0, SwiftUI-Introspect 27.0.0. PRs #74–#77.</li>
+<li>CI only: Dependabot updates merge after Build + CodeQL succeed. PR #80.</li>
+</ul>
+</li>
+</ul>
+<p><strong>Full Changelog</strong>: <a href="https://github.com/jinkun1998/another.notch/compare/v1.2.0...v1.3.0-beta1">https://github.com/jinkun1998/another.notch/compare/v1.2.0...v1.3.0-beta1</a></p>
+]]></description>
+            <enclosure url="https://github.com/jinkun1998/another.notch/releases/download/v1.3.0-beta1/anotherNotch.dmg" length="9156778" type="application/octet-stream" sparkle:edSignature="WLG0MnI5twBtXUr8Acd79lMRltvdMOOY4i+A82QytFPf7I2wLtNJLrjQjfXWVxBlNB17Q2J3ngeVORSAPFNrAw=="/>
+        </item>
+        <item>
             <title>1.2.0</title>
             <pubDate>Fri, 18 Sep 2026 06:47:46 +0000</pubDate>
             <link>https://github.com/jinkun1998/another.notch/releases</link>
