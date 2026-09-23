@@ -69,8 +69,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/EmergeTools/Pow",
       "state" : {
-		"revision" : "1b4b1dda28c50b95f0872927ee2226fe8b58950e",
-		"version" : "1.0.6"
+        "revision" : "1b4b1dda28c50b95f0872927ee2226fe8b58950e",
+        "version" : "1.0.6"
       }
     },
     {
@@ -96,8 +96,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-collections.git",
       "state" : {
-		"revision" : "a0cb0954ecb21e4e31b0070e6ed5674e8556685a",
-		"version" : "1.6.0"
+        "revision" : "a0cb0954ecb21e4e31b0070e6ed5674e8556685a",
+        "version" : "1.6.0"
       }
     },
     {
@@ -114,8 +114,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/siteline/swiftui-introspect",
       "state" : {
-		"revision" : "dd0888ef99d2809863b04e46cad52d1dfd8fc840",
-		"version" : "26.0.2"
+        "revision" : "a37eca1db7bebc9437ee89508e7b4433ff34adb4",
+        "version" : "27.0.0"
       }
     }
   ],
