@@ -1,0 +1,47 @@
+name: Auto-merge Dependabot
+
+on:
+  workflow_run:
+    workflows: ["CodeQL Advanced"]
+    types: [completed]
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  merge:
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Merge verified Dependabot pull request
+        env:
+          GH_REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.workflow_run.pull_requests[0].number }}
+          WORKFLOW_HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+
+          test -n "$PR_NUMBER"
+          metadata="$(gh pr view "$PR_NUMBER" --json author,headRefOid,mergeStateStatus --jq '[.author.login, .headRefOid, .mergeStateStatus] | @tsv')"
+          IFS=$'\t' read -r author head_sha merge_state <<< "$metadata"
+          case "$author" in
+            'app/dependabot'|'dependabot[bot]') ;;
+            *) exit 0 ;;
+          esac
+          test "$head_sha" = "$WORKFLOW_HEAD_SHA"
+          test "$merge_state" = CLEAN
+
+          gh pr checks "$PR_NUMBER" --json name,state,workflow --jq '
+            if any(.[]; .workflow == "Build Another Notch" and .name == "Build Another Notch" and .state == "SUCCESS")
+              and any(.[]; .workflow == "CodeQL Advanced" and .state == "SUCCESS")
+              and all(.[] | select(.workflow == "Build Another Notch" or .workflow == "CodeQL Advanced"); .state == "SUCCESS")
+            then empty
+            else error("Build or CodeQL checks have not all succeeded")
+            end
+          '
+
+          gh pr merge "$PR_NUMBER" --merge --delete-branch
