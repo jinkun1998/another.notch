@@ -65,6 +65,16 @@ final class FeatureModuleRegistry: ObservableObject {
             supportsScrolling: true
         ),
         FeatureModule(
+            id: .quickNotes,
+            title: "Quick Notes",
+            icon: "note.text",
+            tabDestination: .quickNotes,
+            settingsDestination: .quickNotes,
+            installedByDefault: false,
+            isAvailable: true,
+            supportsScrolling: false
+        ),
+        FeatureModule(
             id: .shelf,
             title: "Shelf",
             icon: "tray.fill",
@@ -195,7 +205,7 @@ final class FeatureModuleRegistry: ObservableObject {
         guard isAvailable(id) else { return }
 
         switch id {
-        case .home, .shelf:
+        case .home, .quickNotes, .shelf:
             break
         case .clipboard:
             ClipboardHistoryStore.shared.startMonitoring()
@@ -212,7 +222,7 @@ final class FeatureModuleRegistry: ObservableObject {
             ClipboardHistoryStore.shared.stopMonitoring()
         case .camera:
             WebcamManager.shared.stopSession()
-        case .home, .shelf, .calendar:
+        case .home, .quickNotes, .shelf, .calendar:
             break
         }
     }

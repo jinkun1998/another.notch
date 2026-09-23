@@ -19,6 +19,8 @@ enum FeatureModuleAvailability {
             true
         case .clipboard:
             clipboardHistoryEnabled
+        case .quickNotes:
+            true
         case .shelf:
             shelfEnabled
         case .calendar:

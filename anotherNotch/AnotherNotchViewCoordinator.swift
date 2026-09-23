@@ -131,6 +131,7 @@ class AnotherNotchViewCoordinator: ObservableObject {
 
     @Published var optionKeyPressed: Bool = true
     private var accessibilityObserver: Any?
+    private var wakeObserver: Any?
     private var hudReplacementCancellable: AnyCancellable?
 
     private init() {
@@ -169,6 +170,15 @@ class AnotherNotchViewCoordinator: ObservableObject {
             }
         }
         XPCHelperClient.shared.startMonitoringAccessibilityAuthorization()
+        wakeObserver = NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.didWakeNotification,
+            object: nil,
+            queue: .main
+        ) { _ in
+            Task { @MainActor in
+                await MediaKeyInterceptor.shared.resumeAfterWake()
+            }
+        }
 
         hudReplacementCancellable = Defaults.publisher(.hudReplacement)
             .dropFirst()

@@ -5,7 +5,7 @@
   <img src="https://github.com/jinkun1998/another.notch/actions/workflows/cicd.yml/badge.svg" alt="Another Notch Build & Test" style="margin-right: 10px;" />
 </p>
 
-**Another Notch** is a free, open-source macOS menu bar app that turns your MacBook notch into a Dynamic Island-style utility. Music controls, calendar integration, file shelf with AirDrop support, system HUD replacement, battery status, and camera features stay one hover away.
+**Another Notch** is a free, open-source macOS menu bar app that turns your MacBook notch into a Dynamic Island-style utility. Music controls, calendar integration, quick notes, file shelf with AirDrop support, system HUD replacement, battery status, and camera features stay one hover away.
 
 <p align="center">
   <a href="https://jinkun1998.github.io/another.notch/">Website</a> ·
@@ -78,6 +78,7 @@ brew upgrade --cask another-notch
 - Launch the app, and voilà—your notch is now the coolest part of your screen.
 - Hover over the notch to see it expand and reveal all its secrets.
 - Use the controls to manage your music like a rockstar.
+- Switch to Quick Notes to capture, view, and organize fast notes in the notch.
 - Open the Clipboard tab to search and reuse recent clipboard entries.
 - Open Settings to customize the notch.
 
@@ -114,6 +115,7 @@ brew upgrade --cask another-notch
 - [x] System HUD replacements (volume, brightness, backlight)
 - [x] Bluetooth device live activity
 - [x] Searchable clipboard manager
+- [x] Quick Notes capture and management module
 - [ ] Fans control
 - [ ] Lock screen widgets
 - [ ] Extension system

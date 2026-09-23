@@ -307,7 +307,7 @@ struct OnboardingView: View {
             FeatureModuleRegistry.shared.install(module)
 
             switch module {
-            case .home:
+            case .home, .quickNotes:
                 break
             case .clipboard:
                 Defaults[.clipboardHistoryEnabled] = true

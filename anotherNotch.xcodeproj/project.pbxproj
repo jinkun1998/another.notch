@@ -15,6 +15,9 @@
 		A11E00160000000000000016 /* ScreenBrightnessDisplaySelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11E00050000000000000005 /* ScreenBrightnessDisplaySelector.swift */; };
 		A11E00170000000000000017 /* NotchMotionPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11E00060000000000000006 /* NotchMotionPolicy.swift */; };
 		A11E00180000000000000018 /* NotchMotionPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11E00060000000000000006 /* NotchMotionPolicy.swift */; };
+		E17300020000000000000001 /* QuickNotesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E17300010000000000000001 /* QuickNotesView.swift */; };
+		E17300050000000000000001 /* QuickNote.swift in Sources */ = {isa = PBXBuildFile; fileRef = E17300040000000000000001 /* QuickNote.swift */; };
+		E17300060000000000000001 /* QuickNote.swift in Sources */ = {isa = PBXBuildFile; fileRef = E17300040000000000000001 /* QuickNote.swift */; };
 		A11E00250000000000000025 /* VietnameseLunarCalendar.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11E00080000000000000008 /* VietnameseLunarCalendar.swift */; };
 		A11E00260000000000000026 /* VietnameseLunarCalendar.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11E00080000000000000008 /* VietnameseLunarCalendar.swift */; };
 		A11E00190000000000000019 /* Defaults in Frameworks */ = {isa = PBXBuildFile; productRef = A11E00070000000000000007 /* Defaults */; };
@@ -200,6 +203,8 @@
 		A11E00040000000000000004 /* anotherNotchTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = anotherNotchTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A11E00050000000000000005 /* ScreenBrightnessDisplaySelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnotherNotchXPCHelper/ScreenBrightnessDisplaySelector.swift; sourceTree = SOURCE_ROOT; };
 		A11E00060000000000000006 /* NotchMotionPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotchMotionPolicy.swift; sourceTree = "<group>"; };
+		E17300010000000000000001 /* QuickNotesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickNotesView.swift; sourceTree = "<group>"; };
+		E17300040000000000000001 /* QuickNote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickNote.swift; sourceTree = "<group>"; };
 		A11E00080000000000000008 /* VietnameseLunarCalendar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VietnameseLunarCalendar.swift; sourceTree = "<group>"; };
 		1100290B2E847E2800035A57 /* NSItemProvider+LoadHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSItemProvider+LoadHelpers.swift"; sourceTree = "<group>"; };
 		110029262E84FD4C00035A57 /* TemporaryFileStorageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemporaryFileStorageService.swift; sourceTree = "<group>"; };
@@ -516,6 +521,7 @@
 		1471639B2C5D362F0068B555 /* components */ = {
 			isa = PBXGroup;
 			children = (
+				E17300010000000000000001 /* QuickNotesView.swift */,
 				B141C23B2CA5F50900AC8CC8 /* Onboarding */,
 				B1C448992C97375A001F0858 /* Tips */,
 				14C08BB72C8DE49E000F8AA0 /* Calendar */,
@@ -670,6 +676,7 @@
 				A11E00020000000000000002 /* FeatureModuleAvailability.swift */,
 				A11E00060000000000000006 /* NotchMotionPolicy.swift */,
 				A11E00080000000000000008 /* VietnameseLunarCalendar.swift */,
+				E17300040000000000000001 /* QuickNote.swift */,
 			);
 			path = models;
 			sourceTree = "<group>";
@@ -984,6 +991,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E17300060000000000000001 /* QuickNote.swift in Sources */,
 				A11E00130000000000000013 /* FeatureModuleAvailabilityTests.swift in Sources */,
 				A11E00140000000000000014 /* FeatureModuleID.swift in Sources */,
 				A11E00150000000000000015 /* FeatureModuleAvailability.swift in Sources */,
@@ -1004,6 +1012,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E17300020000000000000001 /* QuickNotesView.swift in Sources */,
+				E17300050000000000000001 /* QuickNote.swift in Sources */,
 				A11E00110000000000000011 /* FeatureModuleID.swift in Sources */,
 				A11E00120000000000000012 /* FeatureModuleAvailability.swift in Sources */,
 				A11E00170000000000000017 /* NotchMotionPolicy.swift in Sources */,

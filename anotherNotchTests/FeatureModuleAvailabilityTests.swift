@@ -3,6 +3,22 @@ import Foundation
 import XCTest
 
 final class FeatureModuleAvailabilityTests: XCTestCase {
+    func testQuickNotesPersistCreateEditAndDelete() throws {
+        let suiteName = "anotherNotchTests.quickNotes.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+
+        let store = QuickNoteStore(defaults: defaults, storageKey: "notes")
+        let note = store.create()
+        store.update(note.id, text: "Buy milk")
+
+        let reloadedStore = QuickNoteStore(defaults: defaults, storageKey: "notes")
+        XCTAssertEqual(reloadedStore.notes.map(\.text), ["Buy milk"])
+
+        reloadedStore.delete(note.id)
+        XCTAssertTrue(reloadedStore.notes.isEmpty)
+    }
+
     func testVietnameseLunarCalendarConvertsTetAndMidAutumnFestival() {
         XCTAssertEqual(
             VietnameseLunarCalendar.date(day: 10, month: 2, year: 2024),

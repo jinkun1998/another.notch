@@ -21,6 +21,7 @@ let notchOuterHorizontalPadding: CGFloat = 19 + 12
 let openNotchHeaderHeight: CGFloat = 30
 let minimumExpandedContentInset: CGFloat = 16
 let calendarContentSize: CGSize = .init(width: 504, height: 205)
+let quickNotesContentSize: CGSize = .init(width: 504, height: 205)
 let calendarOpenNotchSize: CGSize = .init(
     width: calendarContentSize.width + 72,
     height: max(190, calendarContentSize.height + 12)
@@ -145,6 +146,9 @@ func openNotchSize(for view: NotchViews, screenUUID: String? = nil) -> CGSize {
         let size = clipboardOpenNotchSize(screenUUID: screenUUID)
         contentWidth = size.width
         contentHeight = max(0, size.height - openNotchHeaderHeight)
+    case .quickNotes:
+        contentWidth = quickNotesContentSize.width
+        contentHeight = quickNotesContentSize.height
     case .shelf:
         contentWidth = shelfOpenNotchSize.width
         contentHeight = shelfOpenNotchSize.height
