@@ -90,24 +90,20 @@ You can contribute in many ways: writing code, improving documentation, reportin
 
 ## Contributing Translations
 
-We welcome community translations! Localizations are managed via Apple's String Catalog format (`Localizable.xcstrings`).
+We welcome community translations! All translations are managed online via **Crowdin**. **No Xcode, Mac, or coding experience is required.**
 
-### How to add or improve translations:
+### How to translate online:
 
-1. **Using Xcode (Recommended)**:
-   - Open `anotherNotch.xcodeproj` in Xcode.
-   - Select `anotherNotch/Localizable.xcstrings` in the project navigator.
-   - Click the `+` button at the bottom of the language list to add a new language, or select an existing language to edit translations.
+1. **Open the Translation Project**:
+   - Visit [Another Notch on Crowdin](https://crowdin.com/project/another-notch).
+   - Log in with your GitHub, Google, or Crowdin account.
 
-2. **Using a text editor**:
-   - Edit `anotherNotch/Localizable.xcstrings` directly as JSON under the `"localizations"` key for your language code (e.g. `"vi"`, `"ja"`, `"de"`).
+2. **Select your language**:
+   - Pick your language from the project dashboard (or request a new language in the discussions).
+   - Translate or review strings directly in your web browser.
 
-3. **Registering a new language**:
-   - Add your language case and display name in `anotherNotch/managers/AppLanguageManager.swift` (`AppLanguage` enum).
-   - Add the language code to `knownRegions` in `anotherNotch.xcodeproj/project.pbxproj`.
-
-4. **Submit a PR**:
-   - Push your changes and open a pull request.
+3. **Automated Sync**:
+   - Completed translations automatically sync back to the repository and are included in the next app release.
 
 <!-- ## Code Style Guidelines
 
@@ -143,7 +139,6 @@ If you need help or have questions:
 - Check the project documentation
 - Search existing issues for similar questions
 - Open a new issue with the "question" label
-- Join our [community Discord server](https://discord.com/servers/another-notch-1269588937320566815)
 
 ---
 

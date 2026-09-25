@@ -10,7 +10,7 @@ body:
     attributes:
       value: |
         Thank you for helping translate Another Notch! ❤️
-        You can submit translations directly here, or follow our [Translation Guide](https://github.com/jinkun1998/another.notch/blob/main/CONTRIBUTING.md#contributing-translations) to open a Pull Request.
+        **Tip**: You can translate directly online without Xcode or Git on [Crowdin](https://crowdin.com/project/another-notch). You can also submit phrases directly in this form.
   - type: input
     id: language
     attributes:
