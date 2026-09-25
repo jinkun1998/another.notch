@@ -37,7 +37,7 @@ struct FanControlSettings: View {
                 HStack {
                     Text("Hardware Support")
                     Spacer()
-                    Text(manager.isHardwareSupported ? "Supported" : "No Fans Detected")
+                    Text(manager.isHardwareSupported ? LocalizedStringKey("Supported") : LocalizedStringKey("No Fans Detected"))
                         .foregroundStyle(manager.isHardwareSupported ? .green : .secondary)
                 }
 

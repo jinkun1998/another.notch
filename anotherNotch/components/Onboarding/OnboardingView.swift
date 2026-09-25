@@ -98,7 +98,7 @@ private struct OnboardingModuleSelectionRow: View {
                     .frame(width: 24)
                     .foregroundStyle(Color.effectiveAccent)
 
-                Text(module.title)
+                Text(LocalizedStringKey(module.title))
                     .fontWeight(.medium)
 
                 Spacer()

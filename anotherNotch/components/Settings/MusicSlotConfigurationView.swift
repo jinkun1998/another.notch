@@ -68,7 +68,7 @@ struct MusicSlotConfigurationView: View {
                         .frame(width: 32, height: 32)
                         .background(Color(NSColor.controlBackgroundColor))
                         .clipShape(RoundedRectangle(cornerRadius: 6))
-                        .help(control.label)
+                        .help(Text(LocalizedStringKey(control.label)))
                         .onDrag {
                             NSItemProvider(object: NSString(string: "control:\(control.rawValue)"))
                         }
@@ -84,10 +84,17 @@ struct MusicSlotConfigurationView: View {
                 .frame(width: 44, height: 44)
                 .background(Color(NSColor.controlBackgroundColor))
                 .clipShape(RoundedRectangle(cornerRadius: 8))
-            Text(locked ? "\(control.label) • Locked" : control.label)
-                .font(.caption2)
-                .foregroundStyle(.secondary)
-                .lineLimit(1)
+            if locked {
+                Text("\(Text(LocalizedStringKey(control.label))) • \(Text("Locked"))")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            } else {
+                Text(LocalizedStringKey(control.label))
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            }
         }
         .frame(width: 82)
     }

@@ -19,12 +19,27 @@ public enum AppLanguage: String, CaseIterable, Identifiable, Defaults.Serializab
 
     public var displayName: String {
         switch self {
-        case .system: "System Default"
-        case .en: "English"
-        case .vi: "Tiếng Việt"
-        case .zhHans: "简体中文"
-        case .es: "Español"
-        case .fr: "Français"
+        case .system:
+            let systemLang = Locale.current.language.languageCode?.identifier ?? "en"
+            let name: String
+            switch systemLang {
+            case "vi": name = "Tiếng Việt"
+            case "zh": name = "简体中文"
+            case "es": name = "Español"
+            case "fr": name = "Français"
+            default: name = "English"
+            }
+            return "System Default (\(name))"
+        case .en:
+            return "English"
+        case .vi:
+            return "Tiếng Việt"
+        case .zhHans:
+            return "简体中文"
+        case .es:
+            return "Español"
+        case .fr:
+            return "Français"
         }
     }
 }
