@@ -942,22 +942,10 @@
 			knownRegions = (
 				en,
 				Base,
-				ar,
-				cs,
-				de,
-				"en-GB",
+				vi,
+				"zh-Hans",
 				es,
 				fr,
-				hu,
-				it,
-				ko,
-				pl,
-				"pt-BR",
-				ru,
-				tr,
-				uk,
-				"zh-Hans",
-				vi,
 			);
 			mainGroup = 14CEF4092C5CAED200855D72;
 			packageReferences = (

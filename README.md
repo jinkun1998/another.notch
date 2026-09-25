@@ -148,9 +148,9 @@ brew upgrade --cask another-notch
 
 Another Notch supports multiple languages. Community translations are welcome!
 
-- **Translate Online (No Xcode required)**: [Contribute on Crowdin](https://crowdin.com/project/another-notch).
+- **Translate Online (No Xcode required)**: [Contribute on Crowdin](https://crowdin.com/project/anothernotch).
 - **Details**: See the [Translation Guide](CONTRIBUTING.md#contributing-translations).
-- **Supported Locales**: English, Tiếng Việt, 简体中文, Deutsch, Español, Français, Italiano, 한국어, Polski, Português (Brasil), Русский, Türkçe, Українська, العربية, Čeština, Magyar.
+- **Supported Locales**: English, Tiếng Việt, 简体中文, Español, Français.
 
 ## Credits & Attribution
 

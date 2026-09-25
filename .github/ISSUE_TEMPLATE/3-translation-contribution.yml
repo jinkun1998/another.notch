@@ -10,7 +10,7 @@ body:
     attributes:
       value: |
         Thank you for helping translate Another Notch! ❤️
-        **Tip**: You can translate directly online without Xcode or Git on [Crowdin](https://crowdin.com/project/another-notch). You can also submit phrases directly in this form.
+        **Tip**: You can translate directly online without Xcode or Git on [Crowdin](https://crowdin.com/project/anothernotch). You can also submit phrases directly in this form.
   - type: input
     id: language
     attributes:

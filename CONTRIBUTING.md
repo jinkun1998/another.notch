@@ -95,7 +95,7 @@ We welcome community translations! All translations are managed online via **Cro
 ### How to translate online:
 
 1. **Open the Translation Project**:
-   - Visit [Another Notch on Crowdin](https://crowdin.com/project/another-notch).
+   - Visit [Another Notch on Crowdin](https://crowdin.com/project/anothernotch).
    - Log in with your GitHub, Google, or Crowdin account.
 
 2. **Select your language**:
