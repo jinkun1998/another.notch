@@ -12,7 +12,8 @@ enum FeatureModuleAvailability {
         clipboardHistoryEnabled: Bool,
         shelfEnabled: Bool,
         calendarEnabled: Bool,
-        cameraEnabled: Bool
+        cameraEnabled: Bool,
+        fanControlEnabled: Bool = true
     ) -> Bool {
         switch module {
         case .home:
@@ -27,6 +28,8 @@ enum FeatureModuleAvailability {
             calendarEnabled
         case .camera:
             cameraEnabled
+        case .fanControl:
+            fanControlEnabled
         }
     }
 }

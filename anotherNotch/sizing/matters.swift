@@ -22,6 +22,10 @@ let openNotchHeaderHeight: CGFloat = 30
 let minimumExpandedContentInset: CGFloat = 16
 let calendarContentSize: CGSize = .init(width: 504, height: 205)
 let quickNotesContentSize: CGSize = .init(width: 504, height: 205)
+@MainActor
+var fanControlContentSize: CGSize {
+    .init(width: 504, height: FanControlManager.shared.isManualMode ? 195 : 145)
+}
 let calendarOpenNotchSize: CGSize = .init(
     width: calendarContentSize.width + 72,
     height: max(190, calendarContentSize.height + 12)
@@ -164,6 +168,9 @@ func openNotchSize(for view: NotchViews, screenUUID: String? = nil) -> CGSize {
     case .camera:
         contentWidth = 160
         contentHeight = 160
+    case .fanControl:
+        contentWidth = fanControlContentSize.width
+        contentHeight = fanControlContentSize.height
     }
 
     return pixelAlignedNotchSize(
