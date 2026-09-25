@@ -5,6 +5,37 @@
         <link>https://github.com/jinkun1998/another.notch/releases</link>
         <description>anotherNotch updates</description>
         <item>
+            <title>1.3.0-beta2</title>
+            <pubDate>Fri, 25 Sep 2026 10:37:39 +0000</pubDate>
+            <link>https://github.com/jinkun1998/another.notch/releases</link>
+            <sparkle:channel>beta</sparkle:channel>
+            <sparkle:version>34</sparkle:version>
+            <sparkle:shortVersionString>1.3.0-beta2</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <description><![CDATA[<div class="markdown-heading"><h2 class="heading-element">What's Changed</h2><a id="user-content-whats-changed" class="anchor" aria-label="Permalink: What's Changed" href="#whats-changed"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
+<ul>
+<li>build(deps): bump github.com/siteline/swiftui-introspect from 26.0.2 to 27.0.0 by @dependabot[bot] in <a href="https://github.com/jinkun1998/another.notch/pull/74">https://github.com/jinkun1998/another.notch/pull/74</a>
+</li>
+<li>build(deps): bump github.com/swiftlang/swift-syntax from 602.0.0 to 604.0.0 by @dependabot[bot] in <a href="https://github.com/jinkun1998/another.notch/pull/75">https://github.com/jinkun1998/another.notch/pull/75</a>
+</li>
+<li>build(deps): bump github.com/sindresorhus/keyboardshortcuts from 2.4.0 to 3.1.0 by @dependabot[bot] in <a href="https://github.com/jinkun1998/another.notch/pull/76">https://github.com/jinkun1998/another.notch/pull/76</a>
+</li>
+<li>build(deps): bump github.com/sparkle-project/sparkle from 2.9.1 to 2.10.0 by @dependabot[bot] in <a href="https://github.com/jinkun1998/another.notch/pull/77">https://github.com/jinkun1998/another.notch/pull/77</a>
+</li>
+<li>Allow modules on both sides of the notch (#78) by @jinkun1998 in <a href="https://github.com/jinkun1998/another.notch/pull/82">https://github.com/jinkun1998/another.notch/pull/82</a>
+</li>
+<li>[FEATURE] Add fan control (#81) by @jinkun1998 in <a href="https://github.com/jinkun1998/another.notch/pull/83">https://github.com/jinkun1998/another.notch/pull/83</a>
+</li>
+<li>[FEATURE] Add multi-language support (#58) by @jinkun1998 in <a href="https://github.com/jinkun1998/another.notch/pull/84">https://github.com/jinkun1998/another.notch/pull/84</a>
+</li>
+<li>feat(i18n): complete translations for 5 languages and fix UI localization by @jinkun1998 in <a href="https://github.com/jinkun1998/another.notch/pull/85">https://github.com/jinkun1998/another.notch/pull/85</a>
+</li>
+</ul>
+<p><strong>Full Changelog</strong>: <a href="https://github.com/jinkun1998/another.notch/compare/v1.3.0-beta1...v1.3.0-beta2">https://github.com/jinkun1998/another.notch/compare/v1.3.0-beta1...v1.3.0-beta2</a></p>
+]]></description>
+            <enclosure url="https://github.com/jinkun1998/another.notch/releases/download/v1.3.0-beta2/anotherNotch.dmg" length="9429398" type="application/octet-stream" sparkle:edSignature="HDAjEGd1sPVC3ywqrFjur5Em5m6Dz9iMHRyg+uXDj25KeELR8WNKe1h2JxXYBMNy/2rxZBePgtMmnJ6vpwWpBg=="/>
+        </item>
+        <item>
             <title>1.3.0-beta1</title>
             <pubDate>Wed, 23 Sep 2026 09:20:57 +0000</pubDate>
             <link>https://github.com/jinkun1998/another.notch/releases</link>
