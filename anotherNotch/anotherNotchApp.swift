@@ -113,6 +113,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
         MusicManager.shared.destroy()
         FeatureModuleRegistry.shared.deactivate(.clipboard)
+        MediaKeyInterceptor.shared.stop()
         cleanupDragDetectors()
         cleanupWindows()
         XPCHelperClient.shared.stopMonitoringAccessibilityAuthorization()
@@ -126,6 +127,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         } else {
             enableSkyLightOnAllWindows()
         }
+        MediaKeyInterceptor.shared.stop()
     }
 
     @MainActor
@@ -135,6 +137,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             adjustWindowPosition(changeAlpha: true)
         } else {
             disableSkyLightOnAllWindows()
+        }
+
+        Task {
+            await MediaKeyInterceptor.shared.resumeAfterWake()
         }
     }
     
