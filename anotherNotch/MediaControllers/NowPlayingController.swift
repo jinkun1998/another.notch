@@ -290,9 +290,20 @@ final class NowPlayingController: ObservableObject, MediaControllerProtocol {
             newPlaybackState.artwork = nil
         }
 
-        if let dateString = payload.timestamp,
-           let date = ISO8601DateFormatter().date(from: dateString) {
-            newPlaybackState.lastUpdated = date
+        if let dateString = payload.timestamp {
+            let formatter = ISO8601DateFormatter()
+            if let date = formatter.date(from: dateString) {
+                newPlaybackState.lastUpdated = date
+            } else {
+                formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+                if let date = formatter.date(from: dateString) {
+                    newPlaybackState.lastUpdated = date
+                } else if !diff {
+                    newPlaybackState.lastUpdated = Date()
+                } else {
+                    newPlaybackState.lastUpdated = self.playbackState.lastUpdated
+                }
+            }
         } else if !diff {
             newPlaybackState.lastUpdated = Date()
         } else {

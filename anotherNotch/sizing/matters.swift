@@ -73,7 +73,10 @@ let cornerRadiusInsets: (opened: (top: CGFloat, bottom: CGFloat), closed: (top: 
 
 @MainActor
 func tabHeaderMinimumOpenWidth(screenUUID: String? = nil) -> CGFloat {
-    let tabCount = CGFloat(FeatureModuleRegistry.shared.installedModules.count)
+    let tabCount = CGFloat(max(
+        FeatureModuleRegistry.shared.leftInstalledModules.count,
+        FeatureModuleRegistry.shared.rightInstalledModules.count
+    ))
     let tabStripWidth = tabCount * moduleTabWidth
     let requiredInnerWingWidth = moduleTabLeadingPadding + tabStripWidth + moduleTabNotchGap
     let physicalWidth = getClosedNotchSize(screenUUID: screenUUID).width
@@ -84,7 +87,10 @@ func tabHeaderMinimumOpenWidth(screenUUID: String? = nil) -> CGFloat {
 @MainActor
 func moduleTabWingWidth() -> CGFloat {
     moduleTabLeadingPadding
-        + CGFloat(FeatureModuleRegistry.shared.installedModules.count) * moduleTabWidth
+        + CGFloat(max(
+            FeatureModuleRegistry.shared.leftInstalledModules.count,
+            FeatureModuleRegistry.shared.rightInstalledModules.count
+        )) * moduleTabWidth
 }
 
 @MainActor

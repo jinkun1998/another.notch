@@ -160,9 +160,7 @@ struct LyricsStripView: View {
     }
 
     private func currentElapsed(at date: Date) -> Double {
-        guard musicManager.isPlaying else { return musicManager.elapsedTime }
-        let elapsed = musicManager.elapsedTime + date.timeIntervalSince(musicManager.timestampDate) * musicManager.playbackRate
-        return min(max(elapsed, 0), musicManager.songDuration)
+        MusicManager.shared.estimatedPlaybackPosition(at: date)
     }
 
     private func lyricText(_ text: String, font: Font, color: Color) -> some View {

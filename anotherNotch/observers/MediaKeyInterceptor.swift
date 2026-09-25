@@ -29,8 +29,60 @@ final class MediaKeyInterceptor {
     private var runLoopSource: CFRunLoopSource?
     private let step: Float = 1.0 / 16.0
     private var audioPlayer: AVAudioPlayer?
+    private var isScreenLocked: Bool = false
+    private var watchdogTask: Task<Void, Never>?
+    private var restartTask: Task<Void, Never>?
+    private var lifecycleObservers: [NSObjectProtocol] = []
     
-    private init() {}
+    private init() {
+        setupLifecycleObservers()
+    }
+
+    private func setupLifecycleObservers() {
+        let wsCenter = NSWorkspace.shared.notificationCenter
+        let distCenter = DistributedNotificationCenter.default()
+
+        lifecycleObservers.append(
+            wsCenter.addObserver(forName: NSWorkspace.didWakeNotification, object: nil, queue: .main) { [weak self] _ in
+                Task { @MainActor in
+                    self?.isScreenLocked = false
+                    await self?.restart()
+                }
+            }
+        )
+        lifecycleObservers.append(
+            wsCenter.addObserver(forName: NSWorkspace.screensDidWakeNotification, object: nil, queue: .main) { [weak self] _ in
+                Task { @MainActor in
+                    self?.isScreenLocked = false
+                    await self?.restart()
+                }
+            }
+        )
+        lifecycleObservers.append(
+            wsCenter.addObserver(forName: NSWorkspace.sessionDidBecomeActiveNotification, object: nil, queue: .main) { [weak self] _ in
+                Task { @MainActor in
+                    self?.isScreenLocked = false
+                    await self?.restart()
+                }
+            }
+        )
+        lifecycleObservers.append(
+            distCenter.addObserver(forName: NSNotification.Name("com.apple.screenIsUnlocked"), object: nil, queue: .main) { [weak self] _ in
+                Task { @MainActor in
+                    self?.isScreenLocked = false
+                    await self?.restart()
+                }
+            }
+        )
+        lifecycleObservers.append(
+            distCenter.addObserver(forName: NSNotification.Name("com.apple.screenIsLocked"), object: nil, queue: .main) { [weak self] _ in
+                Task { @MainActor in
+                    self?.isScreenLocked = true
+                    self?.stop()
+                }
+            }
+        )
+    }
     
     // MARK: - Accessibility (via XPC)
     
@@ -45,10 +97,13 @@ final class MediaKeyInterceptor {
     // MARK: - Event Tap
     
     func start(promptIfNeeded: Bool = false) async {
-        guard eventTap == nil else { return }
+        guard eventTap == nil else {
+            startWatchdog()
+            return
+        }
         
-        // Ensure HUD replacement is enabled
-        guard Defaults[.hudReplacement] else {
+        // Ensure HUD replacement is enabled and screen not locked
+        guard Defaults[.hudReplacement], !isScreenLocked else {
             stop()
             return
         }
@@ -77,6 +132,9 @@ final class MediaKeyInterceptor {
                     if let eventTap = interceptor.eventTap {
                         CGEvent.tapEnable(tap: eventTap, enable: true)
                     }
+                    Task { @MainActor in
+                        await interceptor.checkHealthAndRecoverIfNeeded()
+                    }
                     return Unmanaged.passRetained(cgEvent)
                 }
                 return interceptor.handleEvent(cgEvent)
@@ -90,10 +148,14 @@ final class MediaKeyInterceptor {
                 CFRunLoopAddSource(CFRunLoopGetMain(), runLoopSource, .commonModes)
             }
             CGEvent.tapEnable(tap: eventTap, enable: true)
+            startWatchdog()
         }
     }
     
     func stop() {
+        stopWatchdog()
+        restartTask?.cancel()
+        restartTask = nil
         if let eventTap {
             CGEvent.tapEnable(tap: eventTap, enable: false)
         }
@@ -105,19 +167,74 @@ final class MediaKeyInterceptor {
     }
 
     func resumeAfterWake() async {
-        guard Defaults[.hudReplacement] else { return }
+        isScreenLocked = false
+        await restart()
+    }
 
-        guard await XPCHelperClient.shared.isAccessibilityAuthorized() else {
+    func restart() async {
+        guard Defaults[.hudReplacement], !isScreenLocked else {
             stop()
             return
         }
 
-        guard let eventTap else {
-            await start(promptIfNeeded: false)
-            return
+        restartTask?.cancel()
+        let task = Task { @MainActor [weak self] in
+            guard let self else { return }
+            self.stop()
+
+            guard Defaults[.hudReplacement], !self.isScreenLocked else { return }
+
+            for delay in [0.0, 0.2, 0.5, 1.0, 2.0] {
+                if Task.isCancelled { return }
+                if delay > 0 {
+                    try? await Task.sleep(for: .seconds(delay))
+                }
+                if Task.isCancelled { return }
+
+                guard await XPCHelperClient.shared.isAccessibilityAuthorized() else {
+                    continue
+                }
+
+                await self.start(promptIfNeeded: false)
+                if self.eventTap != nil {
+                    return
+                }
+            }
+        }
+        restartTask = task
+        await task.value
+    }
+
+    private func startWatchdog() {
+        guard watchdogTask == nil else { return }
+        watchdogTask = Task { [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .seconds(4))
+                guard let self, !Task.isCancelled else { break }
+                await self.checkHealthAndRecoverIfNeeded()
+            }
+        }
+    }
+
+    private func stopWatchdog() {
+        watchdogTask?.cancel()
+        watchdogTask = nil
+    }
+
+    private func checkHealthAndRecoverIfNeeded() async {
+        guard Defaults[.hudReplacement], !isScreenLocked else { return }
+        guard await XPCHelperClient.shared.isAccessibilityAuthorized() else { return }
+
+        let isDead: Bool
+        if let tap = eventTap {
+            isDead = !CFMachPortIsValid(tap) || !CGEvent.tapIsEnabled(tap: tap)
+        } else {
+            isDead = true
         }
 
-        CGEvent.tapEnable(tap: eventTap, enable: true)
+        if isDead {
+            await restart()
+        }
     }
     
     // MARK: - Event Handling

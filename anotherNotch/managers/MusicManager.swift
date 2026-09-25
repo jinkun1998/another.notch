@@ -277,6 +277,11 @@ class MusicManager: ObservableObject {
 
         // Handle artwork and visual transitions for changed content
         if hasContentChange {
+            self.lastArtworkTitle = state.title
+            self.lastArtworkArtist = state.artist
+            self.lastArtworkAlbum = state.album
+            self.lastArtworkBundleIdentifier = state.bundleIdentifier
+
             self.triggerFlipAnimation()
 
             if artworkChanged, let artwork = state.artwork {
@@ -292,14 +297,6 @@ class MusicManager: ObservableObject {
                 }
             }
             self.artworkData = state.artwork
-
-            if artworkChanged || state.artwork == nil {
-                // Update last artwork change values
-                self.lastArtworkTitle = state.title
-                self.lastArtworkArtist = state.artist
-                self.lastArtworkAlbum = state.album
-                self.lastArtworkBundleIdentifier = state.bundleIdentifier
-            }
 
             // Fetch lyrics on content change
             self.fetchLyricsIfAvailable(bundleIdentifier: state.bundleIdentifier, title: state.title, artist: state.artist)
@@ -438,6 +435,15 @@ class MusicManager: ObservableObject {
 
                 self.isFetchingLyrics = true
                 self.currentLyrics = ""
+
+                // Prefer synchronized lyrics from web if available
+                let searchTerms = lyricSearchTerms(title: title, artist: artist)
+                if let lyrics = await self.lyricsFromWeb(searchTerms), !lyrics.synced.isEmpty {
+                    guard !Task.isCancelled else { return }
+                    self.applyLyrics(lyrics)
+                    return
+                }
+
                 do {
                     let script = """
                     tell application \"Music\"
@@ -514,17 +520,36 @@ class MusicManager: ObservableObject {
             guard !Task.isCancelled,
                   let http = response as? HTTPURLResponse,
                   http.statusCode == 200,
-                  let jsonArray = try JSONSerialization.jsonObject(with: data) as? [[String: Any]],
-                  let match = jsonArray.first(where: { result in
-                      guard let trackName = result["trackName"] as? String,
-                            let artistName = result["artistName"] as? String else {
-                          return false
-                      }
-                      return lyricMatchKey(trackName) == lyricMatchKey(terms.title)
-                          && lyricMatchKey(artistName) == lyricMatchKey(terms.artist)
-                  }) else {
+                  let jsonArray = try JSONSerialization.jsonObject(with: data) as? [[String: Any]] else {
                 return nil
             }
+
+            let candidates = jsonArray.filter { result in
+                guard let trackName = result["trackName"] as? String,
+                      let artistName = result["artistName"] as? String else {
+                    return false
+                }
+                return lyricMatchKey(trackName) == lyricMatchKey(terms.title)
+                    && lyricMatchKey(artistName) == lyricMatchKey(terms.artist)
+            }
+
+            let targetDuration = self.songDuration
+            let pool = candidates.isEmpty ? jsonArray : candidates
+            let match = pool.sorted { a, b in
+                let aSynced = !((a["syncedLyrics"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true)
+                let bSynced = !((b["syncedLyrics"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true)
+                if aSynced != bSynced {
+                    return aSynced && !bSynced
+                }
+                if targetDuration > 0 {
+                    let aDur = a["duration"] as? Double ?? 0
+                    let bDur = b["duration"] as? Double ?? 0
+                    return abs(aDur - targetDuration) < abs(bDur - targetDuration)
+                }
+                return false
+            }.first
+
+            guard let match else { return nil }
             let plain = (match["plainLyrics"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
             let synced = (match["syncedLyrics"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
             return plain.isEmpty && synced.isEmpty ? nil : (plain, synced)
@@ -564,6 +589,15 @@ class MusicManager: ObservableObject {
     // MARK: - Synced lyrics helpers
     private func parseLRC(_ lrc: String) -> [(time: Double, text: String)] {
         var result: [(Double, String)] = []
+        var offsetSeconds: Double = 0
+        if let offsetRegex = try? NSRegularExpression(pattern: #"\[offset:\s*([+-]?\d+)\]"#),
+           let match = offsetRegex.firstMatch(in: lrc, range: NSRange(location: 0, length: (lrc as NSString).length)) {
+            let valStr = (lrc as NSString).substring(with: match.range(at: 1))
+            if let valMs = Double(valStr) {
+                offsetSeconds = valMs / 1000.0
+            }
+        }
+
         let pattern = #"\[(\d{1,2}):(\d{2})(?:\.(\d{1,3}))?\]"#
         guard let regex = try? NSRegularExpression(pattern: pattern) else { return [] }
 
@@ -584,7 +618,8 @@ class MusicManager: ObservableObject {
                 let minutes = Double(minStr) ?? 0
                 let seconds = Double(secStr) ?? 0
                 let fractionalSeconds = (Double(fraction) ?? 0) / pow(10, Double(fraction.count))
-                result.append((minutes * 60 + seconds + fractionalSeconds, text))
+                let timestamp = max(0, minutes * 60 + seconds + fractionalSeconds - offsetSeconds)
+                result.append((timestamp, text))
             }
         }
         return result.sorted { $0.0 < $1.0 }
@@ -605,7 +640,7 @@ class MusicManager: ObservableObject {
 
         var low = 0
         var high = syncedLyrics.count - 1
-        var index = 0
+        var index: Int? = nil
         while low <= high {
             let mid = (low + high) / 2
             if syncedLyrics[mid].time <= elapsed {
@@ -614,6 +649,13 @@ class MusicManager: ObservableObject {
             } else {
                 high = mid - 1
             }
+        }
+        guard let index else {
+            return .init(
+                previous: nil,
+                current: "♪",
+                next: syncedLyrics.first?.text
+            )
         }
         return .init(
             previous: index > 0 ? syncedLyrics[index - 1].text : nil,
