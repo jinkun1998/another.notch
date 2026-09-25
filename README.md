@@ -116,6 +116,7 @@ brew upgrade --cask another-notch
 - [x] Bluetooth device live activity
 - [x] Searchable clipboard manager
 - [x] Quick Notes capture and management module
+- [x] Multi-language support
 - [ ] Fans control
 - [ ] Lock screen widgets
 - [ ] Extension system
@@ -142,6 +143,14 @@ brew upgrade --cask another-notch
 
 3. **Build and Run**:
     - Click the "Run" button or press `Cmd + R`. Watch the magic unfold!
+
+## Translations & Localization
+
+Another Notch supports multiple languages. Community translations are welcome!
+
+- **Contribute code/JSON**: Follow the [Translation Guide](CONTRIBUTING.md#contributing-translations).
+- **Submit via Issue**: Open a [Translation Contribution Issue](https://github.com/jinkun1998/another.notch/issues/new?template=3-translation-contribution.yml).
+- **Supported Locales**: English, Tiếng Việt, 简体中文, Deutsch, Español, Français, Italiano, 한국어, Polski, Português (Brasil), Русский, Türkçe, Українська, العربية, Čeština, Magyar.
 
 ## Credits & Attribution
 

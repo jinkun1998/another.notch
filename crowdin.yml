@@ -1,0 +1,7 @@
+project_id: ""
+api_token_env: "CROWDIN_PERSONAL_TOKEN"
+preserve_hierarchy: true
+
+files:
+  - source: /anotherNotch/Localizable.xcstrings
+    translation: /anotherNotch/Localizable.xcstrings
