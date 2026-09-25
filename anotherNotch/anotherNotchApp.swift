@@ -113,6 +113,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
         MusicManager.shared.destroy()
         FeatureModuleRegistry.shared.deactivate(.clipboard)
+        FanControlManager.shared.restoreAuto()
         cleanupDragDetectors()
         cleanupWindows()
         XPCHelperClient.shared.stopMonitoringAccessibilityAuthorization()
@@ -522,6 +523,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
         KeyboardShortcuts.onKeyDown(for: .openCamera) { [weak self] in
             self?.openNotch(.camera)
+        }
+        KeyboardShortcuts.onKeyDown(for: .openFanControl) { [weak self] in
+            self?.openNotch(.fanControl)
         }
 
         if !Defaults[.showOnAllDisplays] {

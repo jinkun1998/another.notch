@@ -5,6 +5,7 @@ enum FeatureModuleID: String, CaseIterable, Hashable, Identifiable {
     case shelf
     case calendar
     case camera
+    case fanControl
 
     var id: String { rawValue }
 }

@@ -103,6 +103,16 @@ final class FeatureModuleRegistry: ObservableObject {
             installedByDefault: false,
             isAvailable: true,
             supportsScrolling: false
+        ),
+        FeatureModule(
+            id: .fanControl,
+            title: "Fan Control",
+            icon: "fan.fill",
+            tabDestination: .fanControl,
+            settingsDestination: .fanControl,
+            installedByDefault: false,
+            isAvailable: FanControlManager.shared.isHardwareSupported,
+            supportsScrolling: false
         )
     ]
 
@@ -140,15 +150,20 @@ final class FeatureModuleRegistry: ObservableObject {
     }
 
     func isAvailable(_ id: FeatureModuleID) -> Bool {
-        FeatureModuleAvailability.isAvailable(
-            moduleIsAvailable: Self.modules.first(where: { $0.id == id })?.isAvailable == true,
+        let moduleIsAvailable = id == .fanControl
+            ? FanControlManager.shared.isHardwareSupported
+            : Self.modules.first(where: { $0.id == id })?.isAvailable == true
+
+        return FeatureModuleAvailability.isAvailable(
+            moduleIsAvailable: moduleIsAvailable,
             isInstalled: isInstalled(id),
             isMainFeatureEnabled: FeatureModuleAvailability.isMainFeatureEnabled(
                 for: id,
                 clipboardHistoryEnabled: Defaults[.clipboardHistoryEnabled],
                 shelfEnabled: Defaults[.boringShelf],
                 calendarEnabled: Defaults[.showCalendar],
-                cameraEnabled: Defaults[.showMirror]
+                cameraEnabled: Defaults[.showMirror],
+                fanControlEnabled: Defaults[.fanControlEnabled]
             )
         )
     }
@@ -213,6 +228,8 @@ final class FeatureModuleRegistry: ObservableObject {
             Task { await CalendarManager.shared.checkCalendarAuthorization() }
         case .camera:
             WebcamManager.shared.checkAndRequestVideoAuthorization()
+        case .fanControl:
+            FanControlManager.shared.startMonitoring()
         }
     }
 
@@ -222,6 +239,8 @@ final class FeatureModuleRegistry: ObservableObject {
             ClipboardHistoryStore.shared.stopMonitoring()
         case .camera:
             WebcamManager.shared.stopSession()
+        case .fanControl:
+            FanControlManager.shared.stopMonitoring()
         case .home, .quickNotes, .shelf, .calendar:
             break
         }

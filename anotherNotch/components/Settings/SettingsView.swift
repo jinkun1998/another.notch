@@ -154,6 +154,7 @@ private enum SettingsPage: String, CaseIterable, Identifiable {
     case bluetooth = "Bluetooth"
     case shelf = "Shelf"
     case camera = "Camera"
+    case fanControl = "Fan Control"
     case shortcuts = "Shortcuts"
     case advanced = "Advanced"
     case about = "About"
@@ -173,6 +174,7 @@ private enum SettingsPage: String, CaseIterable, Identifiable {
         case .bluetooth: "airpodspro"
         case .shelf: "books.vertical"
         case .camera: "web.camera"
+        case .fanControl: "fan.fill"
         case .shortcuts: "command"
         case .advanced: "gearshape.2"
         case .about: "info.circle"
@@ -192,6 +194,7 @@ private enum SettingsPage: String, CaseIterable, Identifiable {
         case .bluetooth: "Bluetooth output connection notifications."
         case .shelf: "Drag, drop, and saved Shelf items."
         case .camera: "Camera mirror appearance and access."
+        case .fanControl: "Monitor fan speeds and adjust cooling modes."
         case .shortcuts: "Global keyboard shortcuts for opening the notch and installed tabs."
         case .advanced: "Accent color, window behavior, and privacy."
         case .about: "Version, updates, and project information."
@@ -259,6 +262,9 @@ struct SettingsView: View {
                     if modules.isInstalled(.camera) {
                         sidebarRow(.camera)
                     }
+                    if modules.isInstalled(.fanControl) {
+                        sidebarRow(.fanControl)
+                    }
                 }
 
                 Section("System") {
@@ -322,6 +328,10 @@ struct SettingsView: View {
                     case .camera:
                     ModuleSettings(moduleID: .camera) {
                         CameraSettings()
+                    }
+                    case .fanControl:
+                    ModuleSettings(moduleID: .fanControl) {
+                        FanControlSettings()
                     }
                     case .shortcuts:
                     ShortcutSettings()
@@ -1094,6 +1104,9 @@ struct ShortcutSettings: View {
                 }
                 if modules.isInstalled(.camera) {
                     KeyboardShortcuts.Recorder("Open Camera", name: .openCamera)
+                }
+                if modules.isInstalled(.fanControl) {
+                    KeyboardShortcuts.Recorder("Open Fan Control", name: .openFanControl)
                 }
             }
         }
