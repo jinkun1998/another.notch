@@ -3,6 +3,59 @@ import Foundation
 import XCTest
 
 final class FeatureModuleAvailabilityTests: XCTestCase {
+    func testTwoSidedTabsPreserveOrderAndKeepHomeOnTheLeft() {
+        let tabOrder: [FeatureModuleID] = [.home, .clipboard, .quickNotes, .shelf]
+        let installedIDs: Set<FeatureModuleID> = [.clipboard, .quickNotes, .shelf]
+        let rightSideIDs: Set<FeatureModuleID> = [.home, .quickNotes, .shelf]
+
+        XCTAssertEqual(
+            FeatureModuleID.tabs(
+                in: tabOrder,
+                installedIDs: installedIDs,
+                rightSideIDs: rightSideIDs,
+                twoSidedLayoutEnabled: true,
+                side: .left
+            ),
+            [.home, .clipboard]
+        )
+        XCTAssertEqual(
+            FeatureModuleID.tabs(
+                in: tabOrder,
+                installedIDs: installedIDs,
+                rightSideIDs: rightSideIDs,
+                twoSidedLayoutEnabled: true,
+                side: .right
+            ),
+            [.quickNotes, .shelf]
+        )
+    }
+
+    func testDisabledTwoSidedLayoutKeepsEveryTabOnTheLeft() {
+        let tabOrder: [FeatureModuleID] = [.home, .clipboard, .quickNotes]
+        let installedIDs: Set<FeatureModuleID> = [.clipboard, .quickNotes]
+
+        XCTAssertEqual(
+            FeatureModuleID.tabs(
+                in: tabOrder,
+                installedIDs: installedIDs,
+                rightSideIDs: [.quickNotes],
+                twoSidedLayoutEnabled: false,
+                side: .left
+            ),
+            tabOrder
+        )
+        XCTAssertEqual(
+            FeatureModuleID.tabs(
+                in: tabOrder,
+                installedIDs: installedIDs,
+                rightSideIDs: [.quickNotes],
+                twoSidedLayoutEnabled: false,
+                side: .right
+            ),
+            []
+        )
+    }
+
     func testQuickNotesPersistCreateEditAndDelete() throws {
         let suiteName = "anotherNotchTests.quickNotes.\(UUID().uuidString)"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))

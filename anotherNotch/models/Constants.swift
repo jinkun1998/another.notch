@@ -101,6 +101,8 @@ extension Defaults.Keys {
     // MARK: Modules
     static let installedFeatureModuleIDs = Key<[String]>("installedFeatureModuleIDs", default: [])
     static let featureModuleTabOrder = Key<[String]>("featureModuleTabOrder", default: [])
+    static let featureModuleRightSideIDs = Key<[String]>("featureModuleRightSideIDs", default: [])
+    static let twoSidedFeatureModuleLayout = Key<Bool>("twoSidedFeatureModuleLayout", default: false)
     static let featureModuleStateMigrated = Key<Bool>("featureModuleStateMigrated", default: false)
     static let softwareUpdateChannel = Key<SoftwareUpdateChannel>("softwareUpdateChannel", default: .stable)
 

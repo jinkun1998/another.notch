@@ -413,6 +413,16 @@ private struct ModulesSettings: View {
 
     var body: some View {
         Form {
+            Section("Tab layout") {
+                Toggle(
+                    "Show modules on both sides of the notch",
+                    isOn: Binding(
+                        get: { modules.twoSidedLayoutEnabled },
+                        set: modules.setTwoSidedLayoutEnabled
+                    )
+                )
+            }
+
             Section("Bundled modules") {
                 ForEach(modules.orderedModules) { module in
                     HStack(spacing: 12) {
@@ -430,6 +440,22 @@ private struct ModulesSettings: View {
                         Spacer()
                         if module.id != .home {
                             if modules.isInstalled(module.id) {
+                                if modules.twoSidedLayoutEnabled {
+                                    Picker(
+                                        "Tab side",
+                                        selection: Binding(
+                                            get: { modules.tabSide(for: module.id) },
+                                            set: { modules.setTabSide(module.id, to: $0) }
+                                        )
+                                    ) {
+                                        ForEach(FeatureModuleTabSide.allCases) { side in
+                                            Text(side.title).tag(side)
+                                        }
+                                    }
+                                    .labelsHidden()
+                                    .pickerStyle(.segmented)
+                                    .frame(width: 110)
+                                }
                                 Button("Remove") {
                                     modules.remove(module.id)
                                 }
@@ -473,7 +499,7 @@ private struct ModulesSettings: View {
                 }
             }
             .animation(.spring(response: 0.3, dampingFraction: 0.82), value: modules.tabOrder)
-            Text("Drag modules to arrange left-wing tabs. Removing a module keeps its data and settings.")
+            Text("Drag modules to set tab order. Choose a side for installed modules when two-sided layout is enabled.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }

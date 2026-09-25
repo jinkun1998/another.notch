@@ -21,8 +21,10 @@ struct AnotherNotchHeader: View {
     }
 
     var body: some View {
-        let tabCount = CGFloat(modules.installedModules.count)
-        let tabContentWidth = tabCount * moduleTabWidth
+        let leftModules = modules.leftInstalledModules
+        let rightModules = modules.rightInstalledModules
+        let leftTabWidth = CGFloat(leftModules.count) * moduleTabWidth
+        let rightTabWidth = CGFloat(rightModules.count) * moduleTabWidth
 
         ZStack {
             Rectangle()
@@ -31,8 +33,8 @@ struct AnotherNotchHeader: View {
                 .frame(maxHeight: .infinity, alignment: .top)
 
             HStack(spacing: 0) {
-                TabSelectionView(tabWidth: moduleTabWidth)
-                    .frame(width: tabContentWidth, alignment: .leading)
+                TabSelectionView(installedModules: leftModules, tabWidth: moduleTabWidth)
+                    .frame(width: leftTabWidth, alignment: .leading)
                     .padding(.leading, moduleTabLeadingPadding)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .notchHeaderVisibility(vm.notchState != .closed)
@@ -41,7 +43,10 @@ struct AnotherNotchHeader: View {
                     .frame(width: vm.closedNotchSize.width)
 
                 HStack(spacing: 4) {
-                if vm.notchState == .open {
+                    TabSelectionView(installedModules: rightModules, tabWidth: moduleTabWidth)
+                        .frame(width: rightTabWidth, alignment: .leading)
+                        .padding(.trailing, moduleTabLeadingPadding)
+                    if vm.notchState == .open {
                     if isHUDType(coordinator.sneakPeek.type) && coordinator.sneakPeek.show && Defaults[.showOpenNotchHUD] {
                         OpenNotchHUD(type: $coordinator.sneakPeek.type, value: $coordinator.sneakPeek.value, icon: $coordinator.sneakPeek.icon)
                             .transition(motion.hudTransition)
