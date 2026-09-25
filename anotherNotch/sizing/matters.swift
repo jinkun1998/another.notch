@@ -22,6 +22,10 @@ let openNotchHeaderHeight: CGFloat = 30
 let minimumExpandedContentInset: CGFloat = 16
 let calendarContentSize: CGSize = .init(width: 504, height: 205)
 let quickNotesContentSize: CGSize = .init(width: 504, height: 205)
+@MainActor
+var fanControlContentSize: CGSize {
+    .init(width: 504, height: FanControlManager.shared.isManualMode ? 195 : 145)
+}
 let calendarOpenNotchSize: CGSize = .init(
     width: calendarContentSize.width + 72,
     height: max(190, calendarContentSize.height + 12)
@@ -69,7 +73,10 @@ let cornerRadiusInsets: (opened: (top: CGFloat, bottom: CGFloat), closed: (top: 
 
 @MainActor
 func tabHeaderMinimumOpenWidth(screenUUID: String? = nil) -> CGFloat {
-    let tabCount = CGFloat(FeatureModuleRegistry.shared.installedModules.count)
+    let tabCount = CGFloat(max(
+        FeatureModuleRegistry.shared.leftInstalledModules.count,
+        FeatureModuleRegistry.shared.rightInstalledModules.count
+    ))
     let tabStripWidth = tabCount * moduleTabWidth
     let requiredInnerWingWidth = moduleTabLeadingPadding + tabStripWidth + moduleTabNotchGap
     let physicalWidth = getClosedNotchSize(screenUUID: screenUUID).width
@@ -80,7 +87,10 @@ func tabHeaderMinimumOpenWidth(screenUUID: String? = nil) -> CGFloat {
 @MainActor
 func moduleTabWingWidth() -> CGFloat {
     moduleTabLeadingPadding
-        + CGFloat(FeatureModuleRegistry.shared.installedModules.count) * moduleTabWidth
+        + CGFloat(max(
+            FeatureModuleRegistry.shared.leftInstalledModules.count,
+            FeatureModuleRegistry.shared.rightInstalledModules.count
+        )) * moduleTabWidth
 }
 
 @MainActor
@@ -158,6 +168,9 @@ func openNotchSize(for view: NotchViews, screenUUID: String? = nil) -> CGSize {
     case .camera:
         contentWidth = 160
         contentHeight = 160
+    case .fanControl:
+        contentWidth = fanControlContentSize.width
+        contentHeight = fanControlContentSize.height
     }
 
     return pixelAlignedNotchSize(

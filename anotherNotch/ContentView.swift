@@ -523,6 +523,12 @@ struct ContentView: View {
                         guard vm.notchState == .open, coordinator.currentView == .clipboard else { return }
                         vm.notchSize = openNotchSize(for: .clipboard, screenUUID: vm.screenUUID)
                     }
+                    .onReceive(FanControlManager.shared.$isManualMode) { _ in
+                        guard vm.notchState == .open, coordinator.currentView == .fanControl else { return }
+                        withAnimation(resizeAnimation) {
+                            vm.notchSize = openNotchSize(for: .fanControl, screenUUID: vm.screenUUID)
+                        }
+                    }
                     .onChange(of: vm.isBatteryPopoverActive) {
                         if !vm.isBatteryPopoverActive && !isHovering && vm.notchState == .open && !SharingStateManager.shared.preventNotchClose {
                             hoverTask?.cancel()
@@ -878,6 +884,9 @@ struct ContentView: View {
         case .camera:
             CameraPreviewView(webcamManager: webcamManager)
                 .frame(width: 160, height: 160)
+        case .fanControl:
+            FanControlView()
+                .frame(width: fanControlContentSize.width, height: fanControlContentSize.height)
         }
     }
 

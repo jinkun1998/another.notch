@@ -39,7 +39,7 @@ private struct OnboardingModuleSelectionView: View {
     @Binding var selectedModules: Set<FeatureModuleID>
     let onContinue: () -> Void
 
-    private let modules = FeatureModuleRegistry.modules.filter { $0.id != .home }
+    private let modules = FeatureModuleRegistry.modules.filter { $0.id != .home && $0.isAvailable }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
@@ -307,7 +307,7 @@ struct OnboardingView: View {
             FeatureModuleRegistry.shared.install(module)
 
             switch module {
-            case .home, .quickNotes:
+            case .home, .quickNotes, .fanControl:
                 break
             case .clipboard:
                 Defaults[.clipboardHistoryEnabled] = true

@@ -9,15 +9,16 @@ import SwiftUI
 
 struct TabSelectionView: View {
     let tabWidth: CGFloat
+    let installedModules: [FeatureModule]
     @ObservedObject private var coordinator = AnotherNotchViewCoordinator.shared
     @ObservedObject private var modules = FeatureModuleRegistry.shared
 
-    init(tabWidth: CGFloat = moduleTabWidth) {
+    init(installedModules: [FeatureModule], tabWidth: CGFloat = moduleTabWidth) {
+        self.installedModules = installedModules
         self.tabWidth = tabWidth
     }
 
     var body: some View {
-        let installedModules = modules.installedModules
         let selectedIndex = installedModules.firstIndex {
             $0.tabDestination == coordinator.currentView
         } ?? 0

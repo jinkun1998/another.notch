@@ -103,11 +103,23 @@ final class FeatureModuleRegistry: ObservableObject {
             installedByDefault: false,
             isAvailable: true,
             supportsScrolling: false
+        ),
+        FeatureModule(
+            id: .fanControl,
+            title: "Fan Control",
+            icon: "fan.fill",
+            tabDestination: .fanControl,
+            settingsDestination: .fanControl,
+            installedByDefault: false,
+            isAvailable: FanControlManager.shared.isHardwareSupported,
+            supportsScrolling: false
         )
     ]
 
     @Published private(set) var installedIDs: Set<FeatureModuleID>
     @Published private(set) var tabOrder: [FeatureModuleID]
+    @Published private(set) var rightSideIDs: Set<FeatureModuleID>
+    @Published private(set) var twoSidedLayoutEnabled: Bool
 
     private init() {
         if !Defaults[.featureModuleStateMigrated] {
@@ -121,7 +133,12 @@ final class FeatureModuleRegistry: ObservableObject {
             Defaults[.installedFeatureModuleIDs].compactMap(FeatureModuleID.init(rawValue:))
         )
         tabOrder = Self.normalizedTabOrder(Defaults[.featureModuleTabOrder])
+        rightSideIDs = Set(
+            Defaults[.featureModuleRightSideIDs].compactMap(FeatureModuleID.init(rawValue:))
+        ).subtracting([.home])
+        twoSidedLayoutEnabled = Defaults[.twoSidedFeatureModuleLayout]
         persistTabOrder()
+        persistRightSideIDs()
     }
 
     var installedModules: [FeatureModule] {
@@ -135,20 +152,53 @@ final class FeatureModuleRegistry: ObservableObject {
         tabOrder.compactMap { id in Self.modules.first { $0.id == id } }
     }
 
+    var leftInstalledModules: [FeatureModule] {
+        modules(for: .left)
+    }
+
+    var rightInstalledModules: [FeatureModule] {
+        modules(for: .right)
+    }
+
+    func tabSide(for id: FeatureModuleID) -> FeatureModuleTabSide {
+        twoSidedLayoutEnabled && rightSideIDs.contains(id) ? .right : .left
+    }
+
+    func setTwoSidedLayoutEnabled(_ isEnabled: Bool) {
+        twoSidedLayoutEnabled = isEnabled
+        Defaults[.twoSidedFeatureModuleLayout] = isEnabled
+    }
+
+    func setTabSide(_ id: FeatureModuleID, to side: FeatureModuleTabSide) {
+        guard !id.isHome else { return }
+
+        if side == .right {
+            rightSideIDs.insert(id)
+        } else {
+            rightSideIDs.remove(id)
+        }
+        persistRightSideIDs()
+    }
+
     func isInstalled(_ id: FeatureModuleID) -> Bool {
         id.isHome || installedIDs.contains(id)
     }
 
     func isAvailable(_ id: FeatureModuleID) -> Bool {
-        FeatureModuleAvailability.isAvailable(
-            moduleIsAvailable: Self.modules.first(where: { $0.id == id })?.isAvailable == true,
+        let moduleIsAvailable = id == .fanControl
+            ? FanControlManager.shared.isHardwareSupported
+            : Self.modules.first(where: { $0.id == id })?.isAvailable == true
+
+        return FeatureModuleAvailability.isAvailable(
+            moduleIsAvailable: moduleIsAvailable,
             isInstalled: isInstalled(id),
             isMainFeatureEnabled: FeatureModuleAvailability.isMainFeatureEnabled(
                 for: id,
                 clipboardHistoryEnabled: Defaults[.clipboardHistoryEnabled],
                 shelfEnabled: Defaults[.boringShelf],
                 calendarEnabled: Defaults[.showCalendar],
-                cameraEnabled: Defaults[.showMirror]
+                cameraEnabled: Defaults[.showMirror],
+                fanControlEnabled: Defaults[.fanControlEnabled]
             )
         )
     }
@@ -213,6 +263,8 @@ final class FeatureModuleRegistry: ObservableObject {
             Task { await CalendarManager.shared.checkCalendarAuthorization() }
         case .camera:
             WebcamManager.shared.checkAndRequestVideoAuthorization()
+        case .fanControl:
+            FanControlManager.shared.startMonitoring()
         }
     }
 
@@ -222,6 +274,8 @@ final class FeatureModuleRegistry: ObservableObject {
             ClipboardHistoryStore.shared.stopMonitoring()
         case .camera:
             WebcamManager.shared.stopSession()
+        case .fanControl:
+            FanControlManager.shared.stopMonitoring()
         case .home, .quickNotes, .shelf, .calendar:
             break
         }
@@ -259,6 +313,23 @@ final class FeatureModuleRegistry: ObservableObject {
 
     private func persistTabOrder() {
         Defaults[.featureModuleTabOrder] = tabOrder.map(\.rawValue)
+    }
+
+    private func persistRightSideIDs() {
+        Defaults[.featureModuleRightSideIDs] = rightSideIDs.map(\.rawValue).sorted()
+    }
+
+    private func modules(for side: FeatureModuleTabSide) -> [FeatureModule] {
+        FeatureModuleID.tabs(
+            in: tabOrder,
+            installedIDs: installedIDs,
+            rightSideIDs: rightSideIDs,
+            twoSidedLayoutEnabled: twoSidedLayoutEnabled,
+            side: side
+        ).compactMap { id in
+            guard isAvailable(id) else { return nil }
+            return Self.modules.first { $0.id == id }
+        }
     }
 }
 

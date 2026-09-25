@@ -18,6 +18,10 @@
 		E17300020000000000000001 /* QuickNotesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E17300010000000000000001 /* QuickNotesView.swift */; };
 		E17300050000000000000001 /* QuickNote.swift in Sources */ = {isa = PBXBuildFile; fileRef = E17300040000000000000001 /* QuickNote.swift */; };
 		E17300060000000000000001 /* QuickNote.swift in Sources */ = {isa = PBXBuildFile; fileRef = E17300040000000000000001 /* QuickNote.swift */; };
+		E18100020000000000000001 /* FanControlManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E18100010000000000000001 /* FanControlManager.swift */; };
+		E18100040000000000000001 /* FanControlView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E18100030000000000000001 /* FanControlView.swift */; };
+		E18100060000000000000001 /* FanControlSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = E18100050000000000000001 /* FanControlSettings.swift */; };
+		E18100070000000000000001 /* FanControlManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E18100010000000000000001 /* FanControlManager.swift */; };
 		E18200020000000000000001 /* AppLanguageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E18200010000000000000001 /* AppLanguageManager.swift */; };
 		E18200030000000000000001 /* AppLanguageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E18200010000000000000001 /* AppLanguageManager.swift */; };
 		A11E00250000000000000025 /* VietnameseLunarCalendar.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11E00080000000000000008 /* VietnameseLunarCalendar.swift */; };
@@ -207,6 +211,9 @@
 		A11E00060000000000000006 /* NotchMotionPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotchMotionPolicy.swift; sourceTree = "<group>"; };
 		E17300010000000000000001 /* QuickNotesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickNotesView.swift; sourceTree = "<group>"; };
 		E17300040000000000000001 /* QuickNote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickNote.swift; sourceTree = "<group>"; };
+		E18100010000000000000001 /* FanControlManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FanControlManager.swift; sourceTree = "<group>"; };
+		E18100030000000000000001 /* FanControlView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FanControlView.swift; sourceTree = "<group>"; };
+		E18100050000000000000001 /* FanControlSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FanControlSettings.swift; sourceTree = "<group>"; };
 		E18200010000000000000001 /* AppLanguageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLanguageManager.swift; sourceTree = "<group>"; };
 		A11E00080000000000000008 /* VietnameseLunarCalendar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VietnameseLunarCalendar.swift; sourceTree = "<group>"; };
 		1100290B2E847E2800035A57 /* NSItemProvider+LoadHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSItemProvider+LoadHelpers.swift"; sourceTree = "<group>"; };
@@ -525,6 +532,7 @@
 			isa = PBXGroup;
 			children = (
 				E17300010000000000000001 /* QuickNotesView.swift */,
+				E18100030000000000000001 /* FanControlView.swift */,
 				B141C23B2CA5F50900AC8CC8 /* Onboarding */,
 				B1C448992C97375A001F0858 /* Tips */,
 				14C08BB72C8DE49E000F8AA0 /* Calendar */,
@@ -553,6 +561,7 @@
 				147163992C5D35FF0068B555 /* MusicManager.swift */,
 				149E0B962C737D00006418B1 /* WebcamManager.swift */,
 				14C08BB52C8DE42D000F8AA0 /* CalendarManager.swift */,
+				E18100010000000000000001 /* FanControlManager.swift */,
 				E18200010000000000000001 /* AppLanguageManager.swift */,
 				B1F0A0012E60000100000001 /* BrightnessManager.swift */,
 				59D8C23B2E589FAA00147B33 /* VolumeManager.swift */,
@@ -777,6 +786,7 @@
 				11F748832ECB27DC00F841DB /* MusicSlotConfigurationView.swift */,
 				11C5E3152DFE88510065821E /* SettingsView.swift */,
 				11C5E3112DFE85970065821E /* SettingsWindowController.swift */,
+				E18100050000000000000001 /* FanControlSettings.swift */,
 				B1D6FD422C6603730015F173 /* SoftwareUpdater.swift */,
 				B1B112902C6A572100093D8F /* EditPanelView.swift */,
 				B1C448972C972CC4001F0858 /* ListItemPopover.swift */,
@@ -1012,6 +1022,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				E17300060000000000000001 /* QuickNote.swift in Sources */,
+				E18100070000000000000001 /* FanControlManager.swift in Sources */,
 				E18200030000000000000001 /* AppLanguageManager.swift in Sources */,
 				A11E00130000000000000013 /* FeatureModuleAvailabilityTests.swift in Sources */,
 				A11E00140000000000000014 /* FeatureModuleID.swift in Sources */,
@@ -1157,6 +1168,9 @@
 				C1A0B0013B00000100000001 /* ClipboardHistoryStore.swift in Sources */,
 				C1A0B0033B00000100000001 /* ClipboardViews.swift in Sources */,
 				C1A0B1033B00000100000001 /* BluetoothConnectionIndicator.swift in Sources */,
+				E18100020000000000000001 /* FanControlManager.swift in Sources */,
+				E18100040000000000000001 /* FanControlView.swift in Sources */,
+				E18100060000000000000001 /* FanControlSettings.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

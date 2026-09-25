@@ -3,6 +3,59 @@ import Foundation
 import XCTest
 
 final class FeatureModuleAvailabilityTests: XCTestCase {
+    func testTwoSidedTabsPreserveOrderAndKeepHomeOnTheLeft() {
+        let tabOrder: [FeatureModuleID] = [.home, .clipboard, .quickNotes, .shelf]
+        let installedIDs: Set<FeatureModuleID> = [.clipboard, .quickNotes, .shelf]
+        let rightSideIDs: Set<FeatureModuleID> = [.home, .quickNotes, .shelf]
+
+        XCTAssertEqual(
+            FeatureModuleID.tabs(
+                in: tabOrder,
+                installedIDs: installedIDs,
+                rightSideIDs: rightSideIDs,
+                twoSidedLayoutEnabled: true,
+                side: .left
+            ),
+            [.home, .clipboard]
+        )
+        XCTAssertEqual(
+            FeatureModuleID.tabs(
+                in: tabOrder,
+                installedIDs: installedIDs,
+                rightSideIDs: rightSideIDs,
+                twoSidedLayoutEnabled: true,
+                side: .right
+            ),
+            [.quickNotes, .shelf]
+        )
+    }
+
+    func testDisabledTwoSidedLayoutKeepsEveryTabOnTheLeft() {
+        let tabOrder: [FeatureModuleID] = [.home, .clipboard, .quickNotes]
+        let installedIDs: Set<FeatureModuleID> = [.clipboard, .quickNotes]
+
+        XCTAssertEqual(
+            FeatureModuleID.tabs(
+                in: tabOrder,
+                installedIDs: installedIDs,
+                rightSideIDs: [.quickNotes],
+                twoSidedLayoutEnabled: false,
+                side: .left
+            ),
+            tabOrder
+        )
+        XCTAssertEqual(
+            FeatureModuleID.tabs(
+                in: tabOrder,
+                installedIDs: installedIDs,
+                rightSideIDs: [.quickNotes],
+                twoSidedLayoutEnabled: false,
+                side: .right
+            ),
+            []
+        )
+    }
+
     func testQuickNotesPersistCreateEditAndDelete() throws {
         let suiteName = "anotherNotchTests.quickNotes.\(UUID().uuidString)"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
@@ -178,7 +231,8 @@ final class FeatureModuleAvailabilityTests: XCTestCase {
                 clipboardHistoryEnabled: false,
                 shelfEnabled: false,
                 calendarEnabled: false,
-                cameraEnabled: false
+                cameraEnabled: false,
+                fanControlEnabled: false
             )
         )
     }
@@ -188,11 +242,13 @@ final class FeatureModuleAvailabilityTests: XCTestCase {
         XCTAssertTrue(mainFeatureEnabled(.shelf, enabledModule: .shelf))
         XCTAssertTrue(mainFeatureEnabled(.calendar, enabledModule: .calendar))
         XCTAssertTrue(mainFeatureEnabled(.camera, enabledModule: .camera))
+        XCTAssertTrue(mainFeatureEnabled(.fanControl, enabledModule: .fanControl))
 
         XCTAssertFalse(mainFeatureEnabled(.clipboard, enabledModule: .shelf))
         XCTAssertFalse(mainFeatureEnabled(.shelf, enabledModule: .calendar))
         XCTAssertFalse(mainFeatureEnabled(.calendar, enabledModule: .camera))
-        XCTAssertFalse(mainFeatureEnabled(.camera, enabledModule: .clipboard))
+        XCTAssertFalse(mainFeatureEnabled(.camera, enabledModule: .fanControl))
+        XCTAssertFalse(mainFeatureEnabled(.fanControl, enabledModule: .clipboard))
     }
 
     func testModuleAvailabilityRequiresInstallAndEnabledToggle() {
@@ -235,8 +291,42 @@ final class FeatureModuleAvailabilityTests: XCTestCase {
             clipboardHistoryEnabled: enabledModule == .clipboard,
             shelfEnabled: enabledModule == .shelf,
             calendarEnabled: enabledModule == .calendar,
-            cameraEnabled: enabledModule == .camera
+            cameraEnabled: enabledModule == .camera,
+            fanControlEnabled: enabledModule == .fanControl
         )
+    }
+
+    @MainActor
+    func testFanControlSafeBoundsClamping() {
+        let mock = MockTestSMCProvider(fanCount: 2, shouldFailWrite: false)
+        let manager = FanControlManager(provider: mock)
+        XCTAssertTrue(manager.isHardwareSupported)
+        XCTAssertEqual(manager.fans.count, 2)
+
+        manager.setTargetRPM(fanIndex: 0, rpm: 99999)
+        XCTAssertEqual(manager.fans[0].targetRPM, 4500)
+
+        manager.setTargetRPM(fanIndex: 0, rpm: 100)
+        XCTAssertEqual(manager.fans[0].targetRPM, 1200)
+    }
+
+    @MainActor
+    func testFanControlAutoFallbackWhenWriteFails() {
+        let mock = MockTestSMCProvider(fanCount: 2, shouldFailWrite: true)
+        let manager = FanControlManager(provider: mock)
+        manager.setMode(manual: true)
+
+        XCTAssertFalse(manager.isManualMode)
+        XCTAssertFalse(manager.hasWritePermission)
+        XCTAssertNotNil(manager.permissionNotice)
+    }
+
+    @MainActor
+    func testFanControlUnsupportedHardwareHandling() {
+        let mock = MockTestSMCProvider(fanCount: 0)
+        let manager = FanControlManager(provider: mock)
+        XCTAssertFalse(manager.isHardwareSupported)
+        XCTAssertTrue(manager.fans.isEmpty)
     }
 
     private func cpuSamples(for processID: pid_t) throws -> [Double] {
@@ -291,5 +381,49 @@ final class FeatureModuleAvailabilityTests: XCTestCase {
             throw launchError
         }
         return try XCTUnwrap(launchedApplication)
+    }
+}
+
+private final class MockTestSMCProvider: SMCProvider {
+    var isConnected: Bool = true
+    var fans: [FanTelemetry] = []
+    var shouldFailWrite: Bool = false
+
+    init(fanCount: Int, shouldFailWrite: Bool = false) {
+        self.shouldFailWrite = shouldFailWrite
+        self.fans = (0..<fanCount).map { i in
+            FanTelemetry(
+                id: i,
+                name: i == 0 ? "Left Fan" : "Right Fan",
+                currentRPM: 1800,
+                minRPM: 1200,
+                maxRPM: 4500,
+                targetRPM: 1800,
+                isManual: false
+            )
+        }
+    }
+
+    func fanCount() -> Int {
+        fans.count
+    }
+
+    func readFanTelemetry(index: Int) -> FanTelemetry? {
+        guard index < fans.count else { return nil }
+        return fans[index]
+    }
+
+    func writeFanMode(index: Int, manual: Bool) -> Bool {
+        if shouldFailWrite { return false }
+        guard index < fans.count else { return false }
+        fans[index].isManual = manual
+        return true
+    }
+
+    func writeFanTargetRPM(index: Int, rpm: Double) -> Bool {
+        if shouldFailWrite { return false }
+        guard index < fans.count else { return false }
+        fans[index].targetRPM = rpm
+        return true
     }
 }

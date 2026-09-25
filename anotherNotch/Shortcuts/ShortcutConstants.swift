@@ -20,4 +20,5 @@ extension KeyboardShortcuts.Name {
     static let openShelf = Self("openShelf", default: .init(.three, modifiers: [.control, .option]))
     static let openCalendar = Self("openCalendar", default: .init(.four, modifiers: [.control, .option]))
     static let openCamera = Self("openCamera", default: .init(.five, modifiers: [.control, .option]))
+    static let openFanControl = Self("openFanControl", default: nil)
 }
