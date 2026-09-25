@@ -63,7 +63,7 @@ struct FanControlView: View {
 
     private func modeButton(title: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            Text(title)
+            Text(LocalizedStringKey(title))
                 .font(.caption.weight(isSelected ? .semibold : .regular))
                 .foregroundStyle(isSelected ? .white : .secondary)
                 .padding(.horizontal, 10)
@@ -94,7 +94,7 @@ struct FanControlView: View {
                         .foregroundStyle(.white)
                 }
                 Spacer()
-                Text(fan.isManual ? "Manual" : "Auto")
+                Text(fan.isManual ? LocalizedStringKey("Manual") : LocalizedStringKey("Auto"))
                     .font(.system(size: 9, weight: .bold))
                     .foregroundStyle(fan.isManual ? Color.orange : Color.green)
                     .padding(.horizontal, 6)
@@ -184,7 +184,7 @@ struct FanControlView: View {
     }
 
     private func presetButton(title: String, fan: FanTelemetry, value: Double) -> some View {
-        Button(title) {
+        Button(LocalizedStringKey(title)) {
             manager.setTargetRPM(fanIndex: fan.id, rpm: value)
         }
         .font(.system(size: 9, weight: .medium))
@@ -199,7 +199,7 @@ struct FanControlView: View {
             Image(systemName: "info.circle")
                 .font(.caption2)
                 .foregroundStyle(.secondary)
-            Text(notice)
+            Text(LocalizedStringKey(notice))
                 .font(.caption2)
                 .foregroundStyle(.secondary)
                 .lineLimit(1)

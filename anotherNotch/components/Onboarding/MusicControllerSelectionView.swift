@@ -85,11 +85,11 @@ struct ControllerOptionView: View {
                 .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isSelected)
 
             VStack(alignment: .leading, spacing: 4) {
-                Text(controller.rawValue)
+                Text(LocalizedStringKey(controller.rawValue))
                     .font(.headline)
                     .fontWeight(.semibold)
 
-                Text(controller.description)
+                Text(LocalizedStringKey(controller.description))
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                 

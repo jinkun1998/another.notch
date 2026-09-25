@@ -110,7 +110,7 @@ private struct LiquidGlassChannelSegmentedPicker: View {
                 selection = channel
             }
         } label: {
-            Text(channel.rawValue)
+            Text(LocalizedStringKey(channel.rawValue))
                 .font(.system(size: 11.5, weight: .medium))
                 .foregroundStyle(isSelected ? Color.white : Color.secondary)
                 .lineLimit(1)

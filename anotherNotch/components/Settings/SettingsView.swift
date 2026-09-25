@@ -108,7 +108,7 @@ private struct LiquidGlassSegmentedPicker<Item: Hashable>: View {
                     Image(systemName: iconName)
                         .font(.system(size: 10, weight: .semibold))
                 }
-                Text(label(item))
+                Text(LocalizedStringKey(label(item)))
                     .lineLimit(1)
             }
             .font(.system(size: 11.5, weight: .medium))
@@ -285,9 +285,9 @@ struct SettingsView: View {
         } detail: {
             VStack(alignment: .leading, spacing: 0) {
                 VStack(alignment: .leading, spacing: 5) {
-                    Text(selectedTab.rawValue)
+                    Text(LocalizedStringKey(selectedTab.rawValue))
                         .font(.system(size: 26, weight: .semibold))
-                    Text(selectedTab.summary)
+                    Text(LocalizedStringKey(selectedTab.summary))
                         .font(.body)
                         .foregroundStyle(.secondary)
                 }
@@ -394,7 +394,7 @@ private struct SettingsSidebarRow: View {
                 Image(systemName: page.icon)
                     .font(.system(size: 16, weight: .medium))
                     .frame(width: 18, height: 18)
-                Text(page.rawValue)
+                Text(LocalizedStringKey(page.rawValue))
                     .font(.system(size: 13, weight: isSelected ? .semibold : .regular))
                 Spacer(minLength: 0)
             }
@@ -444,35 +444,38 @@ private struct ModulesSettings: View {
                         Image(systemName: module.icon)
                             .frame(width: 20)
                         VStack(alignment: .leading, spacing: 2) {
-                            Text(module.title)
-                            Text(modules.isInstalled(module.id) ? "Installed" : "Not installed")
+                            Text(LocalizedStringKey(module.title))
+                            Text(modules.isInstalled(module.id) ? LocalizedStringKey("Installed") : LocalizedStringKey("Not installed"))
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
                         Spacer()
                         if module.id != .home {
                             if modules.isInstalled(module.id) {
-                                if modules.twoSidedLayoutEnabled {
-                                    Picker(
-                                        "Tab side",
-                                        selection: Binding(
-                                            get: { modules.tabSide(for: module.id) },
-                                            set: { modules.setTabSide(module.id, to: $0) }
-                                        )
-                                    ) {
-                                        ForEach(FeatureModuleTabSide.allCases) { side in
-                                            Text(side.title).tag(side)
+                                HStack(spacing: 16) {
+                                    if modules.twoSidedLayoutEnabled {
+                                        Picker(
+                                            "Tab side",
+                                            selection: Binding(
+                                                get: { modules.tabSide(for: module.id) },
+                                                set: { modules.setTabSide(module.id, to: $0) }
+                                            )
+                                        ) {
+                                            ForEach(FeatureModuleTabSide.allCases) { side in
+                                                Text(LocalizedStringKey(side.title)).tag(side)
+                                            }
                                         }
+                                        .labelsHidden()
+                                        .pickerStyle(.segmented)
+                                        .frame(minWidth: 120, idealWidth: 130)
                                     }
-                                    .labelsHidden()
-                                    .pickerStyle(.segmented)
-                                    .frame(width: 110)
+                                    Button("Remove") {
+                                        modules.remove(module.id)
+                                    }
+                                    .foregroundStyle(.red)
+                                    .buttonStyle(.plain)
                                 }
-                                Button("Remove") {
-                                    modules.remove(module.id)
-                                }
-                                .foregroundStyle(.red)
-                                .buttonStyle(.plain)
+                                .fixedSize(horizontal: true, vertical: false)
                             } else {
                                 ModuleInstallButton(moduleID: module.id)
                                     .foregroundStyle(.white)
@@ -557,7 +560,7 @@ private struct ModuleSettings<Content: View>: View {
             content()
         } else if let module = FeatureModuleRegistry.modules.first(where: { $0.id == moduleID }) {
             VStack(alignment: .leading, spacing: 12) {
-                Text("\(module.title) is not installed.")
+                Text(String(format: NSLocalizedString("%@ is not installed.", comment: ""), NSLocalizedString(module.title, comment: "")))
                     .font(.headline)
                 Text("Install it to use these settings. Existing data and settings remain available after reinstalling.")
                     .foregroundStyle(.secondary)
@@ -712,7 +715,9 @@ struct GeneralSettings: View {
                         Text(lang.displayName).tag(lang)
                     }
                 }
-                LaunchAtLogin.Toggle("Launch at login")
+                LaunchAtLogin.Toggle {
+                    Text("Launch at login")
+                }
                 Defaults.Toggle(key: .showOnAllDisplays) {
                     Text("Show on all displays")
                 }
@@ -1717,8 +1722,10 @@ struct About: View {
             }
 
             Section {
-                Button("Quit \(Bundle.main.appName)", role: .destructive) {
+                Button(role: .destructive) {
                     NSApp.terminate(nil)
+                } label: {
+                    Text(String(format: NSLocalizedString("Quit %@", comment: ""), Bundle.main.appName))
                 }
                 .tint(.red)
                 .foregroundStyle(.red)
@@ -2193,13 +2200,16 @@ struct Appearance: View {
                 Defaults.Toggle(key: .coloredSpectrogram) {
                     Text("Colored spectrogram")
                 }
-                Defaults
-                    .Toggle("Player tinting", key: .playerColorTinting)
+                Defaults.Toggle(key: .playerColorTinting) {
+                    Text("Player tinting")
+                }
                 Defaults.Toggle(key: .lightingEffect) {
                     Text("Enable blur effect behind album art")
                 }
                 Toggle("Rotate album artwork during playback", isOn: $rotateAlbumArt)
-                Defaults.Toggle("Match waveform to album artwork", key: .waveformMatchesAlbumArt)
+                Defaults.Toggle(key: .waveformMatchesAlbumArt) {
+                    Text("Match waveform to album artwork")
+                }
                 LiquidGlassSegmentedPicker(
                     "Slider color",
                     selection: $sliderColor,
@@ -2578,17 +2588,6 @@ struct Advanced: View {
             }
             
             Section {
-                Defaults.Toggle(key: .enableShadow) {
-                    Text("Enable window shadow")
-                }
-                Defaults.Toggle(key: .cornerRadiusScaling) {
-                    Text("Corner radius scaling")
-                }
-            } header: {
-                Text("Window Appearance")
-            }
-            
-            Section {
                 HStack {
                     ForEach(icons, id: \.self) { icon in
                         Spacer()
@@ -2752,7 +2751,7 @@ private func buildBadge(text: String) -> some View {
 }
 
 private func settingsBadge(text: String) -> some View {
-    Text(text)
+    Text(LocalizedStringKey(text))
         .foregroundStyle(.secondary)
         .font(.footnote.bold())
         .padding(.vertical, 3)

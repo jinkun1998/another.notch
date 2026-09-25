@@ -37,11 +37,11 @@ struct PermissionRequestView: View {
             }
             .padding(.top, 28)
 
-            Text(title)
+            Text(LocalizedStringKey(title))
                 .font(.title)
                 .fontWeight(.semibold)
 
-            Text(description)
+            Text(LocalizedStringKey(description))
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
 
@@ -49,7 +49,7 @@ struct PermissionRequestView: View {
                 HStack(spacing: 8) {
                     Image(systemName: "lock.shield")
                         .foregroundColor(.secondary)
-                    Text(privacyNote)
+                    Text(LocalizedStringKey(privacyNote))
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.leading)
