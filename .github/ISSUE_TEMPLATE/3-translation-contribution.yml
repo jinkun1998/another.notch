@@ -1,0 +1,52 @@
+---
+name: Translation Contribution
+description: Submit a new language translation or suggest fixes to existing translations.
+title: '[Translation] '
+labels:
+  - localization
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for helping translate Another Notch! ❤️
+        You can submit translations directly here, or follow our [Translation Guide](https://github.com/jinkun1998/another.notch/blob/main/CONTRIBUTING.md#contributing-translations) to open a Pull Request.
+  - type: input
+    id: language
+    attributes:
+      label: Language Name and Code
+      description: e.g. Japanese (ja), Vietnamese (vi), German (de)
+      placeholder: Language name (code)
+    validations:
+      required: true
+  - type: dropdown
+    id: contribution-type
+    attributes:
+      label: Contribution Type
+      description: What kind of translation contribution is this?
+      options:
+        - New Language Translation
+        - Improve Existing Translation
+        - Report Translation Error
+    validations:
+      required: true
+  - type: textarea
+    id: translations
+    attributes:
+      label: Translated Strings / Corrections
+      description: Provide the English key and your translation, or paste the JSON snippet.
+      placeholder: |
+        Original English: Settings
+        Translation: Cài đặt
+
+        Original English: Fan Control
+        Translation: Điều khiển quạt
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: I verified these translations sound natural and accurate in this language.
+          required: true

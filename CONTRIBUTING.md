@@ -13,6 +13,7 @@ You can contribute in many ways: writing code, improving documentation, reportin
   - [Setting Up Your Environment](#setting-up-your-environment)
   - [Making Changes](#making-changes)
   - [Pull Requests](#pull-requests)
+  - [Contributing Translations](#contributing-translations)
 <!-- - [Code Style Guidelines](#code-style-guidelines) -->
 - [Reporting Bugs](#reporting-bugs)
 - [Feature Requests](#feature-requests)
@@ -86,6 +87,27 @@ You can contribute in many ways: writing code, improving documentation, reportin
 3. **Respond to feedback**: Maintainers may request changes.
 
 4. **Be patient**: Reviews take time. Maintainers will get to your PR as soon as they can.
+
+## Contributing Translations
+
+We welcome community translations! Localizations are managed via Apple's String Catalog format (`Localizable.xcstrings`).
+
+### How to add or improve translations:
+
+1. **Using Xcode (Recommended)**:
+   - Open `anotherNotch.xcodeproj` in Xcode.
+   - Select `anotherNotch/Localizable.xcstrings` in the project navigator.
+   - Click the `+` button at the bottom of the language list to add a new language, or select an existing language to edit translations.
+
+2. **Using a text editor**:
+   - Edit `anotherNotch/Localizable.xcstrings` directly as JSON under the `"localizations"` key for your language code (e.g. `"vi"`, `"ja"`, `"de"`).
+
+3. **Registering a new language**:
+   - Add your language case and display name in `anotherNotch/managers/AppLanguageManager.swift` (`AppLanguage` enum).
+   - Add the language code to `knownRegions` in `anotherNotch.xcodeproj/project.pbxproj`.
+
+4. **Submit a PR**:
+   - Push your changes and open a pull request.
 
 <!-- ## Code Style Guidelines
 

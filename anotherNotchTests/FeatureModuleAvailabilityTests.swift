@@ -72,6 +72,26 @@ final class FeatureModuleAvailabilityTests: XCTestCase {
         XCTAssertTrue(reloadedStore.notes.isEmpty)
     }
 
+    @MainActor
+    func testAppLanguageManagerResolvesLocale() {
+        let manager = AppLanguageManager(initialLanguage: .vi)
+        XCTAssertEqual(manager.currentLanguage, .vi)
+        XCTAssertEqual(manager.locale.identifier, "vi")
+
+        manager.setLanguage(.en)
+        XCTAssertEqual(manager.currentLanguage, .en)
+        XCTAssertEqual(manager.locale.identifier, "en")
+
+        manager.setLanguage(.system)
+        XCTAssertEqual(manager.currentLanguage, .system)
+    }
+
+    func testAppLanguageDisplayNamesCoverAllSupportedLanguages() {
+        for lang in AppLanguage.allCases {
+            XCTAssertFalse(lang.displayName.isEmpty)
+        }
+    }
+
     func testVietnameseLunarCalendarConvertsTetAndMidAutumnFestival() {
         XCTAssertEqual(
             VietnameseLunarCalendar.date(day: 10, month: 2, year: 2024),

@@ -206,6 +206,7 @@ struct SettingsView: View {
     @State private var selectedTab: SettingsPage = .general
     @State private var accentColorUpdateTrigger = UUID()
     @ObservedObject private var modules = FeatureModuleRegistry.shared
+    @ObservedObject private var languageManager = AppLanguageManager.shared
 
     let updaterController: SPUStandardUpdaterController?
 
@@ -367,6 +368,7 @@ struct SettingsView: View {
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("AccentColorChanged"))) { _ in
             accentColorUpdateTrigger = UUID()
         }
+        .environment(\.locale, languageManager.locale)
     }
 
     @ViewBuilder
@@ -702,6 +704,14 @@ struct GeneralSettings: View {
                     Text("Show menu bar icon")
                 }
                 .tint(.effectiveAccent)
+                Picker("Language", selection: Binding(
+                    get: { AppLanguageManager.shared.currentLanguage },
+                    set: { AppLanguageManager.shared.setLanguage($0) }
+                )) {
+                    ForEach(AppLanguage.allCases) { lang in
+                        Text(lang.displayName).tag(lang)
+                    }
+                }
                 LaunchAtLogin.Toggle("Launch at login")
                 Defaults.Toggle(key: .showOnAllDisplays) {
                     Text("Show on all displays")

@@ -22,6 +22,8 @@
 		E18100040000000000000001 /* FanControlView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E18100030000000000000001 /* FanControlView.swift */; };
 		E18100060000000000000001 /* FanControlSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = E18100050000000000000001 /* FanControlSettings.swift */; };
 		E18100070000000000000001 /* FanControlManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E18100010000000000000001 /* FanControlManager.swift */; };
+		E18200020000000000000001 /* AppLanguageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E18200010000000000000001 /* AppLanguageManager.swift */; };
+		E18200030000000000000001 /* AppLanguageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E18200010000000000000001 /* AppLanguageManager.swift */; };
 		A11E00250000000000000025 /* VietnameseLunarCalendar.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11E00080000000000000008 /* VietnameseLunarCalendar.swift */; };
 		A11E00260000000000000026 /* VietnameseLunarCalendar.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11E00080000000000000008 /* VietnameseLunarCalendar.swift */; };
 		A11E00190000000000000019 /* Defaults in Frameworks */ = {isa = PBXBuildFile; productRef = A11E00070000000000000007 /* Defaults */; };
@@ -212,6 +214,7 @@
 		E18100010000000000000001 /* FanControlManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FanControlManager.swift; sourceTree = "<group>"; };
 		E18100030000000000000001 /* FanControlView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FanControlView.swift; sourceTree = "<group>"; };
 		E18100050000000000000001 /* FanControlSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FanControlSettings.swift; sourceTree = "<group>"; };
+		E18200010000000000000001 /* AppLanguageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLanguageManager.swift; sourceTree = "<group>"; };
 		A11E00080000000000000008 /* VietnameseLunarCalendar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VietnameseLunarCalendar.swift; sourceTree = "<group>"; };
 		1100290B2E847E2800035A57 /* NSItemProvider+LoadHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSItemProvider+LoadHelpers.swift"; sourceTree = "<group>"; };
 		110029262E84FD4C00035A57 /* TemporaryFileStorageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemporaryFileStorageService.swift; sourceTree = "<group>"; };
@@ -559,6 +562,7 @@
 				149E0B962C737D00006418B1 /* WebcamManager.swift */,
 				14C08BB52C8DE42D000F8AA0 /* CalendarManager.swift */,
 				E18100010000000000000001 /* FanControlManager.swift */,
+				E18200010000000000000001 /* AppLanguageManager.swift */,
 				B1F0A0012E60000100000001 /* BrightnessManager.swift */,
 				59D8C23B2E589FAA00147B33 /* VolumeManager.swift */,
 			);
@@ -938,6 +942,22 @@
 			knownRegions = (
 				en,
 				Base,
+				ar,
+				cs,
+				de,
+				"en-GB",
+				es,
+				fr,
+				hu,
+				it,
+				ko,
+				pl,
+				"pt-BR",
+				ru,
+				tr,
+				uk,
+				"zh-Hans",
+				vi,
 			);
 			mainGroup = 14CEF4092C5CAED200855D72;
 			packageReferences = (
@@ -1003,6 +1023,7 @@
 			files = (
 				E17300060000000000000001 /* QuickNote.swift in Sources */,
 				E18100070000000000000001 /* FanControlManager.swift in Sources */,
+				E18200030000000000000001 /* AppLanguageManager.swift in Sources */,
 				A11E00130000000000000013 /* FeatureModuleAvailabilityTests.swift in Sources */,
 				A11E00140000000000000014 /* FeatureModuleID.swift in Sources */,
 				A11E00150000000000000015 /* FeatureModuleAvailability.swift in Sources */,
@@ -1101,6 +1122,7 @@
 				14C08BB62C8DE42D000F8AA0 /* CalendarManager.swift in Sources */,
 				14D570CD2C5F4BB70011E668 /* AnotherNotchBattery.swift in Sources */,
 				B10F84A32C6C9596009F3026 /* TestView.swift in Sources */,
+				E18200020000000000000001 /* AppLanguageManager.swift in Sources */,
 				1443E7F32C609DCE0027C1FC /* matters.swift in Sources */,
 				11C5E3162DFE88510065821E /* SettingsView.swift in Sources */,
 				1153BD932D986E4300979FB0 /* AppleMusicController.swift in Sources */,

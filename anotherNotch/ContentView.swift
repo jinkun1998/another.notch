@@ -30,6 +30,7 @@ struct ContentView: View {
     @ObservedObject var brightnessManager = BrightnessManager.shared
     @ObservedObject private var clipboardHistory = ClipboardHistoryStore.shared
     @ObservedObject private var modules = FeatureModuleRegistry.shared
+    @ObservedObject private var languageManager = AppLanguageManager.shared
     @State private var hoverTask: Task<Void, Never>?
     @State private var closingShellTask: Task<Void, Never>?
     @State private var closingTransitionID: UUID?
@@ -577,6 +578,7 @@ struct ContentView: View {
         .background(dragDetector)
         .preferredColorScheme(.dark)
         .environmentObject(vm)
+        .environment(\.locale, languageManager.locale)
         .onAppear {
             shellExpansion = vm.notchState == .open ? 1 : 0
             gradientBackgroundProgress = shellExpansion
