@@ -167,7 +167,7 @@ private struct ClipboardEntryRow: View {
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                .foregroundStyle(Color.effectiveAccent)
+                .foregroundStyle(Color(nsColor: .linkColor))
                 .accessibilityLabel(isDetailExpanded ? "Collapse clipboard preview" : "Expand clipboard preview")
             }
 

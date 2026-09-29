@@ -33150,6 +33150,2080 @@
           }
         }
       }
+    },
+    "Manual mode not available on Apple Silicon": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Manual mode not available on Apple Silicon"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chế độ thủ công không khả dụng trên Apple Silicon"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple Silicon 不支持手动模式"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Modo manual no disponible en Apple Silicon"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mode manuel non disponible sur Apple Silicon"
+          }
+        }
+      }
+    },
+    "Manual fan control is not supported on Apple Silicon (ARM64) Macs. macOS manages fans automatically.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Manual fan control is not supported on Apple Silicon (ARM64) Macs. macOS manages fans automatically."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Điều khiển quạt thủ công không được hỗ trợ trên Mac Apple Silicon (ARM64). macOS tự động quản lý quạt."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple Silicon (ARM64) Mac 不支持手动风扇控制。macOS 会自动管理风扇。"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El control manual de ventiladores no es compatible con Macs Apple Silicon (ARM64). macOS gestiona los ventiladores automáticamente."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le contrôle manuel des ventilateurs n'est pas pris en charge sur les Mac Apple Silicon (ARM64). macOS gère les ventilateurs automatiquement."
+          }
+        }
+      }
+    },
+    "Show fan speeds and control cooling modes in the notch.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show fan speeds and control cooling modes in the notch."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hiển thị tốc độ quạt và điều khiển chế độ làm mát trên notch."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在刘海区域显示风扇转速并控制散热模式。"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Muestra la velocidad de los ventiladores y controla el enfriamiento en el notch."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Affiche la vitesse des ventilateurs et gère le refroidissement dans l'encoche."
+          }
+        }
+      }
+    },
+    "When disabled, fan monitoring and controls are hidden from the notch.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "When disabled, fan monitoring and controls are hidden from the notch."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Khi tắt, tính năng theo dõi và điều khiển quạt sẽ bị ẩn khỏi notch."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "禁用后，风扇监控与控制将从刘海中隐藏。"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Al desactivar, el monitoreo y los controles del ventilador se ocultan del notch."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lorsqu'il est désactivé, le suivi et les commandes des ventilateurs sont masqués de l'encoche."
+          }
+        }
+      }
+    },
+    "Hardware Supported": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hardware Supported"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Phần cứng được hỗ trợ"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "硬件受支持"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hardware compatible"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Matériel pris en charge"
+          }
+        }
+      }
+    },
+    "Hardware Not Supported": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hardware Not Supported"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Phần cứng không được hỗ trợ"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "硬件不受支持"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hardware no compatible"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Matériel non pris en charge"
+          }
+        }
+      }
+    },
+    "%lld fan(s) detected": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld fan(s) detected"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đã phát hiện %lld quạt"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "检测到 %lld 个风扇"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld ventilador(es) detectado(s)"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld ventilateur(s) détecté(s)"
+          }
+        }
+      }
+    },
+    "No compatible fans found on this Mac": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No compatible fans found on this Mac"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Không tìm thấy quạt tương thích trên máy Mac này"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在此 Mac 上未找到兼容的风扇"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se encontraron ventiladores compatibles en esta Mac"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aucun ventilateur compatible trouvé sur ce Mac"
+          }
+        }
+      }
+    },
+    "Min: %lld RPM  •  Max: %lld RPM": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Min: %lld RPM  •  Max: %lld RPM"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tối thiểu: %lld RPM  •  Tối đa: %lld RPM"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "最小：%lld RPM  •  最大：%lld RPM"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mín: %lld RPM  •  Máx: %lld RPM"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Min : %lld RPM  •  Max : %lld RPM"
+          }
+        }
+      }
+    },
+    "Fan information is read from the System Management Controller (SMC).": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fan information is read from the System Management Controller (SMC)."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thông tin quạt được đọc từ Bộ điều khiển quản lý hệ thống (SMC)."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "风扇信息读取自系统管理控制器 (SMC)。"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La información de los ventiladores se lee del Controlador de gestión del sistema (SMC)."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Les informations des ventilateurs proviennent du contrôleur de gestion du système (SMC)."
+          }
+        }
+      }
+    },
+    "Manual Control Available": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Manual Control Available"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Điều khiển thủ công khả dụng"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "手动控制可用"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Control manual disponible"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Contrôle manuel disponible"
+          }
+        }
+      }
+    },
+    "Manual Control Unavailable": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Manual Control Unavailable"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Điều khiển thủ công không khả dụng"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "手动控制不可用"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Control manual no disponible"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Contrôle manuel indisponible"
+          }
+        }
+      }
+    },
+    "SMC helper installed. Fan speed can be controlled manually.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SMC helper installed. Fan speed can be controlled manually."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đã cài đặt SMC helper. Có thể điều khiển tốc độ quạt thủ công."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已安装 SMC 辅助程序。可以手动调节风扇转速。"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Helper SMC instalado. La velocidad del ventilador se puede controlar manualmente."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Assistant SMC installé. La vitesse des ventilateurs peut être contrôlée manuellement."
+          }
+        }
+      }
+    },
+    "Install the SMC helper to enable manual fan control on Apple Silicon.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Install the SMC helper to enable manual fan control on Apple Silicon."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cài đặt SMC helper để bật điều khiển quạt thủ công trên Apple Silicon."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "安装 SMC 辅助程序以在 Apple Silicon 上启用手动风扇控制。"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Instala el helper SMC para activar el control manual del ventilador en Apple Silicon."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Installez l'assistant SMC pour activer le contrôle manuel des ventilateurs sur Apple Silicon."
+          }
+        }
+      }
+    },
+    "Direct SMC access available on Intel Macs.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Direct SMC access available on Intel Macs."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Truy cập SMC trực tiếp có sẵn trên máy Mac dùng chip Intel."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Intel Mac 支持直接访问 SMC。"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acceso directo a SMC disponible en Macs con Intel."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Accès SMC direct disponible sur les Mac Intel."
+          }
+        }
+      }
+    },
+    "Fan Writes Failing": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fan Writes Failing"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ghi dữ liệu quạt thất bại"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "写入风扇设置失败"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Error al escribir en los ventiladores"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Échec d'écriture sur les ventilateurs"
+          }
+        }
+      }
+    },
+    "SIP must be disabled for fan control to work on Apple Silicon.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SIP must be disabled for fan control to work on Apple Silicon."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SIP phải được tắt để điều khiển quạt hoạt động trên Apple Silicon."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在 Apple Silicon 上必须禁用 SIP 风扇控制才能工作。"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SIP debe estar desactivado para que el control de ventiladores funcione en Apple Silicon."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le SIP doit être désactivé pour que le contrôle des ventilateurs fonctionne sur Apple Silicon."
+          }
+        }
+      }
+    },
+    "SIP (System Integrity Protection) must be disabled for fan control to work.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SIP (System Integrity Protection) must be disabled for fan control to work."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SIP (Bảo vệ tính toàn vẹn hệ thống) phải được tắt để điều khiển quạt hoạt động."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "必须禁用 SIP（系统完整性保护）风扇控制才能正常工作。"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SIP (System Integrity Protection) debe estar desactivado para que el control de ventiladores funcione."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le SIP (System Integrity Protection) doit être désactivé pour que le contrôle des ventilateurs fonctionne."
+          }
+        }
+      }
+    },
+    "Auto: macOS manages fan speeds based on temperature.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Auto: macOS manages fan speeds based on temperature."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tự động: macOS quản lý tốc độ quạt dựa trên nhiệt độ."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "自动：macOS 根据温度管理风扇转速。"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Automático: macOS gestiona la velocidad de los ventiladores según la temperatura."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Auto : macOS gère la vitesse des ventilateurs selon la température."
+          }
+        }
+      }
+    },
+    "Manual: You set target RPM; macOS thermal limits still apply.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Manual: You set target RPM; macOS thermal limits still apply."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thủ công: Bạn đặt RPM mục tiêu; giới hạn nhiệt của macOS vẫn áp dụng."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "手动：由你设定目标 RPM；macOS 散热限制依然生效。"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Manual: Tú defines las RPM deseadas; los límites térmicos de macOS siguen aplicando."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Manuel : Vous définissez les RPM cibles ; les limites thermiques de macOS s'appliquent toujours."
+          }
+        }
+      }
+    },
+    "On Apple Silicon, manual control requires the SMC helper (one-time admin install).": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "On Apple Silicon, manual control requires the SMC helper (one-time admin install)."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trên Apple Silicon, điều khiển thủ công yêu cầu SMC helper (cần quyền quản trị một lần)."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在 Apple Silicon 上，手动控制需要 SMC 辅助程序（需要一次性管理员授权）。"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En Apple Silicon, el control manual requiere el helper SMC (instalación única con admin)."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sur Apple Silicon, le contrôle manuel nécessite l'assistant SMC (installation admin unique)."
+          }
+        }
+      }
+    },
+    "Note: Fan writes require SIP disabled on Apple Silicon.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Note: Fan writes require SIP disabled on Apple Silicon."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lưu ý: Ghi cài đặt quạt yêu cầu tắt SIP trên Apple Silicon."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "注意：在 Apple Silicon 上写入风扇设置需要关闭 SIP。"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nota: La escritura en los ventiladores requiere desactivar SIP en Apple Silicon."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remarque : La modification des ventilateurs nécessite la désactivation du SIP sur Apple Silicon."
+          }
+        }
+      }
+    },
+    "On Intel Macs, manual control works without additional setup.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "On Intel Macs, manual control works without additional setup."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trên máy Mac Intel, điều khiển thủ công hoạt động mà không cần cài đặt thêm."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在 Intel Mac 上，无需额外设置即可使用手动控制。"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En Macs con Intel, el control manual funciona sin configuración adicional."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sur les Mac Intel, le contrôle manuel fonctionne sans configuration supplémentaire."
+          }
+        }
+      }
+    },
+    "Manual Fan Speeds": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Manual Fan Speeds"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tốc độ quạt thủ công"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "手动风扇转速"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Velocidades manuales del ventilador"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vitesses manuelles des ventilateurs"
+          }
+        }
+      }
+    },
+    "Target": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Target"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mục tiêu"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "目标"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Objetivo"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cible"
+          }
+        }
+      }
+    },
+    "Set target RPM for each fan. macOS thermal limits still apply.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set target RPM for each fan. macOS thermal limits still apply."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đặt RPM mục tiêu cho từng quạt. Giới hạn nhiệt của macOS vẫn áp dụng."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "为每个风扇设置目标 RPM。macOS 散热限制依然生效。"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Define las RPM deseadas para cada ventilador. Los límites térmicos de macOS siguen aplicando."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Définissez les RPM cibles de chaque ventilateur. Les limites thermiques de macOS s'appliquent toujours."
+          }
+        }
+      }
+    },
+    "Temperature Threshold": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Temperature Threshold"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ngưỡng nhiệt độ"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "温度阈值"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Umbral de temperatura"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seuil de température"
+          }
+        }
+      }
+    },
+    "40°C": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "40°C"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "40°C"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "40°C"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "40°C"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "40°C"
+          }
+        }
+      }
+    },
+    "70°C": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "70°C"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "70°C"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "70°C"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "70°C"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "70°C"
+          }
+        }
+      }
+    },
+    "90°C": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "90°C"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "90°C"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "90°C"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "90°C"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "90°C"
+          }
+        }
+      }
+    },
+    "100°C": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "100°C"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "100°C"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "100°C"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "100°C"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "100°C"
+          }
+        }
+      }
+    },
+    "1000 RPM": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1000 RPM"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1000 RPM"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1000 RPM"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1000 RPM"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1000 RPM"
+          }
+        }
+      }
+    },
+    "6000 RPM": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "6000 RPM"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "6000 RPM"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "6000 RPM"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "6000 RPM"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "6000 RPM"
+          }
+        }
+      }
+    },
+    "Fans ramp up when temperature exceeds this threshold.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fans ramp up when temperature exceeds this threshold."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quạt sẽ tăng tốc khi nhiệt độ vượt quá ngưỡng này."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "当温度超过此阈值时风扇开始加速。"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los ventiladores aceleran cuando la temperatura supera este umbral."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Les ventilateurs accélèrent lorsque la température dépasse ce seuil."
+          }
+        }
+      }
+    },
+    "Max Fan Speed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Max Fan Speed"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tốc độ quạt tối đa"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "最大风扇转速"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Velocidad máxima del ventilador"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vitesse max des ventilateurs"
+          }
+        }
+      }
+    },
+    "Maximum speed auto mode will request. Hardware limits still apply.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Maximum speed auto mode will request. Hardware limits still apply."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tốc độ tối đa chế độ tự động có thể yêu cầu. Giới hạn phần cứng vẫn áp dụng."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "自动模式请求的最大转速。硬件物理限制依然生效。"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Velocidad máxima que solicitará el modo automático. Los límites de hardware siguen aplicando."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vitesse maximale demandée en mode auto. Les limites matérielles s'appliquent toujours."
+          }
+        }
+      }
+    },
+    "Aggressiveness": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aggressiveness"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Độ nhạy"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "响应强度"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Agresividad"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Réactivité"
+          }
+        }
+      }
+    },
+    "Gentle": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gentle"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nhẹ nhàng"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "平缓"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suave"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Doux"
+          }
+        }
+      }
+    },
+    "Aggressive": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aggressive"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mạnh mẽ"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "激进"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Agresivo"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Agressif"
+          }
+        }
+      }
+    },
+    "How quickly fans respond to temperature changes.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "How quickly fans respond to temperature changes."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tốc độ phản ứng của quạt khi nhiệt độ thay đổi."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "风扇响应温度变化的速度。"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rapidez con la que los ventiladores responden a los cambios de temperatura."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vitesse de réaction des ventilateurs aux variations de température."
+          }
+        }
+      }
+    },
+    "0.0 = Quiet": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "0.0 = Quiet"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "0.0 = Yên tĩnh"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "0.0 = 静音"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "0.0 = Silencioso"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "0.0 = Silencieux"
+          }
+        }
+      }
+    },
+    "1.5 = Balanced": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1.5 = Balanced"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1.5 = Cân bằng"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1.5 = 平衡"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1.5 = Equilibrado"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1.5 = Équilibré"
+          }
+        }
+      }
+    },
+    "3.0 = Performance": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "3.0 = Performance"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "3.0 = Hiệu năng"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "3.0 = 高性能"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "3.0 = Rendimiento"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "3.0 = Performance"
+          }
+        }
+      }
+    },
+    "Auto Mode Settings": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Auto Mode Settings"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cài đặt chế độ Tự động"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "自动模式设置"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajustes del modo automático"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paramètres du mode Auto"
+          }
+        }
+      }
+    },
+    "Auto mode adjusts fan speeds based on CPU/GPU temperature. Changes take effect immediately.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Auto mode adjusts fan speeds based on CPU/GPU temperature. Changes take effect immediately."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chế độ tự động điều chỉnh tốc độ quạt dựa trên nhiệt độ CPU/GPU. Thay đổi có hiệu lực ngay lập tức."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "自动模式根据 CPU/GPU 温度调节风扇转速。更改立即生效。"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El modo automático ajusta la velocidad del ventilador según la temperatura de CPU/GPU. Los cambios surten efecto de inmediato."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le mode auto ajuste la vitesse des ventilateurs selon la température CPU/GPU. Les modifications prennent effet immédiatement."
+          }
+        }
+      }
+    },
+    "High Temperature Alerts": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "High Temperature Alerts"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cảnh báo nhiệt độ cao"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "高温警报"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alertas de alta temperatura"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alertes de température élevée"
+          }
+        }
+      }
+    },
+    "Show notification when any sensor exceeds threshold": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show notification when any sensor exceeds threshold"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hiện thông báo khi bất kỳ cảm biến nào vượt ngưỡng"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "当任一传感器超过阈值时显示通知"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostrar notificación cuando algún sensor supere el umbral"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Afficher une notification quand un capteur dépasse le seuil"
+          }
+        }
+      }
+    },
+    "Alert Threshold": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alert Threshold"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ngưỡng cảnh báo"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "警报阈值"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Umbral de alerta"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seuil d'alerte"
+          }
+        }
+      }
+    },
+    "Notification triggers when any temperature sensor exceeds this value.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notification triggers when any temperature sensor exceeds this value."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thông báo sẽ kích hoạt khi bất kỳ cảm biến nhiệt độ nào vượt quá giá trị này."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "当任一温度传感器超过此数值时触发通知。"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La notificación se activa cuando algún sensor de temperatura supera este valor."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Une notification se déclenche lorsqu'un capteur dépasse cette valeur."
+          }
+        }
+      }
+    },
+    "Temperature Alerts": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Temperature Alerts"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cảnh báo nhiệt độ"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "温度警报"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alertas de temperatura"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alertes de température"
+          }
+        }
+      }
+    },
+    "Alerts use system notifications. Works in both Auto and Manual modes.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alerts use system notifications. Works in both Auto and Manual modes."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cảnh báo sử dụng thông báo hệ thống. Hoạt động ở cả chế độ Tự động và Thủ công."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "警报使用系统通知。在自动和手动模式下均有效。"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Las alertas usan notificaciones del sistema. Funciona en modo Automático y Manual."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Les alertes utilisent les notifications système. Fonctionne en modes Auto et Manuel."
+          }
+        }
+      }
+    },
+    "SMC Helper": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SMC Helper"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SMC Helper"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SMC 辅助程序"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Helper SMC"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Assistant SMC"
+          }
+        }
+      }
+    },
+    "SMC Helper Installed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SMC Helper Installed"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đã cài đặt SMC Helper"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已安装 SMC 辅助程序"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Helper SMC instalado"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Assistant SMC installé"
+          }
+        }
+      }
+    },
+    "SMC Helper Not Installed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SMC Helper Not Installed"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chưa cài đặt SMC Helper"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "未安装 SMC 辅助程序"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Helper SMC no instalado"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Assistant SMC non installé"
+          }
+        }
+      }
+    },
+    "Manual fan control is enabled.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Manual fan control is enabled."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Điều khiển quạt thủ công đã được bật."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已启用手动风扇控制。"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El control manual del ventilador está activado."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le contrôle manuel des ventilateurs est activé."
+          }
+        }
+      }
+    },
+    "Required for manual fan control on Apple Silicon.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Required for manual fan control on Apple Silicon."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cần thiết cho điều khiển quạt thủ công trên Apple Silicon."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple Silicon 上需要此程序以进行手动风扇控制。"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Requerido para control manual en Apple Silicon."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Requis pour le contrôle manuel sur Apple Silicon."
+          }
+        }
+      }
+    },
+    "Install Helper": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Install Helper"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cài đặt Helper"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "安装辅助程序"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Instalar helper"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Installer l'assistant"
+          }
+        }
+      }
+    },
+    "The helper is a small setuid binary installed to /usr/local/bin/smc-helper. It requires administrator password once. On Apple Silicon, SIP must also be disabled for fan writes to succeed.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The helper is a small setuid binary installed to /usr/local/bin/smc-helper. It requires administrator password once. On Apple Silicon, SIP must also be disabled for fan writes to succeed."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Helper là tệp nhị phân setuid cài vào /usr/local/bin/smc-helper. Cần nhập mật khẩu quản trị một lần. Trên Apple Silicon, SIP cũng cần được tắt để ghi tốc độ quạt thành công."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "该辅助程序是一个安装在 /usr/local/bin/smc-helper 的 setuid 二进制文件，仅需一次管理员密码授权。在 Apple Silicon 上，还需关闭 SIP 才能成功写入风扇转速。"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El helper es un binario setuid instalado en /usr/local/bin/smc-helper. Requiere contraseña de administrador una sola vez. En Apple Silicon, también se debe desactivar SIP para aplicar cambios."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L'assistant est un binaire setuid installé dans /usr/local/bin/smc-helper. Il nécessite le mot de passe administrateur une seule fois. Sur Apple Silicon, le SIP doit également être désactivé pour appliquer les réglages."
+          }
+        }
+      }
+    },
+    "Elevated privileges required for manual fan control. Running in safe Auto mode.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elevated privileges required for manual fan control. Running in safe Auto mode."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cần quyền quản trị để điều khiển quạt thủ công. Đang chạy ở chế độ Tự động an toàn."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "手动风扇控制需要管理员权限。当前以安全自动模式运行。"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se requieren privilegios elevados para el control manual del ventilador. Ejecutando en modo Automático seguro."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Privilèges élevés requis pour le contrôle manuel des ventilateurs. Exécution en mode Auto sécurisé."
+          }
+        }
+      }
+    },
+    "Install SMC helper in Settings for manual control.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Install SMC helper in Settings for manual control."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cài đặt SMC helper trong Cài đặt để điều khiển thủ công."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在设置中安装 SMC 辅助程序以使用手动控制。"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Instala el helper SMC en Ajustes para el control manual."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Installez l'assistant SMC dans les Réglages pour le contrôle manuel."
+          }
+        }
+      }
+    },
+    "SMC helper required for manual control": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SMC helper required for manual control"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cần SMC helper để điều khiển thủ công"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "手动控制需要 SMC 辅助程序"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se requiere helper SMC para control manual"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Assistant SMC requis pour le contrôle manuel"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

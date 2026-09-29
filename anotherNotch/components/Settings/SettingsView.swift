@@ -575,19 +575,17 @@ private struct ModuleInstallButton: View {
     let moduleID: FeatureModuleID
     @ObservedObject private var modules = FeatureModuleRegistry.shared
     @State private var isInstalling = false
+    @State private var showingHelperInstallPrompt = false
 
     var body: some View {
         Button {
-            isInstalling = true
-            let delay = Double.random(in: 0.1...0.9)
-            Task { @MainActor in
-                try? await Task.sleep(for: .seconds(delay))
-                guard !Task.isCancelled else {
-                    isInstalling = false
-                    return
-                }
-                modules.install(moduleID)
+            #if arch(arm64)
+            if moduleID == .fanControl && !FanControlManager.isHelperInstalled {
+                showingHelperInstallPrompt = true
+                return
             }
+            #endif
+            performInstall()
         } label: {
             if isInstalling {
                 HStack(spacing: 6) {
@@ -600,6 +598,32 @@ private struct ModuleInstallButton: View {
             }
         }
         .disabled(isInstalling)
+        .alert("SMC Helper", isPresented: $showingHelperInstallPrompt) {
+            Button("Install Helper") {
+                if FanControlManager.shared.installSMCHelper() {
+                    performInstall()
+                }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Install the SMC helper to enable manual fan control on Apple Silicon.")
+        }
+    }
+
+    private func performInstall() {
+        isInstalling = true
+        let delay = Double.random(in: 0.1...0.9)
+        Task { @MainActor in
+            try? await Task.sleep(for: .seconds(delay))
+            guard !Task.isCancelled else {
+                isInstalling = false
+                return
+            }
+            modules.install(moduleID)
+            if moduleID == .fanControl {
+                Defaults[.fanControlEnabled] = true
+            }
+        }
     }
 }
 
@@ -1368,7 +1392,7 @@ struct Media: View {
                             destination: URL(string: "https://github.com/pear-devs/pear-desktop")!
                         )
                         .font(.caption)
-                        .foregroundColor(.blue)  // Ensures it's visibly a link
+                        .foregroundColor(Color(nsColor: .linkColor))
                     }
                 } else {
                     Text(
@@ -2466,7 +2490,7 @@ struct Advanced: View {
         
         var color: Color {
             switch self {
-            case .blue: return Color(red: 0.0, green: 0.478, blue: 1.0)
+            case .blue: return Color(nsColor: .systemBlue)
             case .purple: return Color(red: 0.686, green: 0.322, blue: 0.871)
             case .pink: return Color(red: 1.0, green: 0.176, blue: 0.333)
             case .red: return Color(red: 1.0, green: 0.271, blue: 0.227)
