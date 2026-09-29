@@ -23,6 +23,7 @@ struct FanControlView: View {
         .padding(.vertical, 8)
         .padding(.horizontal, 4)
         .onAppear {
+            manager.checkHardware()
             manager.startMonitoring()
         }
         .onDisappear {
@@ -31,7 +32,15 @@ struct FanControlView: View {
     }
 
     private var header: some View {
-        HStack {
+        let canUseManual = {
+            #if arch(arm64)
+            return FileManager.default.isExecutableFile(atPath: "/usr/local/bin/smc-helper")
+            #else
+            return true
+            #endif
+        }()
+
+        return HStack {
             HStack(spacing: 6) {
                 Image(systemName: "fan.fill")
                     .font(.headline)
@@ -45,15 +54,20 @@ struct FanControlView: View {
 
             HStack(spacing: 2) {
                 modeButton(title: "Auto", isSelected: !manager.isManualMode) {
-                    withAnimation(.spring(response: 0.28, dampingFraction: 0.8)) {
+                    withAnimation(.easeInOut(duration: 0.18)) {
                         manager.setMode(manual: false)
                     }
                 }
                 modeButton(title: "Manual", isSelected: manager.isManualMode) {
-                    withAnimation(.spring(response: 0.28, dampingFraction: 0.8)) {
-                        manager.setMode(manual: true)
+                    if canUseManual {
+                        withAnimation(.easeInOut(duration: 0.18)) {
+                            manager.setMode(manual: true)
+                        }
+                    } else {
+                        manager.permissionNotice = "Install SMC helper in Settings for manual control."
                     }
                 }
+                .opacity(canUseManual ? 1.0 : 0.6)
             }
             .padding(2)
             .background(Color.white.opacity(0.1), in: Capsule())
@@ -128,6 +142,7 @@ struct FanControlView: View {
 
             if manager.isManualMode {
                 manualControls(fan)
+                    .transition(.opacity)
             }
         }
         .padding(10)

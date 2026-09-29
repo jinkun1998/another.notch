@@ -96,6 +96,7 @@ struct ControllerOptionView: View {
                 if controller == .youtubeMusic, let url = URL(string: "https://github.com/pear-devs/pear-desktop") {
                     Link("View on GitHub: pear-devs/pear-desktop", destination: url)
                         .font(.subheadline)
+                        .foregroundColor(Color(nsColor: .linkColor))
                         .padding(.top, 2)
                 }
             }

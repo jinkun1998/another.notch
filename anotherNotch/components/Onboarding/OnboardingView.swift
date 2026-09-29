@@ -307,8 +307,16 @@ struct OnboardingView: View {
             FeatureModuleRegistry.shared.install(module)
 
             switch module {
-            case .home, .quickNotes, .fanControl:
+            case .home, .quickNotes:
                 break
+            case .fanControl:
+                #if arch(arm64)
+                if FanControlManager.isHelperInstalled {
+                    Defaults[.fanControlEnabled] = true
+                }
+                #else
+                Defaults[.fanControlEnabled] = true
+                #endif
             case .clipboard:
                 Defaults[.clipboardHistoryEnabled] = true
             case .shelf:

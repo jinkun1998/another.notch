@@ -9,9 +9,14 @@ import Foundation
 import IOKit
 
 extension Defaults.Keys {
-    public static let fanControlEnabled = Key<Bool>("fanControlEnabled", default: true)
+    public static let fanControlEnabled = Key<Bool>("fanControlEnabled", default: false)
     public static let fanControlManualMode = Key<Bool>("fanControlManualMode", default: false)
     public static let fanControlTargetRPMs = Key<[String: Double]>("fanControlTargetRPMs", default: [:])
+    public static let fanControlAutoThreshold = Key<Double>("fanControlAutoThreshold", default: 60.0)
+    public static let fanControlAutoMaxSpeed = Key<Int>("fanControlAutoMaxSpeed", default: 4500)
+    public static let fanControlAutoAggressiveness = Key<Double>("fanControlAutoAggressiveness", default: 1.5)
+    public static let fanControlAlertThreshold = Key<Double>("fanControlAlertThreshold", default: 85.0)
+    public static let fanControlAlertEnabled = Key<Bool>("fanControlAlertEnabled", default: false)
 }
 
 public struct FanTelemetry: Identifiable, Equatable, Codable {
@@ -50,7 +55,7 @@ public protocol SMCProvider: AnyObject {
     func writeFanTargetRPM(index: Int, rpm: Double) -> Bool
 }
 
-final class AppleSMCProvider: SMCProvider {
+final class AppleSMCProvider: SMCProvider, @unchecked Sendable {
     private struct SMCVersion {
         var major: UInt8 = 0
         var minor: UInt8 = 0
@@ -293,6 +298,124 @@ final class AppleSMCProvider: SMCProvider {
     }
 }
 
+
+
+// SMC Helper Provider - uses setuid root helper binary
+final class SMCHelperProvider: SMCProvider, @unchecked Sendable {
+    private let helperPath = "/usr/local/bin/smc-helper"
+    private var fanCountCache: Int = 0
+    private var fanCountCached = false
+    private var cachedFans: [FanTelemetry] = []
+    private var lastFetchTime: Date = .distantPast
+
+    var isConnected: Bool {
+        FileManager.default.isExecutableFile(atPath: helperPath)
+    }
+    
+    func invalidateCache() {
+        fanCountCached = false
+        fanCountCache = 0
+        cachedFans = []
+        lastFetchTime = .distantPast
+    }
+
+    func fanCount() -> Int {
+        if fanCountCached { return fanCountCache }
+        _ = populateTelemetry()
+        return fanCountCache
+    }
+
+    func readFanTelemetry(index: Int) -> FanTelemetry? {
+        let now = Date()
+        if now.timeIntervalSince(lastFetchTime) >= 0.8 || cachedFans.isEmpty {
+            _ = populateTelemetry()
+        }
+        return cachedFans.first { $0.id == index }
+    }
+
+    private func populateTelemetry() -> [FanTelemetry] {
+        let output = runHelper(args: ["info"])
+        if let match = output.firstMatch(of: /Total fans: (\d+)/) {
+            let count = Int(match.output.1) ?? 0
+            fanCountCache = count
+            fanCountCached = true
+        }
+
+        let pattern = #"Fan #(\d+):\s+Current speed: ([\d.]+) RPM\s+Min speed: ([\d.]+) RPM\s*\([^)]*\)\s+Max speed: ([\d.]+) RPM\s+Target speed: ([\d.]+) RPM"#
+        let regex = try? NSRegularExpression(pattern: pattern, options: [])
+        let range = NSRange(location: 0, length: output.utf16.count)
+        
+        var fans: [FanTelemetry] = []
+        regex?.enumerateMatches(in: output, options: [], range: range) { match, _, _ in
+            guard let match = match,
+                  match.numberOfRanges == 6,
+                  let idxRange = Range(match.range(at: 1), in: output),
+                  let currRange = Range(match.range(at: 2), in: output),
+                  let minRange = Range(match.range(at: 3), in: output),
+                  let maxRange = Range(match.range(at: 4), in: output),
+                  let targetRange = Range(match.range(at: 5), in: output),
+                  let id = Int(output[idxRange]),
+                  let currentRPM = Double(output[currRange]),
+                  let minRPM = Double(output[minRange]),
+                  let maxRPM = Double(output[maxRange]),
+                  let targetRPM = Double(output[targetRange]) else { return }
+            
+            fans.append(FanTelemetry(
+                id: id,
+                name: "Fan \(id)",
+                currentRPM: currentRPM,
+                minRPM: minRPM,
+                maxRPM: maxRPM,
+                targetRPM: targetRPM,
+                isManual: targetRPM > 0 && targetRPM != maxRPM
+            ))
+        }
+        
+        if !fans.isEmpty {
+            cachedFans = fans
+            lastFetchTime = Date()
+            fanCountCache = fans.count
+            fanCountCached = true
+        }
+        return fans
+    }
+
+    func writeFanMode(index: Int, manual: Bool) -> Bool {
+        cachedFans = []
+        if manual {
+            return true
+        } else {
+            let output = runHelper(args: ["auto", "\(index)"])
+            return !output.contains("Error") && !output.contains("Failed")
+        }
+    }
+
+    func writeFanTargetRPM(index: Int, rpm: Double) -> Bool {
+        cachedFans = []
+        let output = runHelper(args: ["set", "\(index)", "\(Int(rpm))"])
+        return !output.contains("Error") && !output.contains("Failed")
+    }
+
+    private func runHelper(args: [String]) -> String {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: helperPath)
+        process.arguments = args
+        
+        let pipe = Pipe()
+        process.standardOutput = pipe
+        process.standardError = pipe
+        
+        do {
+            try process.run()
+            process.waitUntilExit()
+            let data = pipe.fileHandleForReading.readDataToEndOfFile()
+            return String(data: data, encoding: .utf8) ?? ""
+        } catch {
+            return "Error: \(error)"
+        }
+    }
+}
+
 @MainActor
 final class FanControlManager: ObservableObject {
     static let shared = FanControlManager()
@@ -301,13 +424,33 @@ final class FanControlManager: ObservableObject {
     @Published private(set) var isHardwareSupported: Bool = false
     @Published private(set) var isManualMode: Bool = false
     @Published private(set) var hasWritePermission: Bool = true
-    @Published private(set) var permissionNotice: String?
+    @Published var permissionNotice: String?
 
-    private let provider: SMCProvider
+    private let provider: any SMCProvider
     private var timer: Timer?
 
-    init(provider: SMCProvider = AppleSMCProvider()) {
-        self.provider = provider
+    static var isHelperInstalled: Bool {
+        #if arch(arm64)
+        return FileManager.default.isExecutableFile(atPath: "/usr/local/bin/smc-helper")
+        #else
+        return true
+        #endif
+    }
+
+    init(provider: SMCProvider? = nil) {
+        if !UserDefaults.standard.bool(forKey: "hasInitializedFanControlDefaults") {
+            UserDefaults.standard.set(true, forKey: "hasInitializedFanControlDefaults")
+            Defaults[.fanControlEnabled] = Self.isHelperInstalled
+        }
+        let useHelper = {
+            #if arch(arm64)
+            return true
+            #else
+            return false
+            #endif
+        }()
+        let selectedProvider: any SMCProvider = provider ?? (useHelper ? SMCHelperProvider() : AppleSMCProvider())
+        self.provider = selectedProvider
         checkHardware()
         if isHardwareSupported {
             isManualMode = Defaults[.fanControlManualMode]
@@ -324,8 +467,46 @@ final class FanControlManager: ObservableObject {
             isHardwareSupported = false
             return
         }
+        // Invalidate cache to detect newly installed helper
+        if let helperProvider = provider as? SMCHelperProvider {
+            helperProvider.invalidateCache()
+        }
         let count = provider.fanCount()
         isHardwareSupported = count > 0
+    }
+
+    @discardableResult
+    func installSMCHelper() -> Bool {
+        let helperPath = Bundle.main.bundlePath + "/Contents/Resources/smc-helper"
+        let installPath = "/usr/local/bin/smc-helper"
+        
+        let script = """
+        do shell script "cp '\(helperPath)' '\(installPath)' && chown root:wheel '\(installPath)' && chmod 4755 '\(installPath)'" with administrator privileges
+        """
+        
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
+        process.arguments = ["-e", script]
+        
+        let pipe = Pipe()
+        process.standardOutput = pipe
+        process.standardError = pipe
+        
+        do {
+            try process.run()
+            process.waitUntilExit()
+            if process.terminationStatus == 0 {
+                checkHardware()
+                return true
+            } else {
+                let data = pipe.fileHandleForReading.readDataToEndOfFile()
+                print("Helper install failed: \(String(data: data, encoding: .utf8) ?? "unknown")")
+                return false
+            }
+        } catch {
+            print("Helper install failed: \(error)")
+            return false
+        }
     }
 
     func startMonitoring() {
@@ -359,7 +540,12 @@ final class FanControlManager: ObservableObject {
             if var fan = provider.readFanTelemetry(index: i) {
                 if let saved = savedTargets[String(i)] {
                     fan.targetRPM = min(max(saved, fan.minRPM), fan.maxRPM)
+                } else if fan.targetRPM < fan.minRPM {
+                    fan.targetRPM = fan.minRPM
+                } else if fan.targetRPM > fan.maxRPM {
+                    fan.targetRPM = fan.maxRPM
                 }
+                fan.isManual = isManualMode
                 updatedFans.append(fan)
             }
         }
@@ -370,37 +556,52 @@ final class FanControlManager: ObservableObject {
     func setMode(manual: Bool) {
         guard isHardwareSupported else { return }
 
-        if manual {
+        // Instantly update UI and defaults so animations run smoothly
+        isManualMode = manual
+        Defaults[.fanControlManualMode] = manual
+        for i in 0..<fans.count {
+            fans[i].isManual = manual
+        }
+
+        let provider = self.provider
+        let currentFans = self.fans
+
+        Task.detached(priority: .userInitiated) {
             var success = true
-            for fan in fans {
-                let clampedTarget = min(max(fan.targetRPM, fan.minRPM), fan.maxRPM)
-                let modeSet = provider.writeFanMode(index: fan.id, manual: true)
-                let targetSet = provider.writeFanTargetRPM(index: fan.id, rpm: clampedTarget)
-                if !modeSet || !targetSet {
-                    success = false
+            if manual {
+                for fan in currentFans {
+                    let target = fan.targetRPM > 0 ? fan.targetRPM : (fan.currentRPM > 0 ? fan.currentRPM : fan.minRPM)
+                    let clampedTarget = min(max(target, fan.minRPM), fan.maxRPM)
+                    let modeSet = provider.writeFanMode(index: fan.id, manual: true)
+                    let targetSet = provider.writeFanTargetRPM(index: fan.id, rpm: clampedTarget)
+                    if !modeSet || !targetSet {
+                        success = false
+                    }
+                }
+            } else {
+                for fan in currentFans {
+                    let modeSet = provider.writeFanMode(index: fan.id, manual: false)
+                    if !modeSet {
+                        success = false
+                    }
                 }
             }
 
-            if success {
-                isManualMode = true
-                hasWritePermission = true
-                permissionNotice = nil
-                Defaults[.fanControlManualMode] = true
-            } else {
-                restoreAuto()
-                hasWritePermission = false
-                permissionNotice = "Elevated privileges required for manual fan control. Running in safe Auto mode."
-                isManualMode = false
-                Defaults[.fanControlManualMode] = false
+            await MainActor.run { [weak self] in
+                guard let self = self else { return }
+                if success {
+                    self.hasWritePermission = true
+                    self.permissionNotice = nil
+                } else {
+                    self.restoreAuto()
+                    self.hasWritePermission = false
+                    self.permissionNotice = "Elevated privileges required for manual fan control. Running in safe Auto mode."
+                    self.isManualMode = false
+                    Defaults[.fanControlManualMode] = false
+                }
+                self.refresh()
             }
-        } else {
-            restoreAuto()
-            isManualMode = false
-            hasWritePermission = true
-            permissionNotice = nil
-            Defaults[.fanControlManualMode] = false
         }
-        refresh()
     }
 
     func setTargetRPM(fanIndex: Int, rpm: Double) {
@@ -413,21 +614,34 @@ final class FanControlManager: ObservableObject {
         Defaults[.fanControlTargetRPMs] = saved
 
         if isManualMode {
-            let ok = provider.writeFanTargetRPM(index: fanIndex, rpm: clamped)
-            if !ok {
-                hasWritePermission = false
-                permissionNotice = "Elevated privileges required for manual fan control. Running in safe Auto mode."
-                restoreAuto()
+            let provider = self.provider
+            Task.detached(priority: .userInitiated) {
+                let ok = provider.writeFanTargetRPM(index: fanIndex, rpm: clamped)
+                if !ok {
+                    await MainActor.run { [weak self] in
+                        guard let self = self else { return }
+                        self.hasWritePermission = false
+                        self.permissionNotice = "Elevated privileges required for manual fan control. Running in safe Auto mode."
+                        self.restoreAuto()
+                    }
+                }
             }
         }
     }
 
     func restoreAuto() {
         guard isHardwareSupported else { return }
-        for fan in fans {
-            _ = provider.writeFanMode(index: fan.id, manual: false)
-        }
         isManualMode = false
         Defaults[.fanControlManualMode] = false
+        for i in 0..<fans.count {
+            fans[i].isManual = false
+        }
+        let provider = self.provider
+        let currentFans = self.fans
+        Task.detached(priority: .userInitiated) {
+            for fan in currentFans {
+                _ = provider.writeFanMode(index: fan.id, manual: false)
+            }
+        }
     }
 }

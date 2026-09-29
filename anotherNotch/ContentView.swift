@@ -525,7 +525,7 @@ struct ContentView: View {
                     }
                     .onReceive(FanControlManager.shared.$isManualMode) { _ in
                         guard vm.notchState == .open, coordinator.currentView == .fanControl else { return }
-                        withAnimation(resizeAnimation) {
+                        withAnimation(.easeInOut(duration: 0.18)) {
                             vm.notchSize = openNotchSize(for: .fanControl, screenUUID: vm.screenUUID)
                         }
                     }
@@ -887,6 +887,7 @@ struct ContentView: View {
         case .fanControl:
             FanControlView()
                 .frame(width: fanControlContentSize.width, height: fanControlContentSize.height)
+                .clipped()
         }
     }
 

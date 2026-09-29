@@ -117,7 +117,7 @@ brew upgrade --cask another-notch
 - [x] Searchable clipboard manager
 - [x] Quick Notes capture and management module
 - [x] Multi-language support
-- [ ] Fans control
+- [x] Fans control
 - [ ] Lock screen widgets
 - [ ] Extension system
 
