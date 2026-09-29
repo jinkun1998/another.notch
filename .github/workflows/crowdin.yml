@@ -12,6 +12,7 @@ on:
 jobs:
   synchronize-with-crowdin:
     runs-on: ubuntu-latest
+    if: ${{ secrets.CROWDIN_PROJECT_ID != '' && secrets.CROWDIN_PERSONAL_TOKEN != '' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
