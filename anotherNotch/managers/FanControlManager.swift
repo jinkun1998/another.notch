@@ -385,15 +385,33 @@ final class SMCHelperProvider: SMCProvider, @unchecked Sendable {
         if manual {
             return true
         } else {
-            let output = runHelper(args: ["auto", "\(index)"])
-            return !output.contains("Error") && !output.contains("Failed")
+            // ponytail: retry 3 times with 100ms delay for firmware sync
+            for attempt in 0..<3 {
+                let output = runHelper(args: ["auto", "\(index)"])
+                if !output.contains("Error") && !output.contains("Failed") {
+                    return true
+                }
+                if attempt < 2 {
+                    Thread.sleep(forTimeInterval: 0.1)
+                }
+            }
+            return false
         }
     }
 
     func writeFanTargetRPM(index: Int, rpm: Double) -> Bool {
         cachedFans = []
-        let output = runHelper(args: ["set", "\(index)", "\(Int(rpm))"])
-        return !output.contains("Error") && !output.contains("Failed")
+        // ponytail: retry 3 times with 120ms delay for firmware unlock transition
+        for attempt in 0..<3 {
+            let output = runHelper(args: ["set", "\(index)", "\(Int(rpm))"])
+            if !output.contains("Error") && !output.contains("Failed") {
+                return true
+            }
+            if attempt < 2 {
+                Thread.sleep(forTimeInterval: 0.12)
+            }
+        }
+        return false
     }
 
     private func runHelper(args: [String]) -> String {
@@ -555,6 +573,10 @@ final class FanControlManager: ObservableObject {
 
     func setMode(manual: Bool) {
         guard isHardwareSupported else { return }
+
+        if fans.isEmpty {
+            refresh()
+        }
 
         // Instantly update UI and defaults so animations run smoothly
         isManualMode = manual

@@ -393,15 +393,21 @@ static int readFanModeRaw(int fanNum, io_connect_t conn)
 // Mechanism from agoodkind/macos-smc-fan (MIT).
 kern_return_t unlockFanManual(int fanNum, io_connect_t conn)
 {
-    // Phase 1: direct write, then confirm it took.
-    writeFanModeRaw(fanNum, 1, conn);
-    if (readFanModeRaw(fanNum, conn) == 1)
-        return kIOReturnSuccess;
-    usleep(20000); // 20ms: quick wait if needed
+    // Fast path: already manual
     if (readFanModeRaw(fanNum, conn) == 1)
         return kIOReturnSuccess;
 
-    // Phase 2: thermalmonitord is holding system mode. Suppress it via Ftst,
+    // Phase 1: direct write, retry until it takes.
+    // ponytail: 20 polls @ 25ms = 500ms max for SMC coprocessor
+    for (int i = 0; i < 20; i++)
+    {
+        writeFanModeRaw(fanNum, 1, conn);
+        usleep(25000); // 25ms
+        if (readFanModeRaw(fanNum, conn) == 1)
+            return kIOReturnSuccess;
+    }
+
+    // Phase 2: thermalmonitord is holding system mode. Suppress it via Ftst if available,
     // then retry mode=1 until it sticks.
     if (ftstAvailable(conn))
     {

@@ -311,10 +311,12 @@ final class FeatureModuleAvailabilityTests: XCTestCase {
     }
 
     @MainActor
-    func testFanControlAutoFallbackWhenWriteFails() {
+    func testFanControlAutoFallbackWhenWriteFails() async throws {
         let mock = MockTestSMCProvider(fanCount: 2, shouldFailWrite: true)
         let manager = FanControlManager(provider: mock)
         manager.setMode(manual: true)
+        // ponytail: wait for detached task to fail on mock provider
+        try await Task.sleep(nanoseconds: 50_000_000)
 
         XCTAssertFalse(manager.isManualMode)
         XCTAssertFalse(manager.hasWritePermission)
