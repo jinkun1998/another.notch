@@ -12,7 +12,6 @@ struct AnotherNotchHeader: View {
     @EnvironmentObject var vm: AnotherNotchViewModel
     @ObservedObject var batteryModel = BatteryStatusViewModel.shared
     @ObservedObject var coordinator = AnotherNotchViewCoordinator.shared
-    @ObservedObject private var clipboardHistory = ClipboardHistoryStore.shared
     @ObservedObject private var modules = FeatureModuleRegistry.shared
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -52,16 +51,6 @@ struct AnotherNotchHeader: View {
                             .transition(motion.hudTransition)
                             .animation(motion.hudAnimation, value: coordinator.sneakPeek.show)
                     } else {
-                        if coordinator.currentView == .clipboard {
-                            Button(role: .destructive) {
-                                clipboardHistory.clear()
-                            } label: {
-                                Label("Clear", systemImage: "trash")
-                                    .font(.system(size: 11, weight: .medium))
-                            }
-                            .buttonStyle(.plain)
-                            .disabled(clipboardHistory.entries.isEmpty)
-                        }
                         if Defaults[.settingsIconInNotch] {
                             HoverButton(
                                 icon: "gear",

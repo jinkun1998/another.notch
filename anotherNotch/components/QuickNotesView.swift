@@ -79,7 +79,7 @@ struct QuickNotesView: View {
                 Button(action: { confirmDelete(selectedNote.id) }) {
                     HStack(spacing: 5) {
                         Image(systemName: isConfirmingDelete ? "trash.fill" : "trash")
-                        Text(isConfirmingDelete ? "Are you sure?" : "Delete")
+                        (isConfirmingDelete ? Text("Are you sure?") : Text("Delete"))
                             .fixedSize(horizontal: true, vertical: false)
                     }
                     .font(.caption.weight(.medium))
@@ -97,7 +97,7 @@ struct QuickNotesView: View {
                 }
                 .buttonStyle(.plain)
                 .focused($isDeleteFocused)
-                .accessibilityLabel(isConfirmingDelete ? "Confirm delete note" : "Delete note")
+                .accessibilityLabel(isConfirmingDelete ? Text("Confirm delete note") : Text("Delete note"))
                 .onHover { hovering in
                     withAnimation(.easeOut(duration: 0.12)) {
                         isDeleteHovering = hovering
