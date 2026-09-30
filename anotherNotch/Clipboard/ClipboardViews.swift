@@ -8,6 +8,9 @@ struct ClipboardHistoryView: View {
     @Default(.clipboardPasteOnClick) private var pasteOnClick
     @State private var searchQuery = ""
     @State private var selectedEntryID: ClipboardEntry.ID?
+    @State private var isClearHovered = false
+    @State private var isConfirmingClear = false
+    @FocusState private var isClearFocused: Bool
 
     private var filteredEntries: [ClipboardEntry] {
         ClipboardEntrySearch.results(for: searchQuery, in: store.entries, mode: searchMode)
@@ -15,7 +18,7 @@ struct ClipboardHistoryView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            searchField
+            headerBar
 
             if store.entries.isEmpty {
                 ContentUnavailableView("Clipboard is empty", systemImage: "clipboard")
@@ -34,6 +37,7 @@ struct ClipboardHistoryView: View {
                     LazyVStack(spacing: 8) {
                         ForEach(filteredEntries) { entry in
                             ClipboardEntryRow(entry: entry, isSelected: selectedEntryID == entry.id) {
+                                resetClearConfirmation()
                                 guard selectedEntryID == nil else { return }
                                 withAnimation(.easeOut(duration: 0.12)) {
                                     selectedEntryID = entry.id
@@ -68,7 +72,23 @@ struct ClipboardHistoryView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             }
         }
+        .contentShape(Rectangle())
+        .simultaneousGesture(TapGesture().onEnded {
+            resetClearConfirmation()
+        })
+        .onChange(of: searchQuery) { _, _ in resetClearConfirmation() }
+        .onDisappear { resetClearConfirmation() }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+    }
+
+    private var headerBar: some View {
+        HStack(spacing: 8) {
+            searchField
+            clearButton
+        }
+        .padding(.horizontal, 12)
+        .padding(.top, 0)
+        .padding(.bottom, 8)
     }
 
     private var searchField: some View {
@@ -91,15 +111,72 @@ struct ClipboardHistoryView: View {
             }
         }
         .padding(.horizontal, 12)
-        .padding(.vertical, 8)
+        .frame(height: 32)
         .background(Color.white.opacity(0.08), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
         .overlay {
             RoundedRectangle(cornerRadius: 10, style: .continuous)
                 .strokeBorder(Color.white.opacity(0.08), lineWidth: 1)
         }
-        .padding(.horizontal, 12)
-        .padding(.top, 0)
-        .padding(.bottom, 8)
+    }
+
+    private var clearButton: some View {
+        Button(action: confirmClear) {
+            HStack(spacing: 5) {
+                Image(systemName: isConfirmingClear ? "trash.fill" : "trash")
+                (isConfirmingClear ? Text("Are you sure?") : Text("Clear"))
+                    .fixedSize(horizontal: true, vertical: false)
+            }
+            .font(.caption.weight(.medium))
+            .foregroundStyle(isConfirmingClear ? .white : (store.entries.isEmpty ? Color.secondary.opacity(0.4) : .red))
+            .padding(.horizontal, isConfirmingClear ? 12 : 10)
+            .frame(height: 32)
+            .background(
+                isConfirmingClear
+                    ? Color.red
+                    : isClearHovered && !store.entries.isEmpty ? Color.red.opacity(0.16) : Color.red.opacity(0.08),
+                in: Capsule()
+            )
+            .overlay(Capsule().stroke(Color.red.opacity(isConfirmingClear || store.entries.isEmpty ? 0 : 0.25)))
+            .contentShape(Capsule())
+        }
+        .buttonStyle(.plain)
+        .disabled(store.entries.isEmpty)
+        .focused($isClearFocused)
+        .onHover { hovering in
+            withAnimation(.easeOut(duration: 0.12)) {
+                isClearHovered = hovering
+            }
+            if !hovering {
+                resetClearConfirmation()
+            }
+        }
+        .onChange(of: isClearFocused) { _, focused in
+            if !focused {
+                resetClearConfirmation()
+            }
+        }
+        .animation(.spring(response: 0.28, dampingFraction: 0.74), value: isConfirmingClear)
+        .help(Text("Clear unpinned history"))
+        .accessibilityLabel(isConfirmingClear ? Text("Confirm clear history") : Text("Clear unpinned history"))
+    }
+
+    private func confirmClear() {
+        withAnimation(.spring(response: 0.28, dampingFraction: 0.74)) {
+            guard isConfirmingClear else {
+                isConfirmingClear = true
+                isClearFocused = true
+                return
+            }
+            store.clear()
+            isConfirmingClear = false
+        }
+    }
+
+    private func resetClearConfirmation() {
+        guard isConfirmingClear else { return }
+        withAnimation(.spring(response: 0.28, dampingFraction: 0.74)) {
+            isConfirmingClear = false
+        }
     }
 }
 
