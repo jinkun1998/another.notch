@@ -5,6 +5,25 @@
         <link>https://github.com/jinkun1998/another.notch/releases</link>
         <description>anotherNotch updates</description>
         <item>
+            <title>1.3.0-beta4</title>
+            <pubDate>Wed, 30 Sep 2026 04:24:36 +0000</pubDate>
+            <link>https://github.com/jinkun1998/another.notch/releases</link>
+            <sparkle:channel>beta</sparkle:channel>
+            <sparkle:version>36</sparkle:version>
+            <sparkle:shortVersionString>1.3.0-beta4</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <description><![CDATA[<div class="markdown-heading"><h2 class="heading-element">What's Changed</h2><a id="user-content-whats-changed" class="anchor" aria-label="Permalink: What's Changed" href="#whats-changed"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
+<ul>
+<li>chore(i18n): update translations from Crowdin by @jinkun1998 in <a href="https://github.com/jinkun1998/another.notch/pull/92">https://github.com/jinkun1998/another.notch/pull/92</a>
+</li>
+<li>feat(clipboard): relocate clear button with confirmation and localization by @jinkun1998 in <a href="https://github.com/jinkun1998/another.notch/pull/93">https://github.com/jinkun1998/another.notch/pull/93</a>
+</li>
+</ul>
+<p><strong>Full Changelog</strong>: <a href="https://github.com/jinkun1998/another.notch/compare/v1.3.0-beta3...v1.3.0-beta4">https://github.com/jinkun1998/another.notch/compare/v1.3.0-beta3...v1.3.0-beta4</a></p>
+]]></description>
+            <enclosure url="https://github.com/jinkun1998/another.notch/releases/download/v1.3.0-beta4/anotherNotch.dmg" length="9455180" type="application/octet-stream" sparkle:edSignature="gD0+r3iqXnVb9zillv0nvY53xt0/+pPeoMssSs2yswOdL93VPHaabTuNf5mq0uFITU7eXWuyhmfEZwg3OYI8DA=="/>
+        </item>
+        <item>
             <title>1.3.0-beta3</title>
             <pubDate>Tue, 29 Sep 2026 02:19:24 +0000</pubDate>
             <link>https://github.com/jinkun1998/another.notch/releases</link>
@@ -61,28 +80,6 @@
 <p><strong>Full Changelog</strong>: <a href="https://github.com/jinkun1998/another.notch/compare/v1.3.0-beta1...v1.3.0-beta2">https://github.com/jinkun1998/another.notch/compare/v1.3.0-beta1...v1.3.0-beta2</a></p>
 ]]></description>
             <enclosure url="https://github.com/jinkun1998/another.notch/releases/download/v1.3.0-beta2/anotherNotch.dmg" length="9429398" type="application/octet-stream" sparkle:edSignature="HDAjEGd1sPVC3ywqrFjur5Em5m6Dz9iMHRyg+uXDj25KeELR8WNKe1h2JxXYBMNy/2rxZBePgtMmnJ6vpwWpBg=="/>
-        </item>
-        <item>
-            <title>1.3.0-beta1</title>
-            <pubDate>Wed, 23 Sep 2026 09:20:57 +0000</pubDate>
-            <link>https://github.com/jinkun1998/another.notch/releases</link>
-            <sparkle:channel>beta</sparkle:channel>
-            <sparkle:version>33</sparkle:version>
-            <sparkle:shortVersionString>1.3.0-beta1</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-            <description><![CDATA[<div class="markdown-heading"><h2 class="heading-element">What's Changed</h2><a id="user-content-whats-changed" class="anchor" aria-label="Permalink: What's Changed" href="#whats-changed"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
-<ul>
-<li>Quick Notes: create, edit, persist, select, delete notes directly in the notch. PR #79.
-<ul>
-<li>HUD recovery: notch volume/brightness HUD re-enables after macOS sleep/wake or a long lock-screen period. PR #79.</li>
-<li>Dependencies: Sparkle 2.10.0, KeyboardShortcuts 3.1.0, SwiftSyntax 604.0.0, SwiftUI-Introspect 27.0.0. PRs #74–#77.</li>
-<li>CI only: Dependabot updates merge after Build + CodeQL succeed. PR #80.</li>
-</ul>
-</li>
-</ul>
-<p><strong>Full Changelog</strong>: <a href="https://github.com/jinkun1998/another.notch/compare/v1.2.0...v1.3.0-beta1">https://github.com/jinkun1998/another.notch/compare/v1.2.0...v1.3.0-beta1</a></p>
-]]></description>
-            <enclosure url="https://github.com/jinkun1998/another.notch/releases/download/v1.3.0-beta1/anotherNotch.dmg" length="9156778" type="application/octet-stream" sparkle:edSignature="WLG0MnI5twBtXUr8Acd79lMRltvdMOOY4i+A82QytFPf7I2wLtNJLrjQjfXWVxBlNB17Q2J3ngeVORSAPFNrAw=="/>
         </item>
         <item>
             <title>1.2.0</title>
