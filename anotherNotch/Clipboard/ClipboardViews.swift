@@ -69,6 +69,7 @@ struct ClipboardHistoryView: View {
                 }
                 .contentMargins(.top, 0, for: .scrollContent)
                 .scrollIndicators(.automatic)
+                .coordinateSpace(name: "clipboardScroll")
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             }
         }
@@ -189,87 +190,74 @@ private struct ClipboardEntryRow: View {
     @State private var isDetailExpanded = false
 
     var body: some View {
-        HStack(spacing: 12) {
-            Button {
-                onSelect()
-            } label: {
-                HStack(spacing: 10) {
-                    entryPreview
-                        .frame(width: 40, height: 40)
-                        .background(Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
-
-                    VStack(alignment: .leading, spacing: 3) {
-                        HStack(spacing: 6) {
-                            if entry.isPinned {
-                                Image(systemName: "pin.fill")
-                                    .font(.system(size: 9, weight: .bold))
-                                    .foregroundStyle(.orange)
-                            }
-                            Text(entry.kind == .url ? "URL" : entry.kind == .image ? "Image" : "Text")
-                                .font(.system(size: 11, weight: .semibold))
-                                .foregroundStyle(entry.isPinned ? .orange : .secondary)
-                            Text(entry.timestamp, style: .time)
-                                .font(.system(size: 10))
-                                .foregroundStyle(.secondary.opacity(0.8))
-                        }
-                        Text(detail)
-                            .lineLimit(canExpandDetail && !isDetailExpanded ? 2 : nil)
-                            .font(.system(size: 12))
-                            .foregroundStyle(.white)
-                            .multilineTextAlignment(.leading)
-                            .fixedSize(horizontal: false, vertical: isDetailExpanded)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-
-                    if isSelected {
-                        Image(systemName: "checkmark")
-                            .font(.system(size: 13, weight: .semibold))
-                            .foregroundStyle(.green)
-                            .transition(.scale.combined(with: .opacity))
-                    }
-                }
-                .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-
-            if canExpandDetail {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(spacing: 10) {
                 Button {
-                    withAnimation(.easeOut(duration: 0.16)) {
-                        isDetailExpanded.toggle()
-                    }
+                    onSelect()
                 } label: {
-                    Label(isDetailExpanded ? "Less" : "More", systemImage: isDetailExpanded ? "chevron.up" : "chevron.down")
-                        .font(.system(size: 11, weight: .semibold))
-                        .frame(minWidth: 56, minHeight: 28)
-                        .contentShape(Rectangle())
+                    HStack(spacing: 10) {
+                        entryPreview
+                            .frame(width: 40, height: 40)
+                            .background(Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+
+                        VStack(alignment: .leading, spacing: 3) {
+                            HStack(spacing: 6) {
+                                if entry.isPinned {
+                                    Image(systemName: "pin.fill")
+                                        .font(.system(size: 9, weight: .bold))
+                                        .foregroundStyle(.orange)
+                                }
+                                Text(entry.kind == .url ? "URL" : entry.kind == .image ? "Image" : "Text")
+                                    .font(.system(size: 11, weight: .semibold))
+                                    .foregroundStyle(entry.isPinned ? .orange : .secondary)
+                                Text(entry.timestamp, style: .time)
+                                    .font(.system(size: 10))
+                                    .foregroundStyle(.secondary.opacity(0.8))
+                            }
+                            if !isDetailExpanded {
+                                Text(detail)
+                                    .lineLimit(2)
+                                    .font(.system(size: 12))
+                                    .foregroundStyle(.white)
+                                    .multilineTextAlignment(.leading)
+                            }
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
+                        if isSelected {
+                            Image(systemName: "checkmark")
+                                .font(.system(size: 13, weight: .semibold))
+                                .foregroundStyle(.green)
+                                .transition(.scale.combined(with: .opacity))
+                        }
+                    }
+                    .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                .foregroundStyle(Color(nsColor: .linkColor))
-                .accessibilityLabel(isDetailExpanded ? "Collapse clipboard preview" : "Expand clipboard preview")
-            }
 
-            Button {
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
-                    store.togglePin(entry)
+                if !isDetailExpanded {
+                    actionButtons(isSticky: false)
+                } else {
+                    Color.clear
+                        .frame(width: 116, height: 28)
                 }
-            } label: {
-                Image(systemName: entry.isPinned ? "pin.fill" : "pin")
-                    .font(.system(size: 11))
-                    .rotationEffect(.degrees(entry.isPinned ? 0 : 45))
             }
-            .buttonStyle(.plain)
-            .foregroundStyle(entry.isPinned ? Color.orange : (isHovering ? Color.secondary : Color.clear))
-            .accessibilityLabel(entry.isPinned ? "Unpin clipboard entry" : "Pin clipboard entry")
 
-            Button {
-                store.delete(entry)
-            } label: {
-                Image(systemName: "trash.fill")
-                    .font(.system(size: 11))
+            if isDetailExpanded {
+                Button {
+                    onSelect()
+                } label: {
+                    Text(detail)
+                        .font(.system(size: 12))
+                        .foregroundStyle(.white)
+                        .multilineTextAlignment(.leading)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.top, 6)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .buttonStyle(.plain)
+                .transition(.opacity.combined(with: .move(edge: .top)))
             }
-            .buttonStyle(.plain)
-            .foregroundStyle(isHovering ? .red.opacity(0.8) : .secondary)
-            .accessibilityLabel("Delete clipboard entry")
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 8)
@@ -285,6 +273,30 @@ private struct ClipboardEntryRow: View {
                                 : Color.white.opacity(0.05)
                 )
         )
+        .overlay(alignment: .topTrailing) {
+            if isDetailExpanded {
+                GeometryReader { geo in
+                    let frame = geo.frame(in: .named("clipboardScroll"))
+                    let cardMinY = frame.minY
+                    let cardHeight = geo.size.height
+                    let buttonHeight: CGFloat = 28
+                    let topPadding: CGFloat = 8
+                    let bottomPadding: CGFloat = 8
+
+                    let targetY: CGFloat = 4
+                    let rawOffset = targetY - cardMinY
+                    let maxOffset = max(0, cardHeight - buttonHeight - topPadding - bottomPadding)
+                    let offset = min(max(0, rawOffset), maxOffset)
+                    let isSticky = offset > 0
+
+                    actionButtons(isSticky: isSticky)
+                        .padding(.top, topPadding)
+                        .padding(.trailing, 10)
+                        .offset(y: offset)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+                }
+            }
+        }
         .onHover { hovering in
             isHovering = hovering
             if hovering {
@@ -311,6 +323,63 @@ private struct ClipboardEntryRow: View {
                 Label("Delete", systemImage: "trash")
             }
         }
+    }
+
+    private func actionButtons(isSticky: Bool) -> some View {
+        HStack(spacing: 4) {
+            if canExpandDetail {
+                Button {
+                    withAnimation(.easeOut(duration: 0.16)) {
+                        isDetailExpanded.toggle()
+                    }
+                } label: {
+                    Label(isDetailExpanded ? "Less" : "More", systemImage: isDetailExpanded ? "chevron.up" : "chevron.down")
+                        .font(.system(size: 11, weight: .semibold))
+                        .padding(.horizontal, 6)
+                        .frame(minWidth: 54, minHeight: 26)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(Color(nsColor: .linkColor))
+                .accessibilityLabel(isDetailExpanded ? "Collapse clipboard preview" : "Expand clipboard preview")
+            }
+
+            Button {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                    store.togglePin(entry)
+                }
+            } label: {
+                Image(systemName: entry.isPinned ? "pin.fill" : "pin")
+                    .font(.system(size: 11))
+                    .rotationEffect(.degrees(entry.isPinned ? 0 : 45))
+                    .frame(width: 24, height: 26)
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(entry.isPinned ? Color.orange : (isHovering || isSticky ? Color.secondary : Color.clear))
+            .accessibilityLabel(entry.isPinned ? "Unpin clipboard entry" : "Pin clipboard entry")
+
+            Button {
+                store.delete(entry)
+            } label: {
+                Image(systemName: "trash.fill")
+                    .font(.system(size: 11))
+                    .frame(width: 24, height: 26)
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(isHovering || isSticky ? .red.opacity(0.8) : .secondary)
+            .accessibilityLabel("Delete clipboard entry")
+        }
+        .padding(.horizontal, 4)
+        .padding(.vertical, 2)
+        .background {
+            if isSticky {
+                Capsule()
+                    .fill(Color(nsColor: .windowBackgroundColor).opacity(0.92))
+                    .overlay(Capsule().strokeBorder(Color.white.opacity(0.15), lineWidth: 0.5))
+                    .shadow(color: .black.opacity(0.35), radius: 4, y: 2)
+            }
+        }
+        .animation(.easeInOut(duration: 0.15), value: isSticky)
     }
 
     private var detail: String {
