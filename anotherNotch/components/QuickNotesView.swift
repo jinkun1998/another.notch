@@ -7,7 +7,6 @@ struct QuickNotesView: View {
     @State private var hoveredNoteID: QuickNote.ID?
     @State private var deleteConfirmationID: QuickNote.ID?
     @State private var isDeleteHovering = false
-    @FocusState private var isDeleteFocused: Bool
 
     var body: some View {
         HStack(spacing: 12) {
@@ -15,10 +14,13 @@ struct QuickNotesView: View {
             editor
         }
         .padding(.vertical, 8)
-        .contentShape(Rectangle())
-        .simultaneousGesture(TapGesture().onEnded {
-            resetDeleteConfirmationIfNeeded()
-        })
+        .background {
+            Color.clear
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    resetDeleteConfirmationIfNeeded()
+                }
+        }
         .onAppear(perform: selectFirstNoteIfNeeded)
         .onChange(of: store.notes) { _, _ in selectFirstNoteIfNeeded() }
     }
@@ -96,18 +98,12 @@ struct QuickNotesView: View {
                     .contentShape(Capsule())
                 }
                 .buttonStyle(.plain)
-                .focused($isDeleteFocused)
                 .accessibilityLabel(isConfirmingDelete ? Text("Confirm delete note") : Text("Delete note"))
                 .onHover { hovering in
                     withAnimation(.easeOut(duration: 0.12)) {
                         isDeleteHovering = hovering
                     }
                     if !hovering {
-                        resetDeleteConfirmationIfNeeded()
-                    }
-                }
-                .onChange(of: isDeleteFocused) { _, focused in
-                    if !focused {
                         resetDeleteConfirmationIfNeeded()
                     }
                 }
@@ -139,7 +135,6 @@ struct QuickNotesView: View {
         withAnimation(.spring(response: 0.28, dampingFraction: 0.74)) {
             guard deleteConfirmationID == id else {
                 deleteConfirmationID = id
-                isDeleteFocused = true
                 return
             }
             delete(id)
