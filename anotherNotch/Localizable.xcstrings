@@ -18233,172 +18233,172 @@
         }
       }
     },
-    "Are you sure?": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Are you sure?"
+    "Are you sure?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Are you sure?"
           }
         },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bạn có chắc không?"
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Are you sure?"
           }
         },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "确定吗？"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Are you sure?"
           }
         },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "¿Estás seguro?"
+        "vi" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Are you sure?"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Êtes-vous sûr ?"
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Are you sure?"
           }
         }
       }
     },
-    "Clear unpinned history": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Clear unpinned history"
+    "Clear unpinned history" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear unpinned history"
           }
         },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Xóa lịch sử chưa ghim"
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Clear unpinned history"
           }
         },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "清除未固定的历史记录"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Clear unpinned history"
           }
         },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Borrar historial no fijado"
+        "vi" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Clear unpinned history"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Effacer l'historique non épinglé"
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Clear unpinned history"
           }
         }
       }
     },
-    "Confirm clear history": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Confirm clear history"
+    "Confirm clear history" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirm clear history"
           }
         },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Xác nhận xóa lịch sử"
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Confirm clear history"
           }
         },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "确认清除历史记录"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Confirm clear history"
           }
         },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Confirmar borrado del historial"
+        "vi" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Confirm clear history"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Confirmer l'effacement de l'historique"
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Confirm clear history"
           }
         }
       }
     },
-    "Confirm delete note": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Confirm delete note"
+    "Confirm delete note" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirm delete note"
           }
         },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Xác nhận xóa ghi chú"
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Confirm delete note"
           }
         },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "确认删除便签"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Confirm delete note"
           }
         },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Confirmar eliminación de nota"
+        "vi" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Confirm delete note"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Confirmer la suppression de la note"
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Confirm delete note"
           }
         }
       }
     },
-    "Delete note": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Delete note"
+    "Delete note" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete note"
           }
         },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Xóa ghi chú"
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Delete note"
           }
         },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "删除便签"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Delete note"
           }
         },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Eliminar nota"
+        "vi" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Delete note"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Supprimer la note"
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Delete note"
           }
         }
       }
