@@ -323,6 +323,16 @@ final class FeatureModuleAvailabilityTests: XCTestCase {
         XCTAssertNotNil(manager.permissionNotice)
     }
 
+    func testTemperatureColorMatchesRampThreshold() {
+        XCTAssertEqual(FanControlManager.temperatureColor(temp: 50, rampThreshold: 60, alertThreshold: 85), .secondary)
+        XCTAssertEqual(FanControlManager.temperatureColor(temp: 60, rampThreshold: 60, alertThreshold: 85), .orange)
+        XCTAssertEqual(FanControlManager.temperatureColor(temp: 85, rampThreshold: 60, alertThreshold: 85), .red)
+
+        // Custom ramp threshold 70
+        XCTAssertEqual(FanControlManager.temperatureColor(temp: 65, rampThreshold: 70, alertThreshold: 85), .secondary)
+        XCTAssertEqual(FanControlManager.temperatureColor(temp: 70, rampThreshold: 70, alertThreshold: 85), .orange)
+    }
+
     @MainActor
     func testFanControlUnsupportedHardwareHandling() {
         let mock = MockTestSMCProvider(fanCount: 0)
@@ -413,6 +423,10 @@ private final class MockTestSMCProvider: SMCProvider {
     func readFanTelemetry(index: Int) -> FanTelemetry? {
         guard index < fans.count else { return nil }
         return fans[index]
+    }
+
+    func readCurrentTemperature() -> Double? {
+        55.0
     }
 
     func writeFanMode(index: Int, manual: Bool) -> Bool {

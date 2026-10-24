@@ -514,10 +514,39 @@ kern_return_t setFanAuto(int fanNum, io_connect_t conn)
     return result;
 }
 
+
+float getMaximumTemperature(io_connect_t conn)
+{
+    static const char *keys[] = {
+        "Tp09", "Tp0T", "Tp01", "Tp05", "Tp0D", "Tp0E", "Tp0L", "Tp0P",
+        "Te00", "Te01", "Te02", "Te03", "Te04", "Te05", "Te06", "Te07",
+        "Td00", "Td01", "Td02", "Td03", "Td04", "Td05", "Td06", "Td07", "Td08", "Td09", "Td0A", "Td0C", "Td0D", "Td0E",
+        "Tg04", "Tg05", "Tg0C", "Tg0D",
+        "TC0P", "TC0E", "TC0F", "TC0D", "TC1C", "TC2C", "TC3C", "TC4C", "TC0H", "TCFP",
+        "TG0P", "TG0D",
+        NULL
+    };
+    float maxTemp = -1.0f;
+    for (int i = 0; keys[i]; i++) {
+        SMCVal_t val;
+        if (SMCReadKey((char *)keys[i], &val, conn) == kIOReturnSuccess && val.dataSize > 0) {
+            float f = getFloatFromVal(val);
+            if (f > 0.0f && f < 130.0f && f > maxTemp) {
+                maxTemp = f;
+            }
+        }
+    }
+    return maxTemp;
+}
+
 void printFanInfo(io_connect_t conn)
 {
     int numFans = getFanCount(conn);
     printf("Total fans: %d\n", numFans);
+    float currentTemp = getMaximumTemperature(conn);
+    if (currentTemp > 0.0f) {
+        printf("Current temperature: %.1f C\n", currentTemp);
+    }
     
     for (int i = 0; i < numFans; i++)
     {

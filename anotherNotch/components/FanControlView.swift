@@ -3,10 +3,14 @@
 //  anotherNotch
 //
 
+import Defaults
 import SwiftUI
 
 struct FanControlView: View {
     @ObservedObject private var manager = FanControlManager.shared
+    @Default(.fanControlTempUnit) private var tempUnit
+    @Default(.fanControlAutoThreshold) private var autoThreshold
+    @Default(.fanControlAlertThreshold) private var alertThreshold
 
     var body: some View {
         VStack(spacing: 10) {
@@ -24,10 +28,8 @@ struct FanControlView: View {
         .padding(.horizontal, 4)
         .onAppear {
             manager.checkHardware()
+            manager.refresh()
             manager.startMonitoring()
-        }
-        .onDisappear {
-            manager.stopMonitoring()
         }
     }
 
@@ -48,6 +50,29 @@ struct FanControlView: View {
                 Text("Fan Control")
                     .font(.headline)
                     .foregroundStyle(.white)
+                if let temp = manager.currentTemperature {
+                    HStack(spacing: 3) {
+                        Image(systemName: "thermometer.medium")
+                            .font(.caption2)
+                        Text(FanControlManager.formatTemperature(temp, unit: tempUnit))
+                            .font(.caption.weight(.semibold).monospacedDigit())
+                    }
+                    .foregroundStyle(FanControlManager.temperatureColor(temp: temp, rampThreshold: autoThreshold, alertThreshold: alertThreshold))
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(Color.white.opacity(0.08), in: Capsule())
+                } else if manager.isHardwareSupported {
+                    HStack(spacing: 3) {
+                        Image(systemName: "thermometer.medium")
+                            .font(.caption2)
+                        Text("--")
+                            .font(.caption.weight(.semibold).monospacedDigit())
+                    }
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(Color.white.opacity(0.08), in: Capsule())
+                }
             }
 
             Spacer()

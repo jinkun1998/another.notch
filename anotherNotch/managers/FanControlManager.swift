@@ -7,6 +7,7 @@ import Combine
 import Defaults
 import Foundation
 import IOKit
+import SwiftUI
 
 extension Defaults.Keys {
     public static let fanControlEnabled = Key<Bool>("fanControlEnabled", default: false)
@@ -17,6 +18,7 @@ extension Defaults.Keys {
     public static let fanControlAutoAggressiveness = Key<Double>("fanControlAutoAggressiveness", default: 1.5)
     public static let fanControlAlertThreshold = Key<Double>("fanControlAlertThreshold", default: 85.0)
     public static let fanControlAlertEnabled = Key<Bool>("fanControlAlertEnabled", default: false)
+    public static let fanControlTempUnit = Key<String>("fanControlTempUnit", default: "C")
 }
 
 public struct FanTelemetry: Identifiable, Equatable, Codable {
@@ -47,10 +49,66 @@ public struct FanTelemetry: Identifiable, Equatable, Codable {
     }
 }
 
+extension FanControlManager {
+    /// Color indicator aligned with ramp and alert thresholds.
+    nonisolated static func temperatureColor(
+        temp: Double,
+        rampThreshold: Double = Defaults[.fanControlAutoThreshold],
+        alertThreshold: Double = Defaults[.fanControlAlertThreshold]
+    ) -> Color {
+        let redThreshold = max(alertThreshold, rampThreshold + 10)
+        if temp >= redThreshold {
+            return .red
+        } else if temp >= rampThreshold {
+            return .orange
+        } else {
+            return .secondary
+        }
+    }
+
+    /// Formats temperature in user's preferred unit (C or F)
+    nonisolated static func formatTemperature(_ celsius: Double, unit: String? = nil) -> String {
+        let unit = unit ?? Defaults[.fanControlTempUnit]
+        if unit == "F" {
+            let fahrenheit = celsius * 9/5 + 32
+            return String(format: "%.0f°F", fahrenheit)
+        }
+        return String(format: "%.0f°C", celsius)
+    }
+
+    /// Dynamic thermal curve calculation:
+    /// Maps 30°C–90°C linearly between minRPM and autoMaxSpeed,
+    /// then blends according to autoAggressiveness (0.0 to 3.0, center 1.5).
+    // ponytail: Dynamic normalized curve with response blending; upgrade to PID controller if thermal overshoot warrants it.
+    nonisolated public static func calculateAutoTarget(
+        temp: Double,
+        minRPM: Double,
+        maxRPM: Double,
+        userMaxSpeed: Int,
+        aggressiveness: Double = 1.5
+    ) -> Double {
+        let effectiveMin = max(1000.0, minRPM)
+        let effectiveMax = min(max(effectiveMin, maxRPM), max(effectiveMin, Double(userMaxSpeed)))
+        let ratio = min(1.0, max(0.0, (temp - 30.0) / 60.0))
+        let baseSpeed = effectiveMin + ratio * (effectiveMax - effectiveMin)
+
+        let target: Double
+        if aggressiveness > 1.5 {
+            let t = min(1.0, max(0.0, (aggressiveness - 1.5) / 1.5))
+            target = (1.0 - t) * baseSpeed + t * effectiveMax
+        } else {
+            let t = min(1.0, max(0.0, aggressiveness / 1.5))
+            target = (1.0 - t) * effectiveMin + t * baseSpeed
+        }
+        return min(effectiveMax, max(effectiveMin, target)).rounded()
+    }
+}
+
 public protocol SMCProvider: AnyObject {
     var isConnected: Bool { get }
     func fanCount() -> Int
     func readFanTelemetry(index: Int) -> FanTelemetry?
+    func readCurrentTemperature() -> Double?
     func writeFanMode(index: Int, manual: Bool) -> Bool
     func writeFanTargetRPM(index: Int, rpm: Double) -> Bool
 }
@@ -296,6 +354,27 @@ final class AppleSMCProvider: SMCProvider, @unchecked Sendable {
         let bytes = encodeRPM(type: outInfo.keyInfo.dataType, rpm: rpm)
         return writeKey("F\(index)Tg", bytes: bytes)
     }
+
+    func readCurrentTemperature() -> Double? {
+        let keys = [
+            "Tp09", "Tp0T", "Tp01", "Tp05", "Tp0D", "Tp0E", "Tp0L", "Tp0P",
+            "Te00", "Te01", "Te02", "Te03", "Te04", "Te05", "Te06", "Te07",
+            "Td00", "Td01", "Td02", "Td03", "Td04", "Td05", "Td06", "Td07", "Td08", "Td09", "Td0A", "Td0C", "Td0D", "Td0E",
+            "Tg04", "Tg05", "Tg0C", "Tg0D",
+            "TC0P", "TC0E", "TC0F", "TC0D", "TC1C", "TC2C", "TC3C", "TC4C", "TC0H", "TCFP",
+            "TG0P", "TG0D"
+        ]
+        var maxTemp: Double = -1.0
+        for key in keys {
+            if let (dataType, bytes) = readKey(key), !bytes.isEmpty {
+                let temp = decodeRPM(type: dataType, bytes: bytes)
+                if temp > 0.0 && temp < 130.0 && temp > maxTemp {
+                    maxTemp = temp
+                }
+            }
+        }
+        return maxTemp > 0.0 ? maxTemp : nil
+    }
 }
 
 
@@ -306,17 +385,56 @@ final class SMCHelperProvider: SMCProvider, @unchecked Sendable {
     private var fanCountCache: Int = 0
     private var fanCountCached = false
     private var cachedFans: [FanTelemetry] = []
+    private var cachedTemperature: Double?
     private var lastFetchTime: Date = .distantPast
 
+    private var bundledHelperPath: String? {
+        if let path = Bundle.main.url(forResource: "smc-helper", withExtension: nil)?.path,
+           FileManager.default.isExecutableFile(atPath: path) {
+            return path
+        }
+        let fallback = Bundle.main.bundlePath + "/Contents/Resources/smc-helper"
+        if FileManager.default.isExecutableFile(atPath: fallback) {
+            return fallback
+        }
+        let devPath = URL(fileURLWithPath: #file)
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .appendingPathComponent("helpers/smc-helper/smc-helper").path
+        if FileManager.default.isExecutableFile(atPath: devPath) {
+            return devPath
+        }
+        return nil
+    }
+
+    private var readHelperPath: String {
+        bundledHelperPath ?? helperPath
+    }
+
     var isConnected: Bool {
-        FileManager.default.isExecutableFile(atPath: helperPath)
+        FileManager.default.isExecutableFile(atPath: helperPath) || bundledHelperPath != nil
     }
     
     func invalidateCache() {
         fanCountCached = false
         fanCountCache = 0
         cachedFans = []
+        cachedTemperature = nil
         lastFetchTime = .distantPast
+    }
+
+    func readCurrentTemperature() -> Double? {
+        let now = Date()
+        if now.timeIntervalSince(lastFetchTime) >= 0.8 || cachedFans.isEmpty || cachedTemperature == nil {
+            _ = populateTelemetry()
+        }
+        if cachedTemperature == nil, let bundled = bundledHelperPath {
+            let bundledOut = runHelper(path: bundled, args: ["info"])
+            if let tempMatch = bundledOut.firstMatch(of: /Current temperature: ([\d.]+) C/) {
+                cachedTemperature = Double(tempMatch.output.1)
+            }
+        }
+        return cachedTemperature
     }
 
     func fanCount() -> Int {
@@ -334,11 +452,22 @@ final class SMCHelperProvider: SMCProvider, @unchecked Sendable {
     }
 
     private func populateTelemetry() -> [FanTelemetry] {
-        let output = runHelper(args: ["info"])
+        var output = runHelper(path: readHelperPath, args: ["info"])
+        if output.contains("Error") && readHelperPath != helperPath {
+            output = runHelper(path: helperPath, args: ["info"])
+        }
         if let match = output.firstMatch(of: /Total fans: (\d+)/) {
             let count = Int(match.output.1) ?? 0
             fanCountCache = count
             fanCountCached = true
+        }
+        if let tempMatch = output.firstMatch(of: /Current temperature: ([\d.]+) C/) {
+            cachedTemperature = Double(tempMatch.output.1)
+        } else if let bundled = bundledHelperPath {
+            let bundledOut = runHelper(path: bundled, args: ["info"])
+            if let tempMatch = bundledOut.firstMatch(of: /Current temperature: ([\d.]+) C/) {
+                cachedTemperature = Double(tempMatch.output.1)
+            }
         }
 
         let pattern = #"Fan #(\d+):\s+Current speed: ([\d.]+) RPM\s+Min speed: ([\d.]+) RPM\s*\([^)]*\)\s+Max speed: ([\d.]+) RPM\s+Target speed: ([\d.]+) RPM"#
@@ -414,9 +543,9 @@ final class SMCHelperProvider: SMCProvider, @unchecked Sendable {
         return false
     }
 
-    private func runHelper(args: [String]) -> String {
+    private func runHelper(path: String? = nil, args: [String]) -> String {
         let process = Process()
-        process.executableURL = URL(fileURLWithPath: helperPath)
+        process.executableURL = URL(fileURLWithPath: path ?? helperPath)
         process.arguments = args
         
         let pipe = Pipe()
@@ -439,6 +568,7 @@ final class FanControlManager: ObservableObject {
     static let shared = FanControlManager()
 
     @Published private(set) var fans: [FanTelemetry] = []
+    @Published private(set) var currentTemperature: Double?
     @Published private(set) var isHardwareSupported: Bool = false
     @Published private(set) var isManualMode: Bool = false
     @Published private(set) var hasWritePermission: Bool = true
@@ -446,6 +576,9 @@ final class FanControlManager: ObservableObject {
 
     private let provider: any SMCProvider
     private var timer: Timer?
+    private var isAutoRamped: Bool = false
+    private var isInitializing: Bool = false
+    private var lastRampedRPM: [Int: Double] = [:]
 
     static var isHelperInstalled: Bool {
         #if arch(arm64)
@@ -458,7 +591,7 @@ final class FanControlManager: ObservableObject {
     init(provider: SMCProvider? = nil) {
         if !UserDefaults.standard.bool(forKey: "hasInitializedFanControlDefaults") {
             UserDefaults.standard.set(true, forKey: "hasInitializedFanControlDefaults")
-            Defaults[.fanControlEnabled] = Self.isHelperInstalled
+            Defaults[.fanControlEnabled] = true
         }
         let useHelper = {
             #if arch(arm64)
@@ -472,7 +605,12 @@ final class FanControlManager: ObservableObject {
         checkHardware()
         if isHardwareSupported {
             isManualMode = Defaults[.fanControlManualMode]
+            isInitializing = true
             refresh()
+            isInitializing = false
+            if Defaults[.fanControlEnabled] {
+                startMonitoring()
+            }
         }
     }
 
@@ -491,6 +629,9 @@ final class FanControlManager: ObservableObject {
         }
         let count = provider.fanCount()
         isHardwareSupported = count > 0
+        if isHardwareSupported {
+            currentTemperature = provider.readCurrentTemperature()
+        }
     }
 
     @discardableResult
@@ -541,6 +682,7 @@ final class FanControlManager: ObservableObject {
     func stopMonitoring() {
         timer?.invalidate()
         timer = nil
+        lastRampedRPM.removeAll()
     }
 
     func refresh() {
@@ -553,6 +695,9 @@ final class FanControlManager: ObservableObject {
 
         var updatedFans: [FanTelemetry] = []
         let savedTargets = Defaults[.fanControlTargetRPMs]
+
+        let temp = provider.readCurrentTemperature()
+        currentTemperature = temp
 
         for i in 0..<count {
             if var fan = provider.readFanTelemetry(index: i) {
@@ -569,6 +714,43 @@ final class FanControlManager: ObservableObject {
         }
 
         fans = updatedFans
+
+        // Smooth dynamic auto-ramp curve
+        // ponytail: Dynamic 30°C–90°C response curve with 50 RPM deadband; idles smoothly at minRPM below threshold.
+        if !isInitializing, !isManualMode, let currentTemp = temp {
+            let threshold = Defaults[.fanControlAutoThreshold]
+            let maxSpeed = Defaults[.fanControlAutoMaxSpeed]
+            let aggressiveness = Defaults[.fanControlAutoAggressiveness]
+            let hysteresis = 3.0
+
+            let isAboveThreshold = currentTemp >= threshold || (isAutoRamped && currentTemp >= (threshold - hysteresis))
+
+            for fan in updatedFans {
+                let minRPM = fan.minRPM > 0 ? fan.minRPM : 1200
+                let maxRPM = fan.maxRPM > minRPM ? fan.maxRPM : 5000
+
+                let target: Double
+                if isAboveThreshold {
+                    target = FanControlManager.calculateAutoTarget(
+                        temp: currentTemp,
+                        minRPM: minRPM,
+                        maxRPM: maxRPM,
+                        userMaxSpeed: maxSpeed,
+                        aggressiveness: aggressiveness
+                    )
+                } else {
+                    target = minRPM
+                }
+
+                let last = lastRampedRPM[fan.id] ?? 0
+                if !isAutoRamped || abs(target - last) >= 50 {
+                    _ = provider.writeFanMode(index: fan.id, manual: true)
+                    _ = provider.writeFanTargetRPM(index: fan.id, rpm: target)
+                    lastRampedRPM[fan.id] = target
+                }
+            }
+            isAutoRamped = isAboveThreshold
+        }
     }
 
     func setMode(manual: Bool) {
@@ -579,6 +761,8 @@ final class FanControlManager: ObservableObject {
         }
 
         // Instantly update UI and defaults so animations run smoothly
+        isAutoRamped = false
+        lastRampedRPM.removeAll()
         isManualMode = manual
         Defaults[.fanControlManualMode] = manual
         for i in 0..<fans.count {
@@ -609,9 +793,10 @@ final class FanControlManager: ObservableObject {
                 }
             }
 
+            let opSuccess = success
             await MainActor.run { [weak self] in
                 guard let self = self else { return }
-                if success {
+                if opSuccess {
                     self.hasWritePermission = true
                     self.permissionNotice = nil
                 } else {
@@ -651,8 +836,23 @@ final class FanControlManager: ObservableObject {
         }
     }
 
+    func resetToDefaults() {
+        Defaults[.fanControlEnabled] = true
+        Defaults[.fanControlManualMode] = false
+        Defaults[.fanControlTargetRPMs] = [:]
+        Defaults[.fanControlAutoThreshold] = 60.0
+        Defaults[.fanControlAutoMaxSpeed] = 4500
+        Defaults[.fanControlAutoAggressiveness] = 1.5
+        Defaults[.fanControlAlertThreshold] = 85.0
+        Defaults[.fanControlAlertEnabled] = false
+        Defaults[.fanControlTempUnit] = "C"
+        restoreAuto()
+    }
+
     func restoreAuto() {
         guard isHardwareSupported else { return }
+        isAutoRamped = false
+        lastRampedRPM.removeAll()
         isManualMode = false
         Defaults[.fanControlManualMode] = false
         for i in 0..<fans.count {

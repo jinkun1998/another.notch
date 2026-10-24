@@ -110,8 +110,8 @@ final class FeatureModuleRegistry: ObservableObject {
             icon: "fan.fill",
             tabDestination: .fanControl,
             settingsDestination: .fanControl,
-            installedByDefault: false,
-            isAvailable: FanControlManager.shared.isHardwareSupported,
+            installedByDefault: true,
+            isAvailable: true,
             supportsScrolling: false
         )
     ]
@@ -248,6 +248,9 @@ final class FeatureModuleRegistry: ObservableObject {
     func startInstalledServices() {
         if isInstalled(.clipboard) {
             ClipboardHistoryStore.shared.startMonitoring()
+        }
+        if isInstalled(.fanControl) && Defaults[.fanControlEnabled] {
+            FanControlManager.shared.startMonitoring()
         }
     }
 
