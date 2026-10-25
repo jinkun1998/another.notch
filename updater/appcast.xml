@@ -6,6 +6,36 @@
         <description>anotherNotch updates</description>
         <item>
             <title>1.3.2</title>
+            <pubDate>Sun, 25 Oct 2026 03:12:25 +0000</pubDate>
+            <link>https://github.com/jinkun1998/another.notch/releases</link>
+            <sparkle:version>40</sparkle:version>
+            <sparkle:shortVersionString>1.3.2</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <description><![CDATA[<div class="markdown-heading"><h2 class="heading-element">What's Changed</h2><a id="user-content-whats-changed" class="anchor" aria-label="Permalink: What's Changed" href="#whats-changed"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
+<ul>
+<li>build(deps): bump github.com/apple/swift-collections from 1.7.0 to 1.7.1 by @dependabot[bot] in <a href="https://github.com/jinkun1998/another.notch/pull/98">https://github.com/jinkun1998/another.notch/pull/98</a>
+</li>
+<li>build(deps): bump github.com/apple/swift-collections from 1.7.1 to 1.7.2 by @dependabot[bot] in <a href="https://github.com/jinkun1998/another.notch/pull/101">https://github.com/jinkun1998/another.notch/pull/101</a>
+</li>
+<li>build(deps): bump github.com/siteline/swiftui-introspect from 27.0.0 to 27.1.0 by @dependabot[bot] in <a href="https://github.com/jinkun1998/another.notch/pull/100">https://github.com/jinkun1998/another.notch/pull/100</a>
+</li>
+<li>build(deps): bump github.com/apple/swift-collections from 1.7.2 to 1.7.3 by @dependabot[bot] in <a href="https://github.com/jinkun1998/another.notch/pull/105">https://github.com/jinkun1998/another.notch/pull/105</a>
+</li>
+<li>build(deps): bump actions/download-artifact from 8.0.1 to 8.0.2 by @dependabot[bot] in <a href="https://github.com/jinkun1998/another.notch/pull/99">https://github.com/jinkun1998/another.notch/pull/99</a>
+</li>
+<li>build(deps): bump actions/upload-artifact from 7.0.1 to 7.0.2 by @dependabot[bot] in <a href="https://github.com/jinkun1998/another.notch/pull/103">https://github.com/jinkun1998/another.notch/pull/103</a>
+</li>
+<li>build(deps): bump github/codeql-action/init from 4.38.2 to 4.39.0 by @dependabot[bot] in <a href="https://github.com/jinkun1998/another.notch/pull/106">https://github.com/jinkun1998/another.notch/pull/106</a>
+</li>
+<li>build(deps): bump github/codeql-action/analyze from 4.38.2 to 4.39.0 by @dependabot[bot] in <a href="https://github.com/jinkun1998/another.notch/pull/107">https://github.com/jinkun1998/another.notch/pull/107</a>
+</li>
+</ul>
+<p><strong>Full Changelog</strong>: <a href="https://github.com/jinkun1998/another.notch/compare/v1.3.1...v1.3.2">https://github.com/jinkun1998/another.notch/compare/v1.3.1...v1.3.2</a></p>
+]]></description>
+            <enclosure url="https://github.com/jinkun1998/another.notch/releases/download/v1.3.2/anotherNotch.dmg" length="9472139" type="application/octet-stream" sparkle:edSignature="kTnvqgz6Flu9ULM19NKQ8h2+HfO0LKDTj1qCoG1KLHwMDRMAHRc659cjWkd2pB2Fq7wpZiJJ7BAw0o93tM6OBg=="/>
+        </item>
+        <item>
+            <title>1.3.2</title>
             <pubDate>Sun, 25 Oct 2026 02:51:49 +0000</pubDate>
             <link>https://github.com/jinkun1998/another.notch/releases</link>
             <sparkle:version>39</sparkle:version>
@@ -51,50 +81,6 @@
 <p><strong>Full Changelog</strong>: <a href="https://github.com/jinkun1998/another.notch/compare/v1.3.0...v1.3.1">https://github.com/jinkun1998/another.notch/compare/v1.3.0...v1.3.1</a></p>
 ]]></description>
             <enclosure url="https://github.com/jinkun1998/another.notch/releases/download/v1.3.1/anotherNotch.dmg" length="9470124" type="application/octet-stream" sparkle:edSignature="7CzlpBoic9wJ1y6eEmnoSKCSMJpvyRorr7Y1/RJT2OWVzWR6miWlKHs865qnPwZgGZIztidYInbEbWZiX0m0AA=="/>
-        </item>
-        <item>
-            <title>1.3.0</title>
-            <pubDate>Fri, 02 Oct 2026 01:39:03 +0000</pubDate>
-            <link>https://github.com/jinkun1998/another.notch/releases</link>
-            <sparkle:version>37</sparkle:version>
-            <sparkle:shortVersionString>1.3.0</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-            <description><![CDATA[<div class="markdown-heading"><h1 class="heading-element">anotherNotch v1.3.0</h1><a id="user-content-anothernotch-v130" class="anchor" aria-label="Permalink: anotherNotch v1.3.0" href="#anothernotch-v130"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
-<div class="markdown-heading"><h2 class="heading-element">New Features</h2><a id="user-content-new-features" class="anchor" aria-label="Permalink: New Features" href="#new-features"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
-<ul>
-<li>
-<strong>Fan Control Module</strong>: Telemetry monitoring (RPM, temp), manual/auto speed modes.</li>
-<li>
-<strong>Quick Notes Module</strong>: In-notch scratchpad, persistent storage, morphing delete button confirmation.</li>
-<li>
-<strong>Two-Sided Module Tabs</strong>: Home tab pinned left, utility modules clustered right.</li>
-<li>
-<strong>Multi-Language Support</strong>: Crowdin localization pipeline added. Initial support for English, Tiếng Việt, Español, Français, 简体中文.</li>
-</ul>
-<div class="markdown-heading"><h2 class="heading-element">Improvements</h2><a id="user-content-improvements" class="anchor" aria-label="Permalink: Improvements" href="#improvements"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
-<ul>
-<li>
-<strong>Clipboard Sticky Header</strong>: Action buttons stay pinned on screen while scrolling long expanded records.</li>
-<li>
-<strong>Clipboard History Clearing</strong>: Clear button moved beside search bar with morphing delete confirmation.</li>
-<li>
-<strong>Lyrics Synchronization</strong>: Improved timestamp accuracy and alignment against active media players.</li>
-<li>
-<strong>Dependencies Bump</strong>: Sparkle 2.10.0, Swift Collections 1.7.0, KeyboardShortcuts 3.1.0, SwiftUIIntrospect 27.0.0.</li>
-</ul>
-<div class="markdown-heading"><h2 class="heading-element">Bug Fixes</h2><a id="user-content-bug-fixes" class="anchor" aria-label="Permalink: Bug Fixes" href="#bug-fixes"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
-<ul>
-<li>
-<strong>Fan Control Revert</strong>: Fixed Apple Silicon SMC coprocessor latency causing instant rollback to Auto mode.</li>
-<li>
-<strong>HUD Wake Reclaim</strong>: Prevented macOS default HUD from re-engaging after sleep/lock screen wake.</li>
-<li>
-<strong>Clipboard Sort</strong>: Maintained consistent item ordering after notch collapses.</li>
-</ul>
-<hr>
-<p><strong>Full Changelog</strong>: <a href="https://github.com/jinkun1998/another.notch/compare/v1.2.0...v1.3.0">https://github.com/jinkun1998/another.notch/compare/v1.2.0...v1.3.0</a></p>
-]]></description>
-            <enclosure url="https://github.com/jinkun1998/another.notch/releases/download/v1.3.0/anotherNotch.dmg" length="9472832" type="application/octet-stream" sparkle:edSignature="jHfDrw6UKFnGB1ka8ZJgyGOILCpoKptlgNdbk8AK9lLnOde/bCAP/t0qqmRVloi7Di+GTsXK1THVEcdJqz8+CQ=="/>
         </item>
         <item>
             <title>1.3.0-beta4</title>
