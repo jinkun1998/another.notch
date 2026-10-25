@@ -5,6 +5,17 @@
         <link>https://github.com/jinkun1998/another.notch/releases</link>
         <description>anotherNotch updates</description>
         <item>
+            <title>1.4.1</title>
+            <pubDate>Sun, 25 Oct 2026 08:05:40 +0000</pubDate>
+            <link>https://github.com/jinkun1998/another.notch/releases</link>
+            <sparkle:version>42</sparkle:version>
+            <sparkle:shortVersionString>1.4.1</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <description><![CDATA[<p><strong>Full Changelog</strong>: <a href="https://github.com/jinkun1998/another.notch/compare/v1.4.0...v1.4.1">https://github.com/jinkun1998/another.notch/compare/v1.4.0...v1.4.1</a></p>
+]]></description>
+            <enclosure url="https://github.com/jinkun1998/another.notch/releases/download/v1.4.1/anotherNotch.dmg" length="9517574" type="application/octet-stream" sparkle:edSignature="NS7xmgVe5cnIj3ZWVR/MwZunGCvg0c6WXj36g2hz/39A6W2cTQzSgCRMPlDHSINeAJi+ryjQCUQ5HbdMpjhVCw=="/>
+        </item>
+        <item>
             <title>1.4.0</title>
             <pubDate>Sun, 25 Oct 2026 05:00:26 +0000</pubDate>
             <link>https://github.com/jinkun1998/another.notch/releases</link>
@@ -57,24 +68,6 @@
 <p><strong>Full Changelog</strong>: <a href="https://github.com/jinkun1998/another.notch/compare/v1.3.1...v1.3.2">https://github.com/jinkun1998/another.notch/compare/v1.3.1...v1.3.2</a></p>
 ]]></description>
             <enclosure url="https://github.com/jinkun1998/another.notch/releases/download/v1.3.2/anotherNotch.dmg" length="9472139" type="application/octet-stream" sparkle:edSignature="kTnvqgz6Flu9ULM19NKQ8h2+HfO0LKDTj1qCoG1KLHwMDRMAHRc659cjWkd2pB2Fq7wpZiJJ7BAw0o93tM6OBg=="/>
-        </item>
-        <item>
-            <title>1.3.1</title>
-            <pubDate>Fri, 02 Oct 2026 02:21:38 +0000</pubDate>
-            <link>https://github.com/jinkun1998/another.notch/releases</link>
-            <sparkle:version>38</sparkle:version>
-            <sparkle:shortVersionString>1.3.1</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-            <description><![CDATA[<div class="markdown-heading"><h1 class="heading-element">anotherNotch v1.3.1 (Hotfix)</h1><a id="user-content-anothernotch-v131-hotfix" class="anchor" aria-label="Permalink: anotherNotch v1.3.1 (Hotfix)" href="#anothernotch-v131-hotfix"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
-<div class="markdown-heading"><h2 class="heading-element">Bug Fixes</h2><a id="user-content-bug-fixes" class="anchor" aria-label="Permalink: Bug Fixes" href="#bug-fixes"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
-<ul>
-<li>
-<strong>Quick Notes Deletion</strong>: Fixed an issue where clicking the delete button in Quick Notes failed to delete.</li>
-</ul>
-<hr>
-<p><strong>Full Changelog</strong>: <a href="https://github.com/jinkun1998/another.notch/compare/v1.3.0...v1.3.1">https://github.com/jinkun1998/another.notch/compare/v1.3.0...v1.3.1</a></p>
-]]></description>
-            <enclosure url="https://github.com/jinkun1998/another.notch/releases/download/v1.3.1/anotherNotch.dmg" length="9470124" type="application/octet-stream" sparkle:edSignature="7CzlpBoic9wJ1y6eEmnoSKCSMJpvyRorr7Y1/RJT2OWVzWR6miWlKHs865qnPwZgGZIztidYInbEbWZiX0m0AA=="/>
         </item>
         <item>
             <title>1.3.0-beta4</title>
