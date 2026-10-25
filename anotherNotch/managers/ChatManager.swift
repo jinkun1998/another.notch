@@ -8,6 +8,7 @@ enum ChatServiceType: String, CaseIterable, Identifiable, Codable, Defaults.Seri
     case telegram = "Telegram"
     case whatsapp = "WhatsApp"
     case messenger = "Messenger"
+    case instagram = "Instagram"
     case discord = "Discord"
     case slack = "Slack"
     case custom = "Custom"
@@ -22,6 +23,8 @@ enum ChatServiceType: String, CaseIterable, Identifiable, Codable, Defaults.Seri
             return URL(string: "https://web.whatsapp.org/")!
         case .messenger:
             return URL(string: "https://www.messenger.com/")!
+        case .instagram:
+            return URL(string: "https://www.instagram.com/direct/inbox/")!
         case .discord:
             return URL(string: "https://discord.com/app")!
         case .slack:
@@ -39,6 +42,8 @@ enum ChatServiceType: String, CaseIterable, Identifiable, Codable, Defaults.Seri
             return "phone.bubble.fill"
         case .messenger:
             return "bubble.right.fill"
+        case .instagram:
+            return "camera.viewfinder"
         case .discord:
             return "gamecontroller.fill"
         case .slack:
@@ -56,6 +61,8 @@ enum ChatServiceType: String, CaseIterable, Identifiable, Codable, Defaults.Seri
             return NSColor(red: 0.15, green: 0.83, blue: 0.44, alpha: 1.0)
         case .messenger:
             return NSColor(red: 0.0, green: 0.52, blue: 1.0, alpha: 1.0)
+        case .instagram:
+            return NSColor(red: 0.88, green: 0.19, blue: 0.42, alpha: 1.0)
         case .discord:
             return NSColor(red: 0.35, green: 0.4, blue: 0.95, alpha: 1.0)
         case .slack:
@@ -186,6 +193,7 @@ final class ChatManager: NSObject, ObservableObject, WKScriptMessageHandler, WKN
                 ChatInstance(id: UUID(uuidString: "967D8441-F236-48FC-99F2-3AF317CAD73A")!, serviceType: .telegram, name: "Telegram"),
                 ChatInstance(id: UUID(uuidString: "CB69F377-25D0-4A4A-9570-838A2EB6F96D")!, serviceType: .whatsapp, name: "WhatsApp"),
                 ChatInstance(id: UUID(uuidString: "6D656D41-E0DB-4250-AEC2-E8CAE1634D21")!, serviceType: .messenger, name: "Messenger"),
+                ChatInstance(id: UUID(uuidString: "5E96A192-38B4-4D6F-9C81-79A5BB673412")!, serviceType: .instagram, name: "Instagram"),
                 ChatInstance(id: UUID(uuidString: "48F6A38B-50AB-4E4B-B724-01AB4C6DB03A")!, serviceType: .discord, name: "Discord"),
                 ChatInstance(id: UUID(uuidString: "7BDE24F5-58CC-4E07-8457-4362E1FD45D4")!, serviceType: .slack, name: "Slack")
             ]
@@ -244,6 +252,31 @@ final class ChatManager: NSObject, ObservableObject, WKScriptMessageHandler, WKN
         for (_, wv) in webViews {
             wv.pauseAllMediaPlayback(completionHandler: nil)
         }
+    }
+
+    func moveInstance(from sourceId: UUID, to destinationId: UUID) {
+        guard sourceId != destinationId,
+              let sourceIndex = instances.firstIndex(where: { $0.id == sourceId }),
+              let destIndex = instances.firstIndex(where: { $0.id == destinationId })
+        else { return }
+        var updated = instances
+        let item = updated.remove(at: sourceIndex)
+        updated.insert(item, at: destIndex)
+        instances = updated
+    }
+
+    func moveInstanceUp(id: UUID) {
+        guard let index = instances.firstIndex(where: { $0.id == id }), index > 0 else { return }
+        var updated = instances
+        updated.swapAt(index, index - 1)
+        instances = updated
+    }
+
+    func moveInstanceDown(id: UUID) {
+        guard let index = instances.firstIndex(where: { $0.id == id }), index < instances.count - 1 else { return }
+        var updated = instances
+        updated.swapAt(index, index + 1)
+        instances = updated
     }
 
     @discardableResult
@@ -636,6 +669,7 @@ final class ChatManager: NSObject, ObservableObject, WKScriptMessageHandler, WKN
             || host.contains("whatsapp.net")
             || host.contains("messenger.com")
             || host.contains("facebook.com")
+            || host.contains("instagram.com")
             || host.contains("discord.com")
             || host.contains("discordapp.com")
             || host.contains("slack.com")

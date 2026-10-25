@@ -18,6 +18,7 @@ struct ChatView: View {
     @State private var isShowingCustomAlert: Bool = false
     @State private var customServiceName: String = ""
     @State private var customServiceURL: String = "https://"
+    @State private var draggedId: UUID?
 
     var body: some View {
         VStack(spacing: 8) {
@@ -214,7 +215,38 @@ struct ChatView: View {
         }
         .buttonStyle(.plain)
         .fixedSize()
+        .opacity(draggedId == instance.id ? 0.45 : 1.0)
+        .onDrag {
+            draggedId = instance.id
+            return NSItemProvider(object: instance.id.uuidString as NSString)
+        }
+        .onDrop(of: [.plainText], delegate: ChatTabDropDelegate(
+            destination: instance.id,
+            draggedId: $draggedId,
+            onMove: { src, dst in
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.82)) {
+                    chatManager.moveInstance(from: src, to: dst)
+                }
+            }
+        ))
         .contextMenu {
+            if let idx = chatManager.instances.firstIndex(where: { $0.id == instance.id }) {
+                if idx > 0 {
+                    Button("Move Left") {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.82)) {
+                            chatManager.moveInstanceUp(id: instance.id)
+                        }
+                    }
+                }
+                if idx < chatManager.instances.count - 1 {
+                    Button("Move Right") {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.82)) {
+                            chatManager.moveInstanceDown(id: instance.id)
+                        }
+                    }
+                }
+                Divider()
+            }
             Button("Rename...") {
                 renameText = instance.displayName
                 renamingInstance = instance
@@ -238,5 +270,26 @@ struct ChatView: View {
                 }
             }
         }
+    }
+}
+
+
+private struct ChatTabDropDelegate: DropDelegate {
+    let destination: UUID
+    @Binding var draggedId: UUID?
+    let onMove: (UUID, UUID) -> Void
+
+    func dropEntered(info: DropInfo) {
+        guard let dragged = draggedId, dragged != destination else { return }
+        onMove(dragged, destination)
+    }
+
+    func dropUpdated(info: DropInfo) -> DropProposal? {
+        DropProposal(operation: .move)
+    }
+
+    func performDrop(info: DropInfo) -> Bool {
+        draggedId = nil
+        return true
     }
 }

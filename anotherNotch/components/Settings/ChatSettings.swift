@@ -16,6 +16,7 @@ struct ChatSettings: View {
     @State private var showingCustomAlert = false
     @State private var customName: String = ""
     @State private var customURL: String = "https://"
+    @State private var draggedSettingsId: UUID?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
@@ -56,6 +57,34 @@ struct ChatSettings: View {
                             }
 
                             Spacer()
+
+                            HStack(spacing: 3) {
+                                Button {
+                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.82)) {
+                                        chatManager.moveInstanceUp(id: instance.id)
+                                    }
+                                } label: {
+                                    Image(systemName: "chevron.up")
+                                        .font(.system(size: 10, weight: .semibold))
+                                        .foregroundStyle(chatManager.instances.first?.id == instance.id ? .quaternary : .secondary)
+                                }
+                                .buttonStyle(.plain)
+                                .disabled(chatManager.instances.first?.id == instance.id)
+                                .help("Move up")
+
+                                Button {
+                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.82)) {
+                                        chatManager.moveInstanceDown(id: instance.id)
+                                    }
+                                } label: {
+                                    Image(systemName: "chevron.down")
+                                        .font(.system(size: 10, weight: .semibold))
+                                        .foregroundStyle(chatManager.instances.last?.id == instance.id ? .quaternary : .secondary)
+                                }
+                                .buttonStyle(.plain)
+                                .disabled(chatManager.instances.last?.id == instance.id)
+                                .help("Move down")
+                            }
 
                             Button {
                                 editName = instance.displayName
@@ -98,6 +127,20 @@ struct ChatSettings: View {
                             }
                         }
                         .padding(.vertical, 3)
+                        .opacity(draggedSettingsId == instance.id ? 0.45 : 1.0)
+                        .onDrag {
+                            draggedSettingsId = instance.id
+                            return NSItemProvider(object: instance.id.uuidString as NSString)
+                        }
+                        .onDrop(of: [.plainText], delegate: SettingsServiceDropDelegate(
+                            destination: instance.id,
+                            draggedId: $draggedSettingsId,
+                            onMove: { src, dst in
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.82)) {
+                                    chatManager.moveInstance(from: src, to: dst)
+                                }
+                            }
+                        ))
                     }
 
                     Menu {
@@ -196,5 +239,26 @@ struct ChatSettings: View {
         } message: {
             Text("This will remove cookies, stored logins, and offline cache for all configured accounts.")
         }
+    }
+}
+
+
+private struct SettingsServiceDropDelegate: DropDelegate {
+    let destination: UUID
+    @Binding var draggedId: UUID?
+    let onMove: (UUID, UUID) -> Void
+
+    func dropEntered(info: DropInfo) {
+        guard let dragged = draggedId, dragged != destination else { return }
+        onMove(dragged, destination)
+    }
+
+    func dropUpdated(info: DropInfo) -> DropProposal? {
+        DropProposal(operation: .move)
+    }
+
+    func performDrop(info: DropInfo) -> Bool {
+        draggedId = nil
+        return true
     }
 }

@@ -17,6 +17,36 @@ struct ChatServiceIconView: View {
                     .offset(x: -size * 0.04, y: -size * 0.04)
             }
             .frame(width: size, height: size)
+        } else if icon.lowercased().contains("instagram") || icon == "camera.viewfinder" {
+            ZStack {
+                RoundedRectangle(cornerRadius: size * 0.28, style: .continuous)
+                    .stroke(
+                        LinearGradient(
+                            colors: [Color(red: 0.99, green: 0.69, blue: 0.28), Color(red: 0.88, green: 0.19, blue: 0.42), Color(red: 0.51, green: 0.17, blue: 0.79)],
+                            startPoint: .bottomLeading,
+                            endPoint: .topTrailing
+                        ),
+                        lineWidth: size * 0.12
+                    )
+                    .frame(width: size, height: size)
+
+                Circle()
+                    .stroke(
+                        LinearGradient(
+                            colors: [Color(red: 0.99, green: 0.69, blue: 0.28), Color(red: 0.88, green: 0.19, blue: 0.42)],
+                            startPoint: .bottomLeading,
+                            endPoint: .topTrailing
+                        ),
+                        lineWidth: size * 0.11
+                    )
+                    .frame(width: size * 0.46, height: size * 0.46)
+
+                Circle()
+                    .fill(Color(red: 0.88, green: 0.19, blue: 0.42))
+                    .frame(width: size * 0.12, height: size * 0.12)
+                    .offset(x: size * 0.24, y: -size * 0.24)
+            }
+            .frame(width: size, height: size)
         } else {
             Image(systemName: icon)
                 .font(.system(size: size, weight: .semibold))
@@ -30,6 +60,7 @@ struct ChatServiceIconView: View {
         case "phone.bubble.fill": return Color(red: 0.15, green: 0.83, blue: 0.44)
         case "gamecontroller.fill": return Color(red: 0.35, green: 0.4, blue: 0.95)
         case "number": return Color(red: 0.89, green: 0.11, blue: 0.45)
+        case "camera.viewfinder": return Color(red: 0.88, green: 0.19, blue: 0.42)
         default: return .white
         }
     }
