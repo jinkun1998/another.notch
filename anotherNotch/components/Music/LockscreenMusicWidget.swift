@@ -302,11 +302,14 @@ final class LockscreenMusicWidgetController: ObservableObject {
 
     private var window: LockscreenMusicWidgetWindow?
     private var isScreenLocked: Bool = false
+    private var isLoginUIHidden: Bool = false
+    private var isHiding: Bool = false
     private var isSkyLightAttached: Bool = false
     private var cancellables = Set<AnyCancellable>()
 
     private init() {
         setupObservers()
+        setupDarwinObservers()
     }
 
     private func setupObservers() {
@@ -340,21 +343,115 @@ final class LockscreenMusicWidgetController: ObservableObject {
         }
 
         let distCenter = DistributedNotificationCenter.default()
-        distCenter.addObserver(forName: NSNotification.Name("com.apple.screenIsLocked"), object: nil, queue: .main) { [weak self] _ in
-            Task { @MainActor in self?.onScreenLocked() }
+        let lockNames = ["com.apple.screenIsLocked"]
+        for name in lockNames {
+            distCenter.addObserver(forName: NSNotification.Name(name), object: nil, queue: .main) { [weak self] _ in
+                Task { @MainActor in self?.onScreenLocked() }
+            }
         }
-        distCenter.addObserver(forName: NSNotification.Name("com.apple.screenIsUnlocked"), object: nil, queue: .main) { [weak self] _ in
-            Task { @MainActor in self?.onScreenUnlocked() }
+
+        let unlockNames = [
+            "com.apple.screenIsUnlocked",
+            "com.apple.shieldWindowLowered"
+        ]
+        for name in unlockNames {
+            distCenter.addObserver(forName: NSNotification.Name(name), object: nil, queue: .main) { [weak self] _ in
+                Task { @MainActor in self?.onScreenUnlocked() }
+            }
+        }
+
+        let hideUINames = [
+            "com.apple.screenLockUIIsHidden",
+            "com.apple.screensaver.didstart"
+        ]
+        for name in hideUINames {
+            distCenter.addObserver(forName: NSNotification.Name(name), object: nil, queue: .main) { [weak self] _ in
+                Task { @MainActor in self?.onLoginUIHidden() }
+            }
+        }
+
+        let showUINames = [
+            "com.apple.screenLockUIIsShown",
+            "com.apple.screensaver.didstop",
+            "com.apple.screensaver.willstop"
+        ]
+        for name in showUINames {
+            distCenter.addObserver(forName: NSNotification.Name(name), object: nil, queue: .main) { [weak self] _ in
+                Task { @MainActor in self?.onLoginUIShown() }
+            }
+        }
+    }
+
+    private func setupDarwinObservers() {
+        guard let darwinCenter = CFNotificationCenterGetDarwinNotifyCenter() else { return }
+        let observer = Unmanaged.passUnretained(self).toOpaque()
+
+        let darwinNotifications = [
+            "com.apple.sessionagent.screenLockUIIsShown",
+            "com.apple.sessionagent.screenLockUIIsHidden",
+            "com.apple.sessionagent.screenIsLocked",
+            "com.apple.sessionagent.screenIsUnlocked",
+            "com.apple.sessionagent.shieldWindowLowered",
+            "com.apple.screenunlock.success"
+        ]
+
+        for name in darwinNotifications {
+            CFNotificationCenterAddObserver(
+                darwinCenter,
+                observer,
+                { _, observer, cfName, _, _ in
+                    guard let observer = observer, let cfName = cfName else { return }
+                    let controller = Unmanaged<LockscreenMusicWidgetController>.fromOpaque(observer).takeUnretainedValue()
+                    let nameStr = cfName.rawValue as String
+                    Task { @MainActor in
+                        controller.handleDarwinNotification(nameStr)
+                    }
+                },
+                name as CFString,
+                nil,
+                .deliverImmediately
+            )
+        }
+    }
+
+    func handleDarwinNotification(_ name: String) {
+        switch name {
+        case "com.apple.sessionagent.screenLockUIIsShown":
+            onLoginUIShown()
+        case "com.apple.sessionagent.screenLockUIIsHidden":
+            onLoginUIHidden()
+        case "com.apple.sessionagent.screenIsLocked":
+            onScreenLocked()
+        case "com.apple.sessionagent.screenIsUnlocked",
+             "com.apple.sessionagent.shieldWindowLowered",
+             "com.apple.screenunlock.success":
+            onScreenUnlocked()
+        default:
+            break
         }
     }
 
     func onScreenLocked() {
         isScreenLocked = true
+        isLoginUIHidden = false
         updateVisibility()
     }
 
     func onScreenUnlocked() {
         isScreenLocked = false
+        isLoginUIHidden = false
+        updateVisibility()
+    }
+
+    func onLoginUIHidden() {
+        guard isScreenLocked else { return }
+        isLoginUIHidden = true
+        updateVisibility()
+    }
+
+    func onLoginUIShown() {
+        guard isScreenLocked else { return }
+        isLoginUIHidden = false
         updateVisibility()
     }
 
@@ -364,18 +461,22 @@ final class LockscreenMusicWidgetController: ObservableObject {
             || !MusicManager.shared.songTitle.isEmpty
 
         let shouldShow = isScreenLocked
+            && !isLoginUIHidden
             && Defaults[.lockscreenMusicWidgetEnabled]
             && hasTrack
 
         if shouldShow {
             showWidget()
         } else {
-            hideWidget()
+            hideWidget(animated: true)
         }
     }
 
     // ponytail: single primary-screen lockscreen widget anchored above login controls; upgrade to NSScreen enumeration if multi-display widget requested.
     private func showWidget() {
+        guard isScreenLocked, !isLoginUIHidden else { return }
+        isHiding = false
+
         guard let screen = NSScreen.screens.first(where: { $0.frame.origin == .zero }) ?? NSScreen.main else { return }
 
         let dim = Defaults[.lockscreenMusicWidgetSize].dimensions
@@ -395,10 +496,12 @@ final class LockscreenMusicWidgetController: ObservableObject {
         let y = screen.frame.minY + yOffset
 
         let rect = NSRect(x: x, y: y, width: dim.width, height: dim.height)
+        let isNew = (window == nil)
 
-        if window == nil {
+        if isNew {
             let newWindow = LockscreenMusicWidgetWindow(contentRect: rect)
             newWindow.contentView = NSHostingView(rootView: LockscreenMusicWidgetView())
+            newWindow.alphaValue = 0
             self.window = newWindow
         }
 
@@ -410,17 +513,47 @@ final class LockscreenMusicWidgetController: ObservableObject {
             isSkyLightAttached = true
         }
 
-        window.alphaValue = 1
         window.orderFrontRegardless()
+
+        if isNew || window.alphaValue < 1 {
+            NSAnimationContext.runAnimationGroup { ctx in
+                ctx.duration = 0.22
+                ctx.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+                window.animator().alphaValue = 1
+            }
+        }
     }
 
-    private func hideWidget() {
-        guard let window = window else { return }
-        if isSkyLightAttached {
-            SkyLightOperator.shared.undelegateWindow(window)
-            isSkyLightAttached = false
+    private func hideWidget(animated: Bool = true) {
+        guard let window = window, !isHiding else { return }
+
+        let teardown = { [weak self] in
+            guard let self = self else { return }
+            if self.isHiding {
+                if self.isSkyLightAttached, let win = self.window {
+                    SkyLightOperator.shared.undelegateWindow(win)
+                    self.isSkyLightAttached = false
+                }
+                self.window?.orderOut(nil)
+                self.window = nil
+                self.isHiding = false
+            }
         }
-        window.orderOut(nil)
-        self.window = nil
+
+        if animated {
+            isHiding = true
+            NSAnimationContext.runAnimationGroup { ctx in
+                ctx.duration = 0.18
+                ctx.timingFunction = CAMediaTimingFunction(name: .easeOut)
+                window.animator().alphaValue = 0
+            } completionHandler: {
+                Task { @MainActor in
+                    teardown()
+                }
+            }
+        } else {
+            isHiding = true
+            teardown()
+        }
     }
 }
