@@ -5,6 +5,36 @@
         <link>https://github.com/jinkun1998/another.notch/releases</link>
         <description>anotherNotch updates</description>
         <item>
+            <title>1.3.2</title>
+            <pubDate>Sun, 25 Oct 2026 02:51:49 +0000</pubDate>
+            <link>https://github.com/jinkun1998/another.notch/releases</link>
+            <sparkle:version>39</sparkle:version>
+            <sparkle:shortVersionString>1.3.2</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <description><![CDATA[<div class="markdown-heading"><h2 class="heading-element">What's Changed</h2><a id="user-content-whats-changed" class="anchor" aria-label="Permalink: What's Changed" href="#whats-changed"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
+<ul>
+<li>build(deps): bump github.com/apple/swift-collections from 1.7.0 to 1.7.1 by @dependabot[bot] in <a href="https://github.com/jinkun1998/another.notch/pull/98">https://github.com/jinkun1998/another.notch/pull/98</a>
+</li>
+<li>build(deps): bump github.com/apple/swift-collections from 1.7.1 to 1.7.2 by @dependabot[bot] in <a href="https://github.com/jinkun1998/another.notch/pull/101">https://github.com/jinkun1998/another.notch/pull/101</a>
+</li>
+<li>build(deps): bump github.com/siteline/swiftui-introspect from 27.0.0 to 27.1.0 by @dependabot[bot] in <a href="https://github.com/jinkun1998/another.notch/pull/100">https://github.com/jinkun1998/another.notch/pull/100</a>
+</li>
+<li>build(deps): bump github.com/apple/swift-collections from 1.7.2 to 1.7.3 by @dependabot[bot] in <a href="https://github.com/jinkun1998/another.notch/pull/105">https://github.com/jinkun1998/another.notch/pull/105</a>
+</li>
+<li>build(deps): bump actions/download-artifact from 8.0.1 to 8.0.2 by @dependabot[bot] in <a href="https://github.com/jinkun1998/another.notch/pull/99">https://github.com/jinkun1998/another.notch/pull/99</a>
+</li>
+<li>build(deps): bump actions/upload-artifact from 7.0.1 to 7.0.2 by @dependabot[bot] in <a href="https://github.com/jinkun1998/another.notch/pull/103">https://github.com/jinkun1998/another.notch/pull/103</a>
+</li>
+<li>build(deps): bump github/codeql-action/init from 4.38.2 to 4.39.0 by @dependabot[bot] in <a href="https://github.com/jinkun1998/another.notch/pull/106">https://github.com/jinkun1998/another.notch/pull/106</a>
+</li>
+<li>build(deps): bump github/codeql-action/analyze from 4.38.2 to 4.39.0 by @dependabot[bot] in <a href="https://github.com/jinkun1998/another.notch/pull/107">https://github.com/jinkun1998/another.notch/pull/107</a>
+</li>
+</ul>
+<p><strong>Full Changelog</strong>: <a href="https://github.com/jinkun1998/another.notch/compare/v1.3.1...v1.3.2">https://github.com/jinkun1998/another.notch/compare/v1.3.1...v1.3.2</a></p>
+]]></description>
+            <enclosure url="https://github.com/jinkun1998/another.notch/releases/download/v1.3.2/anotherNotch.dmg" length="9470228" type="application/octet-stream" sparkle:edSignature="U3jhoRFgK79ClN6IJZdmzoCPLQjnm/ZasKCt1ADRdpN6jsaleHt544XfwvoMt18xExIKBj8FNICE9Ed7B5l+Dg=="/>
+        </item>
+        <item>
             <title>1.3.1</title>
             <pubDate>Fri, 02 Oct 2026 02:21:38 +0000</pubDate>
             <link>https://github.com/jinkun1998/another.notch/releases</link>
@@ -84,33 +114,6 @@
 <p><strong>Full Changelog</strong>: <a href="https://github.com/jinkun1998/another.notch/compare/v1.3.0-beta3...v1.3.0-beta4">https://github.com/jinkun1998/another.notch/compare/v1.3.0-beta3...v1.3.0-beta4</a></p>
 ]]></description>
             <enclosure url="https://github.com/jinkun1998/another.notch/releases/download/v1.3.0-beta4/anotherNotch.dmg" length="9455180" type="application/octet-stream" sparkle:edSignature="gD0+r3iqXnVb9zillv0nvY53xt0/+pPeoMssSs2yswOdL93VPHaabTuNf5mq0uFITU7eXWuyhmfEZwg3OYI8DA=="/>
-        </item>
-        <item>
-            <title>1.2.0</title>
-            <pubDate>Fri, 18 Sep 2026 06:47:46 +0000</pubDate>
-            <link>https://github.com/jinkun1998/another.notch/releases</link>
-            <sparkle:version>32</sparkle:version>
-            <sparkle:shortVersionString>1.2.0</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-            <description><![CDATA[<div class="markdown-heading"><h1 class="heading-element">anotherNotch v1.2.0</h1><a id="user-content-anothernotch-v120" class="anchor" aria-label="Permalink: anotherNotch v1.2.0" href="#anothernotch-v120"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
-<div class="markdown-heading"><h2 class="heading-element">New Features</h2><a id="user-content-new-features" class="anchor" aria-label="Permalink: New Features" href="#new-features"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
-<ul>
-<li>Music lyrics — synced lyrics below music controls, with verified lyric matching.</li>
-<li>Lunar calendar — Vietnamese lunar dates in Calendar.</li>
-<li>Tab shortcuts — global keyboard shortcuts for installed notch modules.</li>
-<li>Clipboard improvements — paste selected records into the active app; preview long content.</li>
-<li>System HUD controls — choose which macOS HUDs anotherNotch replaces.</li>
-<li>Update check — menu bar action to manually check for updates.</li>
-<li>Homebrew Cask — install anotherNotch from Homebrew.</li>
-</ul>
-<div class="markdown-heading"><h2 class="heading-element">Optimizations</h2><a id="user-content-optimizations" class="anchor" aria-label="Permalink: Optimizations" href="#optimizations"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
-<ul>
-<li>Reduced open-notch redraw work for music lyrics, progress, and waveform effects.</li>
-<li>Smoother notch resizing and stable music-control positioning.</li>
-<li>Improved notch sizing options consistency across display types.</li>
-</ul>
-]]></description>
-            <enclosure url="https://github.com/jinkun1998/another.notch/releases/download/v1.2.0/anotherNotch.dmg" length="9098440" type="application/octet-stream" sparkle:edSignature="s8YscFtX1o5bvF51DYbLNsbRDmZ1WOC7/vn8Au2E5Ih1xcEAN7qCJQf7AC0H3BovNvfQwzOWAVpwTo51sJIbDA=="/>
         </item>
     </channel>
 </rss>
