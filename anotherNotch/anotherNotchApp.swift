@@ -128,6 +128,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         } else {
             enableSkyLightOnAllWindows()
         }
+        LockscreenMusicWidgetController.shared.onScreenLocked()
         MediaKeyInterceptor.shared.stop()
     }
 
@@ -139,6 +140,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         } else {
             disableSkyLightOnAllWindows()
         }
+        LockscreenMusicWidgetController.shared.onScreenUnlocked()
 
         Task {
             await MediaKeyInterceptor.shared.resumeAfterWake()
@@ -370,6 +372,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         _ = VolumeManager.shared
+        _ = LockscreenMusicWidgetController.shared
         FeatureModuleRegistry.shared.startInstalledServices()
 
         let normalizedMusicControls = MusicControlButton.normalizedLayout(Defaults[.musicControlSlots])

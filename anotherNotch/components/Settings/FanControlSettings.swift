@@ -275,16 +275,13 @@ struct FanControlSettings: View {
 
             // Reset to Defaults
             Section {
-                Button(role: .destructive) {
-                    manager.resetToDefaults()
-                } label: {
-                    HStack {
-                        Spacer()
-                        Text("Reset to Defaults")
-                            .fontWeight(.medium)
-                            .foregroundStyle(.red)
-                        Spacer()
+                HStack {
+                    Spacer()
+                    Button("Reset to Defaults") {
+                        manager.resetToDefaults()
                     }
+                    .buttonStyle(.borderless)
+                    .foregroundStyle(.red)
                 }
             } footer: {
                 Text("Restores all fan control preferences and thresholds back to system defaults.")

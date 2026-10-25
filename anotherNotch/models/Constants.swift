@@ -89,6 +89,82 @@ enum HapticFeedbackLevel: String, CaseIterable, Identifiable, Defaults.Serializa
 }
 
 // Action to perform when Option (⌥) is held while pressing media keys
+
+enum LockscreenWidgetSize: String, CaseIterable, Identifiable, Defaults.Serializable {
+    case compact = "Compact"
+    case standard = "Standard"
+    case large = "Large"
+
+    var id: String { rawValue }
+
+    var dimensions: (width: CGFloat, height: CGFloat, artworkSize: CGFloat, cornerRadius: CGFloat) {
+        switch self {
+        case .compact:
+            return (370, 136, 48, 22)
+        case .standard:
+            return (430, 154, 56, 26)
+        case .large:
+            return (500, 176, 68, 30)
+        }
+    }
+
+    var titleSize: CGFloat {
+        switch self {
+        case .compact: 14
+        case .standard: 15
+        case .large: 17
+        }
+    }
+
+    var artistSize: CGFloat {
+        switch self {
+        case .compact: 12
+        case .standard: 13
+        case .large: 14
+        }
+    }
+
+    var controlsSpacing: CGFloat {
+        switch self {
+        case .compact: 32
+        case .standard: 38
+        case .large: 46
+        }
+    }
+
+    var transportIconSize: CGFloat {
+        switch self {
+        case .compact: 16
+        case .standard: 18
+        case .large: 20
+        }
+    }
+
+    var playIconSize: CGFloat {
+        switch self {
+        case .compact: 18
+        case .standard: 21
+        case .large: 24
+        }
+    }
+
+    var playButtonSize: CGFloat {
+        switch self {
+        case .compact: 36
+        case .standard: 40
+        case .large: 46
+        }
+    }
+}
+
+enum LockscreenWidgetPosition: String, CaseIterable, Identifiable, Defaults.Serializable {
+    case leading = "Left"
+    case center = "Center"
+    case trailing = "Right"
+
+    var id: String { rawValue }
+}
+
 enum OptionKeyAction: String, CaseIterable, Identifiable, Defaults.Serializable {
     case openSettings = "Open System Settings"
     case showHUD = "Show HUD"
@@ -129,6 +205,10 @@ extension Defaults.Keys {
     static let notchHeight = Key<CGFloat>("notchHeight", default: 32)
     //static let openLastTabByDefault = Key<Bool>("openLastTabByDefault", default: false)
     static let showOnLockScreen = Key<Bool>("showOnLockScreen", default: false)
+    static let lockscreenMusicWidgetEnabled = Key<Bool>("lockscreenMusicWidgetEnabled", default: true)
+    static let lockscreenMusicWidgetSize = Key<LockscreenWidgetSize>("lockscreenMusicWidgetSize", default: .standard)
+    static let lockscreenMusicWidgetPosition = Key<LockscreenWidgetPosition>("lockscreenMusicWidgetPosition", default: .center)
+    static let lockscreenMusicWidgetYOffset = Key<Double>("lockscreenMusicWidgetYOffset", default: 200)
     static let hideFromScreenRecording = Key<Bool>("hideFromScreenRecording", default: false)
 
     // MARK: Clipboard
