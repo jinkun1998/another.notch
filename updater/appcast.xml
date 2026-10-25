@@ -11,7 +11,20 @@
             <sparkle:version>41</sparkle:version>
             <sparkle:shortVersionString>1.4.0</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-            <description><![CDATA[<p><strong>Full Changelog</strong>: <a href="https://github.com/jinkun1998/another.notch/compare/v1.3.2...v1.4.0">https://github.com/jinkun1998/another.notch/compare/v1.3.2...v1.4.0</a></p>
+            <description><![CDATA[<div class="markdown-heading"><h3 class="heading-element">Changes in v1.4.0</h3><a id="user-content-changes-in-v140" class="anchor" aria-label="Permalink: Changes in v1.4.0" href="#changes-in-v140"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
+<ul>
+<li>
+<strong>Lock Screen Music Widget</strong>: Apple Music styled widget with Liquid Glass on macOS lock screen (<code>SkyLightOperator</code>, <code>level = Int32.max - 2</code>, <code>canBecomeVisibleWithoutLogin</code>).</li>
+<li>
+<strong>Audio Output Route Switcher</strong>: Interactive audio device selector supporting MacBook speakers, AirPods, and Bluetooth/AirPlay devices directly on lock screen.</li>
+<li>
+<strong>Customizable Widget Sizing &amp; Alignment</strong>: Added Compact, Standard, and Large sizing tiers, vertical offset slider, and left/center/right alignments.</li>
+<li>
+<strong>Unified Settings UI</strong>: Standardized "Reset to Defaults" across fan control, appearance, and lock screen settings.</li>
+<li>
+<strong>Lock Screen Event Handling</strong>: Redundant screen lock detection via <code>DistributedNotificationCenter</code> and <code>NSWorkspace</code> session notifications.</li>
+</ul>
+<p><strong>Full Changelog</strong>: <a href="https://github.com/jinkun1998/another.notch/compare/v1.3.2...v1.4.0">https://github.com/jinkun1998/another.notch/compare/v1.3.2...v1.4.0</a></p>
 ]]></description>
             <enclosure url="https://github.com/jinkun1998/another.notch/releases/download/v1.4.0/anotherNotch.dmg" length="9508741" type="application/octet-stream" sparkle:edSignature="BoK1n1jJyitYb0rt0G5bUgkYaUJfb5zOcG5tN7DXw8uCb6SxqGTTw/rxrJMG7iGlZeh2K2zdbTPivsC1HfVRDA=="/>
         </item>
