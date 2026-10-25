@@ -7,8 +7,15 @@ struct ChatSettings: View {
     @Default(.chatShowNotificationsInNotch) private var showNotifications
     @Default(.chatPlaySound) private var playSound
     @ObservedObject private var chatManager = ChatManager.shared
+
     @State private var showingClearConfirmation = false
     @State private var clearedDataNotice = false
+    @State private var editingInstance: ChatInstance?
+    @State private var editName: String = ""
+    @State private var editURL: String = ""
+    @State private var showingCustomAlert = false
+    @State private var customName: String = ""
+    @State private var customURL: String = "https://"
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
@@ -26,34 +33,117 @@ struct ChatSettings: View {
 
                     Defaults.Toggle("Play notification sound", key: .chatPlaySound)
                         .disabled(!chatEnabled)
+
+                    Button("Test Message Sneak Peek") {
+                        chatManager.testNotification()
+                    }
+                    .disabled(!chatEnabled)
                 }
 
-                Section("Supported Services") {
-                    ForEach(ChatService.allCases) { service in
-                        HStack {
-                            Image(systemName: service.iconName)
-                                .foregroundStyle(Color(nsColor: service.accentColor))
+                Section("Configured Services") {
+                    ForEach(chatManager.instances) { instance in
+                        HStack(spacing: 12) {
+                            ChatServiceIconView(icon: instance.iconName, size: 14)
                                 .frame(width: 20)
-                            Text(service.rawValue)
+
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(instance.displayName)
+                                    .font(.body)
+                                Text(instance.url.absoluteString)
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+                                    .lineLimit(1)
+                            }
+
                             Spacer()
-                            Text(service.url.host ?? "")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+
+                            Button {
+                                editName = instance.displayName
+                                editURL = instance.customURLString ?? (instance.serviceType == .custom ? "" : instance.serviceType.defaultURL.absoluteString)
+                                editingInstance = instance
+                            } label: {
+                                Image(systemName: "pencil")
+                                    .foregroundStyle(.secondary)
+                            }
+                            .buttonStyle(.plain)
+                            .help("Edit name or URL")
+
+                            Button {
+                                chatManager.duplicateInstance(id: instance.id)
+                            } label: {
+                                Image(systemName: "plus.square.on.square")
+                                    .foregroundStyle(.secondary)
+                            }
+                            .buttonStyle(.plain)
+                            .help("Duplicate account (isolated session)")
+
+                            Button {
+                                chatManager.clearData(for: instance.id) {}
+                            } label: {
+                                Image(systemName: "arrow.counterclockwise")
+                                    .foregroundStyle(.secondary)
+                            }
+                            .buttonStyle(.plain)
+                            .help("Clear session for this account")
+
+                            if chatManager.instances.count > 1 {
+                                Button(role: .destructive) {
+                                    chatManager.removeInstance(id: instance.id)
+                                } label: {
+                                    Image(systemName: "trash")
+                                        .foregroundStyle(.red.opacity(0.8))
+                                }
+                                .buttonStyle(.plain)
+                                .help("Remove service")
+                            }
                         }
+                        .padding(.vertical, 3)
+                    }
+
+                    Menu {
+                        ForEach(ChatServiceType.allCases) { type in
+                            Button {
+                                if type == .custom {
+                                    customName = "Custom"
+                                    customURL = "https://"
+                                    showingCustomAlert = true
+                                } else {
+                                    chatManager.addInstance(serviceType: type)
+                                }
+                            } label: {
+                                Label("Add \(type.rawValue)", systemImage: type.iconName)
+                            }
+                        }
+                    } label: {
+                        Label("Add Service...", systemImage: "plus")
                     }
                 }
 
                 Section("Session & Data") {
                     HStack {
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Clear Chat Sessions")
+                            Text("Free Inactive Tabs RAM")
+                                .font(.body)
+                            Text("Unloads background web views from memory until next selected.")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                        Button("Free RAM") {
+                            chatManager.unloadInactiveWebViews()
+                        }
+                    }
+
+                    HStack {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Clear All Chat Sessions")
                                 .font(.body)
                             Text("Logs out of all messaging accounts and deletes cached data.")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
                         Spacer()
-                        Button("Clear Data", role: .destructive) {
+                        Button("Clear All Data", role: .destructive) {
                             showingClearConfirmation = true
                         }
                     }
@@ -61,19 +151,50 @@ struct ChatSettings: View {
             }
             .formStyle(.grouped)
         }
+        .alert("Edit Service", isPresented: Binding(
+            get: { editingInstance != nil },
+            set: { if !$0 { editingInstance = nil } }
+        )) {
+            TextField("Display Name", text: $editName)
+            TextField("Custom URL", text: $editURL)
+            Button("Save") {
+                if var inst = editingInstance {
+                    inst.name = editName.trimmingCharacters(in: .whitespacesAndNewlines)
+                    let trimmed = editURL.trimmingCharacters(in: .whitespacesAndNewlines)
+                    inst.customURLString = trimmed.isEmpty ? nil : trimmed
+                    chatManager.updateInstance(inst)
+                }
+                editingInstance = nil
+            }
+            Button("Cancel", role: .cancel) {
+                editingInstance = nil
+            }
+        }
+        .alert("Add Custom Chat Service", isPresented: $showingCustomAlert) {
+            TextField("Display Name", text: $customName)
+            TextField("URL", text: $customURL)
+            Button("Add") {
+                chatManager.addInstance(
+                    serviceType: .custom,
+                    name: customName,
+                    customURL: customURL
+                )
+            }
+            Button("Cancel", role: .cancel) {}
+        }
         .confirmationDialog(
             "Clear all chat website data?",
             isPresented: $showingClearConfirmation,
             titleVisibility: .visible
         ) {
-            Button("Clear Data & Sign Out", role: .destructive) {
+            Button("Clear All Data & Sign Out", role: .destructive) {
                 chatManager.clearData {
                     clearedDataNotice = true
                 }
             }
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("This will remove cookies, stored logins, and offline cache for Telegram, WhatsApp, Discord, Slack, and Messenger.")
+            Text("This will remove cookies, stored logins, and offline cache for all configured accounts.")
         }
     }
 }

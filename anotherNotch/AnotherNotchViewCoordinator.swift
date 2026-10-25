@@ -306,13 +306,15 @@ class AnotherNotchViewCoordinator: ObservableObject {
     ) {
         Task { @MainActor in
             withAnimation(.smooth) {
-                self.expandingView.show = status
-                self.expandingView.type = type
-                self.expandingView.value = value
-                self.expandingView.browser = browser
-                self.expandingView.title = title
-                self.expandingView.subtitle = subtitle
-                self.expandingView.icon = icon
+                self.expandingView = ExpandedItem(
+                    show: status,
+                    type: type,
+                    value: value,
+                    browser: browser,
+                    title: title,
+                    subtitle: subtitle,
+                    icon: icon
+                )
             }
         }
     }

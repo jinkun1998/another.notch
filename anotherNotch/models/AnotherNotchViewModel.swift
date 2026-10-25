@@ -182,6 +182,7 @@ class AnotherNotchViewModel: NSObject, ObservableObject {
         self.notchSize = closedSize
         self.isBatteryPopoverActive = false
         self.edgeAutoOpenActive = false
+        ChatManager.shared.pauseAll()
     }
 
     func finishClose() {

@@ -4,16 +4,17 @@ import WebKit
 import Combine
 import Defaults
 
-enum ChatService: String, CaseIterable, Identifiable, Codable {
+enum ChatServiceType: String, CaseIterable, Identifiable, Codable, Defaults.Serializable {
     case telegram = "Telegram"
     case whatsapp = "WhatsApp"
     case messenger = "Messenger"
     case discord = "Discord"
     case slack = "Slack"
+    case custom = "Custom"
 
     var id: String { rawValue }
 
-    var url: URL {
+    var defaultURL: URL {
         switch self {
         case .telegram:
             return URL(string: "https://web.telegram.org/a/")!
@@ -25,6 +26,8 @@ enum ChatService: String, CaseIterable, Identifiable, Codable {
             return URL(string: "https://discord.com/app")!
         case .slack:
             return URL(string: "https://app.slack.com/client")!
+        case .custom:
+            return URL(string: "https://google.com")!
         }
     }
 
@@ -40,6 +43,8 @@ enum ChatService: String, CaseIterable, Identifiable, Codable {
             return "gamecontroller.fill"
         case .slack:
             return "number"
+        case .custom:
+            return "globe"
         }
     }
 
@@ -55,97 +60,321 @@ enum ChatService: String, CaseIterable, Identifiable, Codable {
             return NSColor(red: 0.35, green: 0.4, blue: 0.95, alpha: 1.0)
         case .slack:
             return NSColor(red: 0.89, green: 0.11, blue: 0.45, alpha: 1.0)
+        case .custom:
+            return NSColor(red: 0.6, green: 0.6, blue: 0.6, alpha: 1.0)
         }
+    }
+}
+
+typealias ChatService = ChatServiceType
+
+struct ChatInstance: Identifiable, Codable, Equatable, Hashable, Defaults.Serializable {
+    var id: UUID
+    var serviceType: ChatServiceType
+    var name: String
+    var customURLString: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id, serviceType, name, customURLString
+    }
+
+    init(id: UUID = UUID(), serviceType: ChatServiceType, name: String? = nil, customURLString: String? = nil) {
+        self.id = id
+        self.serviceType = serviceType
+        let trimmedName = name?.trimmingCharacters(in: .whitespacesAndNewlines)
+        self.name = (trimmedName?.isEmpty == false) ? trimmedName! : serviceType.rawValue
+        self.customURLString = customURLString?.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.id = try container.decodeIfPresent(UUID.self, forKey: .id) ?? UUID()
+        self.serviceType = try container.decodeIfPresent(ChatServiceType.self, forKey: .serviceType) ?? .telegram
+        let decodedName = try container.decodeIfPresent(String.self, forKey: .name) ?? ""
+        self.name = decodedName.isEmpty ? self.serviceType.rawValue : decodedName
+        self.customURLString = try container.decodeIfPresent(String.self, forKey: .customURLString)
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(serviceType, forKey: .serviceType)
+        try container.encode(name, forKey: .name)
+        try container.encodeIfPresent(customURLString, forKey: .customURLString)
+    }
+
+    var displayName: String {
+        name.isEmpty ? serviceType.rawValue : name
+    }
+
+    var url: URL {
+        if let custom = customURLString, !custom.isEmpty, let parsed = URL(string: custom), parsed.scheme != nil {
+            return parsed
+        }
+        return serviceType.defaultURL
+    }
+
+    var iconName: String {
+        serviceType.iconName
+    }
+
+    var accentColor: NSColor {
+        serviceType.accentColor
     }
 }
 
 struct ChatNotificationItem: Identifiable, Equatable {
     let id = UUID()
-    let service: ChatService
+    let instanceId: UUID
+    let serviceType: ChatServiceType
+    let instanceName: String
     let title: String
     let body: String
     let timestamp: Date
+
+    var service: ChatServiceType {
+        serviceType
+    }
 }
 
 final class ChatManager: NSObject, ObservableObject, WKScriptMessageHandler, WKNavigationDelegate, WKUIDelegate {
     static let shared = ChatManager()
 
-    @Published var activeService: ChatService {
+    @Published var instances: [ChatInstance] = [] {
         didSet {
-            Defaults[.chatSelectedService] = activeService.rawValue
-            unreadCounts[activeService] = 0
+            Defaults[.chatInstances] = instances
         }
     }
 
-    @Published var unreadCounts: [ChatService: Int] = [:]
+    @Published var activeInstanceId: UUID {
+        willSet {
+            webViews[activeInstanceId]?.pauseAllMediaPlayback(completionHandler: nil)
+        }
+        didSet {
+            Defaults[.chatActiveInstanceID] = activeInstanceId.uuidString
+            unreadCounts[activeInstanceId] = 0
+        }
+    }
+
+    @Published var unreadCounts: [UUID: Int] = [:]
     @Published var latestNotification: ChatNotificationItem?
+
+    var activeInstance: ChatInstance? {
+        instances.first { $0.id == activeInstanceId } ?? instances.first
+    }
+
+    var activeService: ChatServiceType {
+        get { activeInstance?.serviceType ?? .telegram }
+        set {
+            if let match = instances.first(where: { $0.serviceType == newValue }) {
+                activeInstanceId = match.id
+            }
+        }
+    }
 
     var unreadCount: Int {
         unreadCounts.values.reduce(0, +)
     }
 
-    private var webViews: [ChatService: WKWebView] = [:]
+    private var webViews: [UUID: WKWebView] = [:]
     private let defaultUserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Safari/605.1.15"
 
     override private init() {
-        let saved = Defaults[.chatSelectedService]
-        self.activeService = ChatService(rawValue: saved) ?? .telegram
+        var loaded = Defaults[.chatInstances]
+        if loaded.isEmpty {
+            loaded = [
+                ChatInstance(id: UUID(uuidString: "967D8441-F236-48FC-99F2-3AF317CAD73A")!, serviceType: .telegram, name: "Telegram"),
+                ChatInstance(id: UUID(uuidString: "CB69F377-25D0-4A4A-9570-838A2EB6F96D")!, serviceType: .whatsapp, name: "WhatsApp"),
+                ChatInstance(id: UUID(uuidString: "6D656D41-E0DB-4250-AEC2-E8CAE1634D21")!, serviceType: .messenger, name: "Messenger"),
+                ChatInstance(id: UUID(uuidString: "48F6A38B-50AB-4E4B-B724-01AB4C6DB03A")!, serviceType: .discord, name: "Discord"),
+                ChatInstance(id: UUID(uuidString: "7BDE24F5-58CC-4E07-8457-4362E1FD45D4")!, serviceType: .slack, name: "Slack")
+            ]
+        }
+
+        var needsResave = false
+        for i in 0..<loaded.count {
+            let u = loaded[i].id.uuid
+            let version = (u.6 & 0xF0) >> 4
+            let variant = (u.8 & 0xC0) >> 6
+            if version != 4 || variant != 2 {
+                loaded[i].id = UUID()
+                needsResave = true
+            }
+        }
+        if needsResave {
+            Defaults[.chatInstances] = loaded
+        }
+
+        self.instances = loaded
+
+        let savedActive = Defaults[.chatActiveInstanceID]
+        if let savedUUID = UUID(uuidString: savedActive), loaded.contains(where: { $0.id == savedUUID }) {
+            self.activeInstanceId = savedUUID
+        } else {
+            self.activeInstanceId = loaded.first?.id ?? UUID()
+        }
+
         super.init()
     }
 
     func preloadActiveService() {
         DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            _ = self.getOrCreateWebView(for: self.activeService)
+            guard let self = self, let active = self.activeInstance else { return }
+            _ = self.getOrCreateWebView(for: active)
+        }
+    }
+
+    func unloadWebView(for instanceId: UUID) {
+        guard let wv = webViews.removeValue(forKey: instanceId) else { return }
+        wv.stopLoading()
+        wv.pauseAllMediaPlayback(completionHandler: nil)
+        wv.navigationDelegate = nil
+        wv.uiDelegate = nil
+        wv.removeFromSuperview()
+    }
+
+    func unloadInactiveWebViews() {
+        let inactiveIds = webViews.keys.filter { $0 != activeInstanceId }
+        for id in inactiveIds {
+            unloadWebView(for: id)
+        }
+    }
+
+    func pauseAll() {
+        for (_, wv) in webViews {
+            wv.pauseAllMediaPlayback(completionHandler: nil)
+        }
+    }
+
+    @discardableResult
+    func addInstance(serviceType: ChatServiceType, name: String? = nil, customURL: String? = nil) -> ChatInstance {
+        let count = instances.filter { $0.serviceType == serviceType }.count
+        let defaultName: String
+        if let name = name, !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            defaultName = name
+        } else if count == 0 {
+            defaultName = serviceType.rawValue
+        } else {
+            defaultName = "\(serviceType.rawValue) \(count + 1)"
+        }
+
+        let newInstance = ChatInstance(
+            id: UUID(),
+            serviceType: serviceType,
+            name: defaultName,
+            customURLString: customURL
+        )
+        instances.append(newInstance)
+        activeInstanceId = newInstance.id
+        return newInstance
+    }
+
+    func duplicateInstance(id: UUID) {
+        guard let source = instances.first(where: { $0.id == id }) else { return }
+        let count = instances.filter { $0.serviceType == source.serviceType }.count
+        let newName = "\(source.displayName) \(count + 1)"
+        let copy = ChatInstance(
+            id: UUID(),
+            serviceType: source.serviceType,
+            name: newName,
+            customURLString: source.customURLString
+        )
+        instances.append(copy)
+        activeInstanceId = copy.id
+    }
+
+    func updateInstance(_ updated: ChatInstance) {
+        guard let index = instances.firstIndex(where: { $0.id == updated.id }) else { return }
+        let oldURL = instances[index].url
+        instances[index] = updated
+        if oldURL != updated.url, let wv = webViews[updated.id] {
+            wv.load(URLRequest(url: updated.url))
+        }
+    }
+
+    func removeInstance(id: UUID) {
+        guard let index = instances.firstIndex(where: { $0.id == id }) else { return }
+        instances.remove(at: index)
+        webViews[id]?.stopLoading()
+        webViews.removeValue(forKey: id)
+        unreadCounts.removeValue(forKey: id)
+
+        // Delete isolated persistent web data store from disk
+        WKWebsiteDataStore.remove(forIdentifier: id) { _ in }
+
+        if activeInstanceId == id {
+            if let next = instances.first {
+                activeInstanceId = next.id
+            }
         }
     }
 
     @MainActor
-    func getOrCreateWebView(for service: ChatService) -> WKWebView {
-        if let existing = webViews[service] {
+    func getOrCreateWebView(for instance: ChatInstance) -> WKWebView {
+        if let existing = webViews[instance.id] {
             return existing
         }
 
         let config = WKWebViewConfiguration()
-        config.websiteDataStore = WKWebsiteDataStore.default()
+        // Isolated persistent website data store per instance
+        config.websiteDataStore = WKWebsiteDataStore(forIdentifier: instance.id)
         config.defaultWebpagePreferences.allowsContentJavaScript = true
+        config.mediaTypesRequiringUserActionForPlayback = []
+
+        let escapedName = instance.displayName
+            .replacingOccurrences(of: "\\", with: "\\\\")
+            .replacingOccurrences(of: "\"", with: "\\\"")
 
         let scriptSource = """
         (function() {
             if (window.__notchChatInjected) return;
             window.__notchChatInjected = true;
-            window.__notchServiceName = "\(service.rawValue)";
+            window.__notchInstanceId = "\(instance.id.uuidString)";
+            window.__notchServiceName = "\(escapedName)";
+
+            function MockNotification(title, options) {
+                try {
+                    window.webkit.messageHandlers.notchNotification.postMessage({
+                        instanceId: window.__notchInstanceId || '',
+                        service: window.__notchServiceName || '',
+                        title: String(title || ''),
+                        body: String((options && options.body) || ''),
+                        tag: String((options && options.tag) || '')
+                    });
+                } catch(e) {}
+                this.title = title;
+                this.options = options;
+                this.close = function() {};
+                this.addEventListener = function() {};
+                this.removeEventListener = function() {};
+                this.dispatchEvent = function() { return false; };
+            }
+
+            MockNotification.requestPermission = function(cb) {
+                if (typeof cb === 'function') cb('granted');
+                return Promise.resolve('granted');
+            };
 
             try {
-                const OrigNotification = window.Notification;
-                window.Notification = function(title, options) {
-                    try {
-                        window.webkit.messageHandlers.notchNotification.postMessage({
-                            service: window.__notchServiceName || '',
-                            title: String(title || ''),
-                            body: String((options && options.body) || ''),
-                            tag: String((options && options.tag) || '')
-                        });
-                    } catch(e) {}
-                    return {
-                        close: function() {},
-                        addEventListener: function() {},
-                        removeEventListener: function() {},
-                        dispatchEvent: function() { return false; }
-                    };
-                };
-                window.Notification.permission = 'granted';
-                window.Notification.requestPermission = function(cb) {
-                    if (cb) cb('granted');
-                    return Promise.resolve('granted');
-                };
-            } catch(e) {}
+                Object.defineProperty(MockNotification, 'permission', {
+                    get: function() { return 'granted'; },
+                    configurable: true
+                });
+                Object.defineProperty(MockNotification, 'maxActions', {
+                    get: function() { return 2; },
+                    configurable: true
+                });
+                window.Notification = MockNotification;
+            } catch(e) {
+                window.Notification = MockNotification;
+            }
 
             try {
-                if (window.ServiceWorkerRegistration && window.ServiceWorkerRegistration.prototype.showNotification) {
-                    window.ServiceWorkerRegistration.prototype.showNotification = function(title, options) {
+                if (typeof ServiceWorkerRegistration !== 'undefined') {
+                    ServiceWorkerRegistration.prototype.showNotification = function(title, options) {
                         try {
                             window.webkit.messageHandlers.notchNotification.postMessage({
+                                instanceId: window.__notchInstanceId || '',
                                 service: window.__notchServiceName || '',
                                 title: String(title || ''),
                                 body: String((options && options.body) || ''),
@@ -158,39 +387,55 @@ final class ChatManager: NSObject, ObservableObject, WKScriptMessageHandler, WKN
             } catch(e) {}
 
             let lastCount = -1;
+            let lastTitle = '';
             function checkTitleBadge() {
                 try {
-                    const title = document.title || '';
-                    const match = title.match(/\\((\\d+)\\)/);
+                    const rawTitle = document.title || '';
+                    if (rawTitle === lastTitle) return;
+                    lastTitle = rawTitle;
+
                     let count = 0;
+                    const match = rawTitle.match(/\\((\\d+)\\)/);
                     if (match) {
                         count = parseInt(match[1], 10);
-                    } else if (title.startsWith('*') || title.startsWith('•')) {
+                    } else if (rawTitle.startsWith('*') || rawTitle.startsWith('•')) {
                         count = 1;
                     }
+
                     if (count !== lastCount) {
+                        const isNew = (count > lastCount && lastCount >= 0);
                         lastCount = count;
                         window.webkit.messageHandlers.notchBadge.postMessage({
-                            service: window.__notchServiceName || '',
-                            count: count
+                            instanceId: window.__notchInstanceId || '',
+                            count: count,
+                            rawTitle: rawTitle,
+                            isNew: isNew
                         });
                     }
                 } catch(e) {}
             }
 
-            const titleElem = document.querySelector('title');
-            if (titleElem) {
-                new MutationObserver(checkTitleBadge).observe(titleElem, { subtree: true, characterData: true, childList: true });
-            } else if (document.head) {
-                new MutationObserver(checkTitleBadge).observe(document.head, { subtree: true, characterData: true, childList: true });
+            function initTitleObserver() {
+                const titleElem = document.querySelector('title');
+                if (titleElem) {
+                    new MutationObserver(checkTitleBadge).observe(titleElem, { subtree: true, characterData: true, childList: true });
+                } else if (document.head) {
+                    new MutationObserver(checkTitleBadge).observe(document.head, { subtree: true, characterData: true, childList: true });
+                }
             }
-            setInterval(checkTitleBadge, 2000);
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initTitleObserver);
+            } else {
+                initTitleObserver();
+            }
+            setInterval(checkTitleBadge, 20000);
         })();
         """
 
         let userScript = WKUserScript(
             source: scriptSource,
-            injectionTime: .atDocumentEnd,
+            injectionTime: .atDocumentStart,
             forMainFrameOnly: false
         )
         config.userContentController.addUserScript(userScript)
@@ -203,34 +448,61 @@ final class ChatManager: NSObject, ObservableObject, WKScriptMessageHandler, WKN
         webView.uiDelegate = self
         webView.setValue(false, forKey: "drawsBackground")
 
-        webView.load(URLRequest(url: service.url))
-        webViews[service] = webView
+        webView.load(URLRequest(url: instance.url))
+        webViews[instance.id] = webView
         return webView
     }
 
+    @MainActor
+    func getOrCreateWebView(for service: ChatServiceType) -> WKWebView {
+        if let match = instances.first(where: { $0.serviceType == service }) {
+            return getOrCreateWebView(for: match)
+        }
+        let added = addInstance(serviceType: service)
+        return getOrCreateWebView(for: added)
+    }
+
     func reloadCurrent() {
-        webViews[activeService]?.reload()
+        guard let id = activeInstance?.id else { return }
+        webViews[id]?.reload()
     }
 
     func goBack() {
-        if webViews[activeService]?.canGoBack == true {
-            webViews[activeService]?.goBack()
+        guard let id = activeInstance?.id else { return }
+        if webViews[id]?.canGoBack == true {
+            webViews[id]?.goBack()
         }
     }
 
     func goForward() {
-        if webViews[activeService]?.canGoForward == true {
-            webViews[activeService]?.goForward()
+        guard let id = activeInstance?.id else { return }
+        if webViews[id]?.canGoForward == true {
+            webViews[id]?.goForward()
         }
     }
 
-    func clearData(completion: @escaping () -> Void) {
-        let types = WKWebsiteDataStore.allWebsiteDataTypes()
-        WKWebsiteDataStore.default().removeData(ofTypes: types, modifiedSince: .distantPast) { [weak self] in
-            DispatchQueue.main.async {
-                self?.webViews.removeAll()
-                self?.unreadCounts.removeAll()
-                completion()
+    func clearData(for instanceId: UUID? = nil, completion: @escaping () -> Void) {
+        if let id = instanceId {
+            webViews[id]?.stopLoading()
+            webViews.removeValue(forKey: id)
+            unreadCounts[id] = 0
+            WKWebsiteDataStore.remove(forIdentifier: id) { _ in
+                DispatchQueue.main.async {
+                    completion()
+                }
+            }
+        } else {
+            for inst in instances {
+                webViews[inst.id]?.stopLoading()
+                WKWebsiteDataStore.remove(forIdentifier: inst.id) { _ in }
+            }
+            webViews.removeAll()
+            unreadCounts.removeAll()
+            let types = WKWebsiteDataStore.allWebsiteDataTypes()
+            WKWebsiteDataStore.default().removeData(ofTypes: types, modifiedSince: .distantPast) {
+                DispatchQueue.main.async {
+                    completion()
+                }
             }
         }
     }
@@ -239,29 +511,48 @@ final class ChatManager: NSObject, ObservableObject, WKScriptMessageHandler, WKN
 
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         guard let dict = message.body as? [String: Any] else { return }
-        let serviceRaw = dict["service"] as? String ?? ""
-        let service = ChatService(rawValue: serviceRaw) ?? activeService
+        let instanceIdStr = dict["instanceId"] as? String ?? ""
+        let instanceId = UUID(uuidString: instanceIdStr) ?? activeInstanceId
 
         if message.name == "notchNotification" {
             let title = (dict["title"] as? String) ?? ""
             let body = (dict["body"] as? String) ?? ""
             DispatchQueue.main.async { [weak self] in
-                self?.handleNotification(service: service, title: title, body: body)
+                self?.handleNotification(instanceId: instanceId, title: title, body: body)
             }
         } else if message.name == "notchBadge" {
             let count = (dict["count"] as? Int) ?? 0
+            let rawTitle = (dict["rawTitle"] as? String) ?? ""
+            let isNew = (dict["isNew"] as? Bool) ?? false
             DispatchQueue.main.async { [weak self] in
-                self?.handleBadge(service: service, count: count)
+                self?.handleBadge(instanceId: instanceId, count: count, rawTitle: rawTitle, isNew: isNew)
             }
         }
     }
 
+    private var lastNotificationTime: [UUID: Date] = [:]
+
     @MainActor
-    private func handleNotification(service: ChatService, title: String, body: String) {
+    func handleNotification(instanceId: UUID, title: String, body: String) {
+        guard let instance = instances.first(where: { $0.id == instanceId }) else { return }
         guard !title.isEmpty || !body.isEmpty else { return }
-        let cleanTitle = title.isEmpty ? service.rawValue : title
-        unreadCounts[service, default: 0] += 1
-        latestNotification = ChatNotificationItem(service: service, title: cleanTitle, body: body, timestamp: Date())
+
+        // Throttle notifications per instance within 1.2s to prevent duplicates
+        if let last = lastNotificationTime[instanceId], Date().timeIntervalSince(last) < 1.2 {
+            return
+        }
+        lastNotificationTime[instanceId] = Date()
+
+        let cleanTitle = title.isEmpty ? instance.displayName : title
+        unreadCounts[instanceId, default: 0] += 1
+        latestNotification = ChatNotificationItem(
+            instanceId: instanceId,
+            serviceType: instance.serviceType,
+            instanceName: instance.displayName,
+            title: cleanTitle,
+            body: body,
+            timestamp: Date()
+        )
 
         guard Defaults[.chatShowNotificationsInNotch] else { return }
 
@@ -275,21 +566,58 @@ final class ChatManager: NSObject, ObservableObject, WKScriptMessageHandler, WKN
             status: true,
             type: .chatNotification,
             title: cleanTitle,
-            subtitle: body,
-            icon: service.iconName
+            subtitle: body.isEmpty ? "New message" : body,
+            icon: instance.iconName
         )
     }
 
     @MainActor
-    private func handleBadge(service: ChatService, count: Int) {
-        unreadCounts[service] = count
+    private func handleBadge(instanceId: UUID, count: Int, rawTitle: String, isNew: Bool) {
+        unreadCounts[instanceId] = count
+        if isNew && count > 0 {
+            guard let instance = instances.first(where: { $0.id == instanceId }) else { return }
+            var clean = rawTitle
+            if let match = clean.range(of: #"^\\((\\d+)\\)\\s*"#, options: .regularExpression) {
+                clean = String(clean[match.upperBound...])
+            } else if clean.hasPrefix("*") || clean.hasPrefix("•") {
+                clean = String(clean.dropFirst()).trimmingCharacters(in: .whitespacesAndNewlines)
+            }
+            clean = clean.trimmingCharacters(in: .whitespacesAndNewlines)
+
+            let sender: String
+            let snippet: String
+            if clean.contains(":") {
+                let parts = clean.split(separator: ":", maxSplits: 1).map(String.init)
+                sender = parts[0].trimmingCharacters(in: .whitespaces)
+                snippet = parts[1].trimmingCharacters(in: .whitespaces)
+            } else if !clean.isEmpty && clean.lowercased() != instance.displayName.lowercased() && clean.lowercased() != instance.serviceType.rawValue.lowercased() {
+                sender = clean
+                snippet = "New message"
+            } else {
+                sender = instance.displayName
+                snippet = "New message"
+            }
+
+            handleNotification(instanceId: instanceId, title: sender, body: snippet)
+        }
+    }
+
+    @MainActor
+    func testNotification() {
+        guard let instance = activeInstance ?? instances.first else { return }
+        handleNotification(
+            instanceId: instance.id,
+            title: instance.displayName,
+            body: "Hello! This is a test notch notification."
+        )
     }
 
     // MARK: - WKNavigationDelegate
 
     func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
         if navigationAction.navigationType == .linkActivated, let url = navigationAction.request.url {
-            if !isInternalChatURL(url) {
+            let instance = instances.first(where: { webViews[$0.id] == webView }) ?? activeInstance
+            if let instance = instance, !isInternalChatURL(url, instance: instance) {
                 NSWorkspace.shared.open(url)
                 decisionHandler(.cancel)
                 return
@@ -298,8 +626,11 @@ final class ChatManager: NSObject, ObservableObject, WKScriptMessageHandler, WKN
         decisionHandler(.allow)
     }
 
-    private func isInternalChatURL(_ url: URL) -> Bool {
+    private func isInternalChatURL(_ url: URL, instance: ChatInstance) -> Bool {
         guard let host = url.host?.lowercased() else { return false }
+        if let instHost = instance.url.host?.lowercased(), host.contains(instHost) || instHost.contains(host) {
+            return true
+        }
         return host.contains("telegram.org")
             || host.contains("whatsapp.com")
             || host.contains("whatsapp.net")

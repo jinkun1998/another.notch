@@ -33,7 +33,7 @@ let calendarOpenNotchSize: CGSize = .init(
 let shelfOpenNotchSize: CGSize = .init(width: 640, height: 160)
 let clipboardOpenNotchWidth: CGFloat = calendarOpenNotchSize.width
 let musicOpenNotchSize: CGSize = calendarOpenNotchSize
-let chatContentSize: CGSize = .init(width: 800, height: 520)
+let chatContentSize: CGSize = .init(width: 820, height: 520)
 let baseMaximumOpenNotchSize: CGSize = .init(
     width: max(shelfOpenNotchSize.width, musicOpenNotchSize.width, calendarOpenNotchSize.width, chatContentSize.width),
     height: max(shelfOpenNotchSize.height, musicOpenNotchSize.height, calendarOpenNotchSize.height, chatContentSize.height)
@@ -74,14 +74,15 @@ let cornerRadiusInsets: (opened: (top: CGFloat, bottom: CGFloat), closed: (top: 
 
 @MainActor
 func tabHeaderMinimumOpenWidth(screenUUID: String? = nil) -> CGFloat {
-    let tabCount = CGFloat(max(
-        FeatureModuleRegistry.shared.leftInstalledModules.count,
-        FeatureModuleRegistry.shared.rightInstalledModules.count
-    ))
-    let tabStripWidth = tabCount * moduleTabWidth
-    let requiredInnerWingWidth = moduleTabLeadingPadding + tabStripWidth + moduleTabNotchGap
+    let leftCount = CGFloat(FeatureModuleRegistry.shared.leftInstalledModules.count)
+    let rightCount = CGFloat(FeatureModuleRegistry.shared.rightInstalledModules.count)
+    let leftWingWidth = leftCount * moduleTabWidth + moduleTabLeadingPadding + moduleTabNotchGap
+    let rightExtraControls: CGFloat = (Defaults[.settingsIconInNotch] ? 28 : 0)
+        + (Defaults[.batteryFeatureEnabled] && Defaults[.showBatteryIndicator] ? 95 : 0)
+    let rightWingWidth = rightCount * moduleTabWidth + rightExtraControls + moduleTabLeadingPadding + moduleTabNotchGap
+    let wingWidth = max(leftWingWidth, rightWingWidth)
     let physicalWidth = getClosedNotchSize(screenUUID: screenUUID).width
-    let dynamicWidth = physicalWidth + (requiredInnerWingWidth * 2) + (notchOuterHorizontalPadding * 2)
+    let dynamicWidth = physicalWidth + (wingWidth * 2) + (notchOuterHorizontalPadding * 2)
     return max(tabBarMinimumOpenWidth, dynamicWidth)
 }
 

@@ -301,7 +301,7 @@ struct ContentView: View {
 
     private var closedNotchContentSize: CGSize {
         let baseSize = CGSize(width: vm.closedNotchSize.width, height: vm.effectiveClosedNotchHeight)
-        guard baseSize.height > 0 else { return baseSize }
+        guard baseSize.height > 0 || coordinator.expandingView.show || coordinator.sneakPeek.show else { return baseSize }
 
         if coordinator.helloAnimationRunning {
             return .init(width: baseSize.width * 1.26, height: 120)
@@ -330,9 +330,10 @@ struct ContentView: View {
         if coordinator.expandingView.type == .chatNotification && coordinator.expandingView.show
             && vm.notchState == .closed
         {
+            let topHeight = max(baseSize.height, 32)
             return .init(
-                width: max(baseSize.width + 180, 320),
-                height: baseSize.height
+                width: max(baseSize.width + 200, 380),
+                height: topHeight + 24
             )
         }
 
@@ -808,21 +809,22 @@ struct ContentView: View {
                             .frame(width: powerNotificationIconWidth, alignment: .leading)
                         }
                         .frame(height: vm.effectiveClosedNotchHeight, alignment: .center)
-                    } else if !showsMusicSneakPeek
+                    } else if (!showsMusicSneakPeek || coordinator.expandingView.type == .chatNotification)
                         && coordinator.expandingView.type == .chatNotification && coordinator.expandingView.show
                         && vm.notchState == .closed
                     {
                         ChatNotificationIndicator(
                             item: coordinator.expandingView,
-                            physicalNotchWidth: max(0, vm.closedNotchSize.width - cornerRadiusInsets.closed.top)
+                            physicalNotchWidth: max(0, vm.closedNotchSize.width - cornerRadiusInsets.closed.top),
+                            topRowHeight: max(vm.effectiveClosedNotchHeight, 32)
                         )
-                        .frame(height: closedNotchContentSize.height, alignment: .center)
+                        .frame(height: closedNotchContentSize.height, alignment: .top)
                         .contentShape(Rectangle())
                         .onTapGesture {
                             coordinator.toggleExpandingView(status: false, type: .chatNotification)
                             coordinator.currentView = .chat
                             if let notif = ChatManager.shared.latestNotification {
-                                ChatManager.shared.activeService = notif.service
+                                ChatManager.shared.activeInstanceId = notif.instanceId
                             }
                             doOpen()
                         }
@@ -917,7 +919,8 @@ struct ContentView: View {
                 .clipped()
         case .chat:
             ChatView()
-                .frame(width: chatContentSize.width, height: chatContentSize.height)
+                .frame(maxWidth: .infinity)
+                .frame(height: chatContentSize.height)
                 .clipped()
         }
     }

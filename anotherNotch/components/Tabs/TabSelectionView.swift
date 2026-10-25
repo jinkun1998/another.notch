@@ -29,6 +29,7 @@ struct TabSelectionView: View {
                 .fill(Color(nsColor: .secondarySystemFill))
                 .frame(width: tabWidth, height: 26)
                 .offset(x: CGFloat(selectedIndex) * tabWidth)
+                .clipShape(Capsule())
 
             HStack(spacing: 0) {
                 ForEach(installedModules) { module in
@@ -46,7 +47,6 @@ struct TabSelectionView: View {
             }
         }
         .frame(width: CGFloat(installedModules.count) * tabWidth, height: 26, alignment: .leading)
-        .clipShape(Capsule())
         .animation(.smooth, value: coordinator.currentView)
         .onAppear(perform: ensureSelectionIsAvailable)
         .onChange(of: modules.installedIDs) { _, _ in ensureSelectionIsAvailable() }

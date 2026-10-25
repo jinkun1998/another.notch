@@ -83,7 +83,6 @@ struct AnotherNotchHeader: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: openNotchHeaderHeight)
-        .clipped()
         .foregroundColor(.gray)
         .environmentObject(vm)
     }
