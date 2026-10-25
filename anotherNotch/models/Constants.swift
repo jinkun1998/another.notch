@@ -338,5 +338,11 @@ extension Defaults.Keys {
         }
     }
 
+    // MARK: Chat
+    static let chatEnabled = Key<Bool>("chatEnabled", default: true)
+    static let chatShowNotificationsInNotch = Key<Bool>("chatShowNotificationsInNotch", default: true)
+    static let chatPlaySound = Key<Bool>("chatPlaySound", default: true)
+    static let chatSelectedService = Key<String>("chatSelectedService", default: "Telegram")
+
     static let didClearLegacyURLCacheV1 = Key<Bool>("didClearLegacyURLCache_v1", default: false)
 }

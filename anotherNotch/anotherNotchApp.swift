@@ -536,6 +536,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         KeyboardShortcuts.onKeyDown(for: .openFanControl) { [weak self] in
             self?.openNotch(.fanControl)
         }
+        KeyboardShortcuts.onKeyDown(for: .openChat) { [weak self] in
+            self?.openNotch(.chat)
+        }
 
         if !Defaults[.showOnAllDisplays] {
             let viewModel = self.vm

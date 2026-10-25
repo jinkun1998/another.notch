@@ -12,6 +12,7 @@ struct TabSelectionView: View {
     let installedModules: [FeatureModule]
     @ObservedObject private var coordinator = AnotherNotchViewCoordinator.shared
     @ObservedObject private var modules = FeatureModuleRegistry.shared
+    @ObservedObject private var chatManager = ChatManager.shared
 
     init(installedModules: [FeatureModule], tabWidth: CGFloat = moduleTabWidth) {
         self.installedModules = installedModules
@@ -34,7 +35,8 @@ struct TabSelectionView: View {
                     TabButton(
                         label: module.title,
                         icon: module.icon,
-                        selected: coordinator.currentView == module.tabDestination
+                        selected: coordinator.currentView == module.tabDestination,
+                        badgeCount: module.id == .chat ? chatManager.unreadCount : 0
                     ) {
                         coordinator.currentView = module.tabDestination
                     }

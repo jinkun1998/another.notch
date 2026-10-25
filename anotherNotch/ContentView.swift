@@ -327,6 +327,15 @@ struct ContentView: View {
             )
         }
 
+        if coordinator.expandingView.type == .chatNotification && coordinator.expandingView.show
+            && vm.notchState == .closed
+        {
+            return .init(
+                width: max(baseSize.width + 180, 320),
+                height: baseSize.height
+            )
+        }
+
         if coordinator.expandingView.type == .bluetoothDevice && coordinator.expandingView.show
             && vm.notchState == .closed
         {
@@ -800,6 +809,24 @@ struct ContentView: View {
                         }
                         .frame(height: vm.effectiveClosedNotchHeight, alignment: .center)
                     } else if !showsMusicSneakPeek
+                        && coordinator.expandingView.type == .chatNotification && coordinator.expandingView.show
+                        && vm.notchState == .closed
+                    {
+                        ChatNotificationIndicator(
+                            item: coordinator.expandingView,
+                            physicalNotchWidth: max(0, vm.closedNotchSize.width - cornerRadiusInsets.closed.top)
+                        )
+                        .frame(height: closedNotchContentSize.height, alignment: .center)
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            coordinator.toggleExpandingView(status: false, type: .chatNotification)
+                            coordinator.currentView = .chat
+                            if let notif = ChatManager.shared.latestNotification {
+                                ChatManager.shared.activeService = notif.service
+                            }
+                            doOpen()
+                        }
+                    } else if !showsMusicSneakPeek
                         && coordinator.expandingView.type == .bluetoothDevice && coordinator.expandingView.show
                         && vm.notchState == .closed
                     {
@@ -887,6 +914,10 @@ struct ContentView: View {
         case .fanControl:
             FanControlView()
                 .frame(width: fanControlContentSize.width, height: fanControlContentSize.height)
+                .clipped()
+        case .chat:
+            ChatView()
+                .frame(width: chatContentSize.width, height: chatContentSize.height)
                 .clipped()
         }
     }

@@ -33,9 +33,10 @@ let calendarOpenNotchSize: CGSize = .init(
 let shelfOpenNotchSize: CGSize = .init(width: 640, height: 160)
 let clipboardOpenNotchWidth: CGFloat = calendarOpenNotchSize.width
 let musicOpenNotchSize: CGSize = calendarOpenNotchSize
+let chatContentSize: CGSize = .init(width: 580, height: 420)
 let baseMaximumOpenNotchSize: CGSize = .init(
-    width: max(shelfOpenNotchSize.width, musicOpenNotchSize.width, calendarOpenNotchSize.width),
-    height: max(shelfOpenNotchSize.height, musicOpenNotchSize.height, calendarOpenNotchSize.height)
+    width: max(shelfOpenNotchSize.width, musicOpenNotchSize.width, calendarOpenNotchSize.width, chatContentSize.width),
+    height: max(shelfOpenNotchSize.height, musicOpenNotchSize.height, calendarOpenNotchSize.height, chatContentSize.height)
 )
 
 @MainActor
@@ -171,6 +172,9 @@ func openNotchSize(for view: NotchViews, screenUUID: String? = nil) -> CGSize {
     case .fanControl:
         contentWidth = fanControlContentSize.width
         contentHeight = fanControlContentSize.height
+    case .chat:
+        contentWidth = chatContentSize.width
+        contentHeight = chatContentSize.height
     }
 
     return pixelAlignedNotchSize(

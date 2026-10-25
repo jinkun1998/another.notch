@@ -237,12 +237,18 @@ final class FeatureModuleAvailabilityTests: XCTestCase {
         )
     }
 
+    func testChatModuleAvailabilityAndDefaults() {
+        XCTAssertTrue(FeatureModuleID.allCases.contains(.chat))
+        XCTAssertEqual(FeatureModuleID.chat.rawValue, "chat")
+    }
+
     func testEachModuleUsesItsOwnMainFeatureToggle() {
         XCTAssertTrue(mainFeatureEnabled(.clipboard, enabledModule: .clipboard))
         XCTAssertTrue(mainFeatureEnabled(.shelf, enabledModule: .shelf))
         XCTAssertTrue(mainFeatureEnabled(.calendar, enabledModule: .calendar))
         XCTAssertTrue(mainFeatureEnabled(.camera, enabledModule: .camera))
         XCTAssertTrue(mainFeatureEnabled(.fanControl, enabledModule: .fanControl))
+        XCTAssertTrue(mainFeatureEnabled(.chat, enabledModule: .chat))
 
         XCTAssertFalse(mainFeatureEnabled(.clipboard, enabledModule: .shelf))
         XCTAssertFalse(mainFeatureEnabled(.shelf, enabledModule: .calendar))
@@ -292,7 +298,8 @@ final class FeatureModuleAvailabilityTests: XCTestCase {
             shelfEnabled: enabledModule == .shelf,
             calendarEnabled: enabledModule == .calendar,
             cameraEnabled: enabledModule == .camera,
-            fanControlEnabled: enabledModule == .fanControl
+            fanControlEnabled: enabledModule == .fanControl,
+            chatEnabled: enabledModule == .chat
         )
     }
 
