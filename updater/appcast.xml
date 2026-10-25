@@ -11,7 +11,16 @@
             <sparkle:version>42</sparkle:version>
             <sparkle:shortVersionString>1.4.1</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-            <description><![CDATA[<p><strong>Full Changelog</strong>: <a href="https://github.com/jinkun1998/another.notch/compare/v1.4.0...v1.4.1">https://github.com/jinkun1998/another.notch/compare/v1.4.0...v1.4.1</a></p>
+            <description><![CDATA[<div class="markdown-heading"><h3 class="heading-element">Changes in v1.4.1 (Hotfix)</h3><a id="user-content-changes-in-v141-hotfix" class="anchor" aria-label="Permalink: Changes in v1.4.1 (Hotfix)" href="#changes-in-v141-hotfix"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
+<ul>
+<li>
+<strong>Lock Screen Idle Detection</strong>: Automatically hides lock screen music widget when avatar and password prompt go idle or screensaver starts; restores widget when user interacts.</li>
+<li>
+<strong>Instant Unlock Fade</strong>: Fades out lock screen widget immediately upon authentication (<code>com.apple.screenunlock.success</code> and <code>shieldWindowLowered</code>), eliminating post-unlock delay and desktop lingering.</li>
+<li>
+<strong>Documentation</strong>: Added total downloads badge to README.</li>
+</ul>
+<p><strong>Full Changelog</strong>: <a href="https://github.com/jinkun1998/another.notch/compare/v1.4.0...v1.4.1">https://github.com/jinkun1998/another.notch/compare/v1.4.0...v1.4.1</a></p>
 ]]></description>
             <enclosure url="https://github.com/jinkun1998/another.notch/releases/download/v1.4.1/anotherNotch.dmg" length="9517574" type="application/octet-stream" sparkle:edSignature="NS7xmgVe5cnIj3ZWVR/MwZunGCvg0c6WXj36g2hz/39A6W2cTQzSgCRMPlDHSINeAJi+ryjQCUQ5HbdMpjhVCw=="/>
         </item>
