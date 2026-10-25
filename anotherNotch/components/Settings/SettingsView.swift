@@ -1343,6 +1343,10 @@ struct Media: View {
     @Default(.sneakPeekDuration) private var sneakPeekDuration
 
     @Default(.enableLyrics) var enableLyrics
+    @Default(.lockscreenMusicWidgetEnabled) private var lockscreenMusicWidgetEnabled
+    @Default(.lockscreenMusicWidgetSize) private var lockscreenWidgetSize
+    @Default(.lockscreenMusicWidgetPosition) private var lockscreenWidgetPosition
+    @Default(.lockscreenMusicWidgetYOffset) private var lockscreenWidgetYOffset
 
     var body: some View {
         Form {
@@ -1465,6 +1469,54 @@ struct Media: View {
                     .foregroundStyle(.secondary)
             }
             .disabled(!coordinator.musicLiveActivityEnabled)
+
+            Section {
+                Defaults.Toggle(key: .lockscreenMusicWidgetEnabled) {
+                    Text("Show lock screen music widget")
+                }
+
+                if lockscreenMusicWidgetEnabled {
+                    LiquidGlassSegmentedPicker(
+                        "Size",
+                        selection: $lockscreenWidgetSize,
+                        items: LockscreenWidgetSize.allCases
+                    ) { $0.rawValue }
+
+                    LiquidGlassSegmentedPicker(
+                        "Alignment",
+                        selection: $lockscreenWidgetPosition,
+                        items: LockscreenWidgetPosition.allCases
+                    ) { $0.rawValue }
+
+                    HStack {
+                        Text("Vertical Offset")
+                        Spacer()
+                        Text("\(Int(lockscreenWidgetYOffset)) pt")
+                            .foregroundStyle(.secondary)
+                            .monospacedDigit()
+                    }
+                    Slider(value: $lockscreenWidgetYOffset, in: 140...600, step: 10)
+
+                    HStack {
+                        Spacer()
+                        Button("Reset to Defaults") {
+                            Defaults.reset(
+                                .lockscreenMusicWidgetSize,
+                                .lockscreenMusicWidgetPosition,
+                                .lockscreenMusicWidgetYOffset
+                            )
+                        }
+                        .buttonStyle(.borderless)
+                        .foregroundStyle(.red)
+                    }
+                }
+            } header: {
+                Text("Lock Screen Widget")
+            } footer: {
+                Text("Displays an Apple Music styled widget with Liquid Glass on the lock screen during playback.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
         }
         .accentColor(.effectiveAccent)
     }
@@ -2423,29 +2475,18 @@ struct Appearance: View {
             }
 
             Section {
-                Button(action: resetNotchAppearance) {
-                    HStack(spacing: 10) {
-                        Image(systemName: "arrow.counterclockwise")
-                            .font(.body.weight(.medium))
-                            .foregroundStyle(.red)
-                            .frame(width: 24, height: 24)
-                            .background(Color.red.opacity(0.12), in: Circle())
-
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Restore Default Appearance")
-                                .fontWeight(.medium)
-                                .foregroundStyle(.red)
-                            Text("Resets motion, gradient, corners, and shadow")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-
-                        Spacer(minLength: 8)
+                HStack {
+                    Spacer()
+                    Button("Reset to Defaults") {
+                        resetNotchAppearance()
                     }
-                    .padding(.vertical, 4)
-                    .contentShape(Rectangle())
+                    .buttonStyle(.borderless)
+                    .foregroundStyle(.red)
                 }
-                .buttonStyle(.plain)
+            } footer: {
+                Text("Resets motion, gradient, corners, and shadow")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
         }
         .accentColor(.effectiveAccent)
@@ -2664,6 +2705,9 @@ struct Advanced: View {
                 }
                 Defaults.Toggle(key: .showOnLockScreen) {
                     Text("Show notch on lock screen")
+                }
+                Defaults.Toggle(key: .lockscreenMusicWidgetEnabled) {
+                    Text("Show lock screen music widget")
                 }
                 Defaults.Toggle(key: .hideFromScreenRecording) {
                     Text("Hide from screen recording")

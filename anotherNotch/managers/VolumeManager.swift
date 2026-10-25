@@ -86,6 +86,7 @@ final class VolumeManager: NSObject, ObservableObject {
     @Published private(set) var isMuted: Bool = false
     @Published private(set) var lastChangeAt: Date = .distantPast
     @Published private(set) var currentOutputDevice: OutputDevice?
+    @Published private(set) var availableOutputDevices: [OutputDevice] = []
     private var knownBluetoothDeviceIDs: Set<AudioObjectID> = []
     private var isFirstDeviceDiscovery: Bool = true
 
@@ -216,6 +217,7 @@ final class VolumeManager: NSObject, ObservableObject {
         isFirstDeviceDiscovery = false
 
         DispatchQueue.main.async {
+            self.availableOutputDevices = devices
             self.currentOutputDevice = devices.first { $0.id == defaultDeviceID }
             if let device = newlyConnected, Defaults[.showBluetoothDeviceConnectionIndicator], CBManager.authorization == .allowedAlways {
                 AnotherNotchViewCoordinator.shared.toggleExpandingView(
@@ -268,6 +270,26 @@ final class VolumeManager: NSObject, ObservableObject {
             )
         }
         .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+    }
+
+    func selectOutputDevice(_ device: OutputDevice) {
+        var address = AudioObjectPropertyAddress(
+            mSelector: kAudioHardwarePropertyDefaultOutputDevice,
+            mScope: kAudioObjectPropertyScopeGlobal,
+            mElement: kAudioObjectPropertyElementMain
+        )
+        var deviceID = device.id
+        let status = AudioObjectSetPropertyData(
+            AudioObjectID(kAudioObjectSystemObject),
+            &address,
+            0,
+            nil,
+            UInt32(MemoryLayout<AudioObjectID>.size),
+            &deviceID
+        )
+        if status == noErr {
+            refreshOutputDevices()
+        }
     }
 
     private func isAliveOutputDevice(_ deviceID: AudioObjectID) -> Bool {
