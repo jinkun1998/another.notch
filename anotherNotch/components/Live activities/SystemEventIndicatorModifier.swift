@@ -152,20 +152,18 @@ struct DraggableProgressBar: View {
                 DragGesture(minimumDistance: 0)
                     .onChanged { gesture in
                         if !isDragging {
+                            isDragging = true
                             HapticFeedback.perform(.levelChange)
                         }
-                        withAnimation(.smooth(duration: 0.3)) {
-                            isDragging = true
-                            let newValue = max(0, min(gesture.location.x / geometry.size.width, 1))
-                            if Int(newValue * 10) != Int(value * 10) {
-                                HapticFeedback.perform(.levelChange)
-                            }
-                            value = newValue
-                            onChange?(newValue)
+                        let newValue = max(0, min(gesture.location.x / geometry.size.width, 1))
+                        if Int(newValue * 10) != Int(value * 10) {
+                            HapticFeedback.perform(.levelChange)
                         }
+                        value = newValue
+                        onChange?(newValue)
                     }
                     .onEnded { _ in
-                        withAnimation(.smooth(duration: 0.3)) {
+                        withAnimation(.easeOut(duration: 0.15)) {
                             isDragging = false
                         }
                     }

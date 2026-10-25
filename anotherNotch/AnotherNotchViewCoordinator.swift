@@ -259,7 +259,10 @@ class AnotherNotchViewCoordinator: ObservableObject {
                 return
             }
         }
-        withAnimation(.smooth) {
+        let animation: Animation = (sneakPeek.show == status)
+            ? .interactiveSpring(response: 0.12, dampingFraction: 0.95)
+            : .smooth
+        withAnimation(animation) {
             sneakPeek = .init(show: status, type: type, value: value, icon: icon)
         }
 

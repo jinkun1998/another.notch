@@ -323,19 +323,12 @@ final class MediaKeyInterceptor {
     }
 
     private func playFeedbackSound() {
-        guard let feedback = UserDefaults.standard.persistentDomain(forName: "NSGlobalDomain")?["com.apple.sound.beep.feedback"] as? Int,
-              feedback == 1 else { return }
+        var keyExistsAndHasValidFormat: DarwinBoolean = false
+        let feedback = CFPreferencesGetAppBooleanValue("com.apple.sound.beep.feedback" as CFString, kCFPreferencesAnyApplication, &keyExistsAndHasValidFormat)
+        guard keyExistsAndHasValidFormat.boolValue && feedback else { return }
 
         prepareAudioPlayerIfNeeded()
-        guard let player = audioPlayer else {
-            print("⚠️ [MediaKeyInterceptor] No audio player available to play feedback sound")
-            return
-        }
-        if let url = player.url {
-            print("🔊 [MediaKeyInterceptor] Playing feedback sound from: \(url.path)")
-        } else {
-            print("🔊 [MediaKeyInterceptor] Playing feedback sound (no url available for AVAudioPlayer)")
-        }
+        guard let player = audioPlayer else { return }
         if player.isPlaying {
             player.stop()
             player.currentTime = 0

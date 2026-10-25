@@ -42,15 +42,17 @@ struct AnotherNotchHeader: View {
                     .frame(width: vm.closedNotchSize.width)
 
                 HStack(spacing: 4) {
-                    TabSelectionView(installedModules: rightModules, tabWidth: moduleTabWidth)
-                        .frame(width: rightTabWidth, alignment: .leading)
-                        .padding(.trailing, moduleTabLeadingPadding)
-                    if vm.notchState == .open {
-                    if isHUDType(coordinator.sneakPeek.type) && coordinator.sneakPeek.show && Defaults[.showOpenNotchHUD] {
+                    if vm.notchState == .open,
+                       isHUDType(coordinator.sneakPeek.type) && coordinator.sneakPeek.show && Defaults[.showOpenNotchHUD]
+                    {
                         OpenNotchHUD(type: $coordinator.sneakPeek.type, value: $coordinator.sneakPeek.value, icon: $coordinator.sneakPeek.icon)
                             .transition(motion.hudTransition)
                             .animation(motion.hudAnimation, value: coordinator.sneakPeek.show)
                     } else {
+                        TabSelectionView(installedModules: rightModules, tabWidth: moduleTabWidth)
+                            .frame(width: rightTabWidth, alignment: .leading)
+                            .padding(.trailing, moduleTabLeadingPadding)
+
                         if Defaults[.settingsIconInNotch] {
                             HoverButton(
                                 icon: "gear",
@@ -73,7 +75,6 @@ struct AnotherNotchHeader: View {
                             )
                         }
                     }
-                    }
                 }
                 .font(.system(.headline, design: .rounded))
                 .padding(.trailing, 10)
@@ -82,6 +83,7 @@ struct AnotherNotchHeader: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: openNotchHeaderHeight)
+        .clipped()
         .foregroundColor(.gray)
         .environmentObject(vm)
     }

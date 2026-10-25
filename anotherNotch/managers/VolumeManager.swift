@@ -113,7 +113,7 @@ final class VolumeManager: NSObject, ObservableObject {
     @MainActor func increase(stepDivisor: Float = 1.0) {
         let divisor = max(stepDivisor, 0.25)
         let delta = step / Float32(divisor)
-        let current = readVolumeInternal() ?? rawVolume
+        let current = rawVolume
         let target = max(0, min(1, current + delta))
         setAbsolute(target)
         AnotherNotchViewCoordinator.shared.toggleSneakPeek(status: true, type: .volume, value: CGFloat(target))
@@ -122,7 +122,7 @@ final class VolumeManager: NSObject, ObservableObject {
     @MainActor func decrease(stepDivisor: Float = 1.0) {
         let divisor = max(stepDivisor, 0.25)
         let delta = step / Float32(divisor)
-        let current = readVolumeInternal() ?? rawVolume
+        let current = rawVolume
         let target = max(0, min(1, current - delta))
         setAbsolute(target)
         AnotherNotchViewCoordinator.shared.toggleSneakPeek(status: true, type: .volume, value: CGFloat(target))
@@ -162,7 +162,7 @@ final class VolumeManager: NSObject, ObservableObject {
 
     @MainActor func setAbsolute(_ value: Float32) {
         let clamped = max(0, min(1, value))
-        let currentlyMuted = isMutedInternal()
+        let currentlyMuted = isMuted
         if currentlyMuted && clamped > 0 {
             toggleMuteInternal()
         }
@@ -173,7 +173,7 @@ final class VolumeManager: NSObject, ObservableObject {
             toggleMuteInternal()
         }
 
-        publish(volume: clamped, muted: isMutedInternal(), touchDate: true)
+        publish(volume: clamped, muted: clamped == 0, touchDate: true)
     }
 
     // MARK: - CoreAudio Helpers
@@ -614,10 +614,17 @@ final class VolumeManager: NSObject, ObservableObject {
     }
 
     private func publish(volume: Float32, muted: Bool, touchDate: Bool) {
-        DispatchQueue.main.async {
+        if Thread.isMainThread {
             if touchDate { self.lastChangeAt = Date() }
             self.rawVolume = volume
             self.isMuted = muted
+        } else {
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                if touchDate { self.lastChangeAt = Date() }
+                self.rawVolume = volume
+                self.isMuted = muted
+            }
         }
     }
 
