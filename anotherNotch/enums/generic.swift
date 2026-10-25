@@ -122,7 +122,7 @@ final class FeatureModuleRegistry: ObservableObject {
             settingsDestination: .chat,
             installedByDefault: true,
             isAvailable: true,
-            supportsScrolling: false
+            supportsScrolling: true
         )
     ]
 

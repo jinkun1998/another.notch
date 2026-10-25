@@ -1174,7 +1174,7 @@ struct ContentView: View {
     }
 
     private func handleUpGesture(translation: CGFloat, phase: NSEvent.Phase) {
-        guard !isScrollableTab, vm.notchState == .open && !vm.isHoveringCalendar else { return }
+        guard !isScrollableTab, coordinator.currentView != .chat, vm.notchState == .open && !vm.isHoveringCalendar else { return }
 
         withAnimation(interactionAnimation) {
             gestureProgress = (translation / Defaults[.gestureSensitivity]) * -20
