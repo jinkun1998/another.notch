@@ -17,12 +17,17 @@ struct ChatView: View {
     var body: some View {
         VStack(spacing: 8) {
             // Service Selector Toolbar
-            HStack(spacing: 6) {
-                ForEach(ChatService.allCases) { service in
-                    serviceButton(for: service)
+            HStack(spacing: 8) {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 6) {
+                        ForEach(ChatService.allCases) { service in
+                            serviceButton(for: service)
+                        }
+                    }
+                    .padding(.vertical, 1)
                 }
 
-                Spacer()
+                Spacer(minLength: 8)
 
                 // Navigation & Browser Actions
                 HStack(spacing: 4) {
@@ -122,5 +127,6 @@ struct ChatView: View {
             )
         }
         .buttonStyle(.plain)
+        .fixedSize()
     }
 }
