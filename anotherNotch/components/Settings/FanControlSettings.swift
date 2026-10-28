@@ -82,6 +82,17 @@ struct FanControlSettings: View {
                         .padding(.horizontal, 7)
                         .padding(.vertical, 2)
                         .background(Color.secondary.opacity(0.12), in: Capsule())
+                    } else if manager.isHardwareSupported {
+                        HStack(spacing: 4) {
+                            Image(systemName: "thermometer.medium")
+                                .font(.caption2)
+                            Text("--")
+                                .font(.caption.weight(.semibold).monospacedDigit())
+                        }
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal, 7)
+                        .padding(.vertical, 2)
+                        .background(Color.secondary.opacity(0.12), in: Capsule())
                     }
                 }
             } header: {

@@ -413,10 +413,14 @@ final class SMCHelperProvider: SMCProvider, @unchecked Sendable {
     )
 
     private var readHelperPath: String {
+        // Prefer bundled helper (always ships with latest metrics like temperature)
+        if let bundled = bundledHelperPath, FileManager.default.isExecutableFile(atPath: bundled) {
+            return bundled
+        }
         if FileManager.default.isExecutableFile(atPath: helperPath) {
             return helperPath
         }
-        return bundledHelperPath ?? helperPath
+        return helperPath
     }
 
     var isConnected: Bool {
@@ -467,6 +471,11 @@ final class SMCHelperProvider: SMCProvider, @unchecked Sendable {
         }
         if let tempMatch = output.firstMatch(of: /Current temperature: ([\d.]+) C/) {
             cachedTemperature = Double(tempMatch.output.1)
+        } else if let bundled = bundledHelperPath, bundled != readHelperPath, FileManager.default.isExecutableFile(atPath: bundled) {
+            let altOutput = runHelper(path: bundled, args: ["info"])
+            if let tempMatch = altOutput.firstMatch(of: /Current temperature: ([\d.]+) C/) {
+                cachedTemperature = Double(tempMatch.output.1)
+            }
         }
 
         let range = NSRange(location: 0, length: output.utf16.count)
