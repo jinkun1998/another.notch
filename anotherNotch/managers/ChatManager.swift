@@ -807,7 +807,9 @@ final class ChatManager: NSObject, ObservableObject, WKScriptMessageHandler, WKN
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         guard let dict = message.body as? [String: Any] else { return }
         let instanceIdStr = dict["instanceId"] as? String ?? ""
-        let instanceId = UUID(uuidString: instanceIdStr) ?? activeInstanceId
+        let instanceId = webViews.first(where: { $0.value === message.webView })?.key
+            ?? UUID(uuidString: instanceIdStr)
+            ?? activeInstanceId
 
         if message.name == "notchNotification" {
             let title = (dict["title"] as? String) ?? ""
@@ -838,10 +840,6 @@ final class ChatManager: NSObject, ObservableObject, WKScriptMessageHandler, WKN
 
         let now = Date()
 
-        if isDirect {
-            lastDirectNotificationTime[instanceId] = now
-        }
-
         // Suppress popups ONLY when notch is open and user is actively viewing this exact chat tab
         let isViewingThisChat = AnotherNotchViewCoordinator.shared.isNotchOpen
             && AnotherNotchViewCoordinator.shared.currentView == .chat
@@ -860,14 +858,19 @@ final class ChatManager: NSObject, ObservableObject, WKScriptMessageHandler, WKN
                 return
             }
 
-            // Per-instance throttle: minimum 1.2s
-            if let last = lastNotificationTime[instanceId], now.timeIntervalSince(last) < 1.2 {
-                return
-            }
-
-            // Global throttle across tabs: minimum 0.8s
-            if now.timeIntervalSince(lastGlobalNotificationTime) < 0.8 {
-                return
+            if isDirect {
+                // Direct notifications bypass badge throttle; throttle identical or rapid fire (< 0.5s)
+                if let last = lastDirectNotificationTime[instanceId], now.timeIntervalSince(last) < 0.5 {
+                    return
+                }
+            } else {
+                // Indirect badge updates: throttle 1.2s per instance, 0.8s globally
+                if let last = lastNotificationTime[instanceId], now.timeIntervalSince(last) < 1.2 {
+                    return
+                }
+                if now.timeIntervalSince(lastGlobalNotificationTime) < 0.8 {
+                    return
+                }
             }
 
             lastNotificationTime[instanceId] = now
@@ -875,10 +878,12 @@ final class ChatManager: NSObject, ObservableObject, WKScriptMessageHandler, WKN
             lastNotificationSignature[instanceId] = signature
         }
 
-        let cleanTitle = title.isEmpty ? instance.displayName : title
         if isDirect {
+            lastDirectNotificationTime[instanceId] = now
             unreadCounts[instanceId, default: 0] += 1
         }
+
+        let cleanTitle = title.isEmpty ? instance.displayName : title
         latestNotification = ChatNotificationItem(
             instanceId: instanceId,
             serviceType: instance.serviceType,
@@ -907,62 +912,25 @@ final class ChatManager: NSObject, ObservableObject, WKScriptMessageHandler, WKN
 
     @MainActor
     private func handleBadge(instanceId: UUID, count: Int, rawTitle: String) {
+        let oldCount = previousCounts[instanceId] ?? 0
+        previousCounts[instanceId] = count
         unreadCounts[instanceId] = count
 
-        guard count > 0 else {
-            previousCounts[instanceId] = 0
-            return
-        }
+        guard count > oldCount else { return }
 
-        // Ignore title updates if a direct Web Notification already dispatched within 2.5s
+        // Ignore badge title updates if direct Web Notification already dispatched within 3s
         if let lastDirect = lastDirectNotificationTime[instanceId],
-           Date().timeIntervalSince(lastDirect) < 2.5 {
-            previousCounts[instanceId] = count
+           Date().timeIntervalSince(lastDirect) < 3.0 {
             return
         }
 
         guard let instance = instances.first(where: { $0.id == instanceId }) else { return }
 
-        // Clean rawTitle of "(1) " or "* " or "• "
-        var clean = rawTitle
-        if let match = clean.range(of: #"^\((\d+)\)\s*"#, options: .regularExpression) {
-            clean = String(clean[match.upperBound...])
-        } else if clean.hasPrefix("*") || clean.hasPrefix("•") {
-            clean = String(clean.dropFirst()).trimmingCharacters(in: .whitespacesAndNewlines)
-        }
-        clean = clean.trimmingCharacters(in: .whitespacesAndNewlines)
-
-        let genericNames: Set<String> = [
-            "",
-            instance.displayName.lowercased(),
-            instance.serviceType.rawValue.lowercased(),
-            "messenger", "facebook", "whatsapp", "telegram", "instagram", "discord", "slack"
-        ]
-        let isGeneric = genericNames.contains(clean.lowercased())
-
-        let oldCount = previousCounts[instanceId] ?? 0
-        previousCounts[instanceId] = count
-
-        if isGeneric {
-            // Flashing generic title (e.g. "(1) Messenger") only notifies when count actually increments
-            guard count > oldCount else { return }
-            let sender = instance.displayName
-            let snippet = count == 1 ? "New message" : "\(count) new messages"
-            handleNotification(instanceId: instanceId, title: sender, body: snippet, isDirect: false)
-        } else {
-            // Specific title containing sender and/or message snippet
-            let sender: String
-            let snippet: String
-            if clean.contains(":") {
-                let parts = clean.split(separator: ":", maxSplits: 1).map(String.init)
-                sender = parts[0].trimmingCharacters(in: .whitespaces)
-                snippet = parts[1].trimmingCharacters(in: .whitespaces)
-            } else {
-                sender = clean
-                snippet = "New message"
-            }
-            handleNotification(instanceId: instanceId, title: sender, body: snippet, isDirect: false)
-        }
+        // Never guess sender from document.title: title reflects active chat, not incoming sender.
+        // ponytail: service name title fallback. Upgrade path: per-service DOM parser if direct notifications fail.
+        let sender = instance.displayName
+        let snippet = count == 1 ? "New message" : "\(count) new messages"
+        handleNotification(instanceId: instanceId, title: sender, body: snippet, isDirect: false)
     }
 
     @MainActor
