@@ -79,9 +79,18 @@ class AnotherNotchViewCoordinator: ObservableObject {
             if oldValue == .camera, currentView != .camera {
                 modules.deactivate(.camera)
             }
+            if oldValue == .chat, currentView != .chat {
+                ChatManager.shared.pauseAll()
+            }
+            if currentView == .fanControl {
+                FanControlManager.shared.setNotchOpen(true)
+            } else if oldValue == .fanControl {
+                FanControlManager.shared.setNotchOpen(false)
+            }
             modules.activate(currentView)
         }
     }
+    @Published var isNotchOpen: Bool = false
     @Published var helloAnimationRunning: Bool = false
     private var sneakPeekDispatch: DispatchWorkItem?
     private var expandingViewDispatch: DispatchWorkItem?
@@ -171,6 +180,15 @@ class AnotherNotchViewCoordinator: ObservableObject {
             }
         }
         XPCHelperClient.shared.startMonitoringAccessibilityAuthorization()
+        NotificationCenter.default.addObserver(
+            forName: NSApplication.didBecomeActiveNotification,
+            object: nil,
+            queue: .main
+        ) { _ in
+            Task {
+                _ = await XPCHelperClient.shared.isAccessibilityAuthorized()
+            }
+        }
         wakeObserver = NSWorkspace.shared.notificationCenter.addObserver(
             forName: NSWorkspace.didWakeNotification,
             object: nil,

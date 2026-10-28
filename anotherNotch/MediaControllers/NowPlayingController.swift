@@ -242,9 +242,34 @@ final class NowPlayingController: ObservableObject, MediaControllerProtocol {
     }
 
     // MARK: - Update Methods
+    private func isSelfMediaUpdate(_ payload: NowPlayingPayload, diff: Bool) -> Bool {
+        let ownBundle = (Bundle.main.bundleIdentifier ?? "com.jinkun1998.anothernotch").lowercased()
+        if let parent = payload.parentApplicationBundleIdentifier?.lowercased(),
+           (parent == ownBundle || parent.contains("anothernotch")) {
+            return true
+        }
+        if let bundle = payload.bundleIdentifier?.lowercased(),
+           (bundle == ownBundle || bundle.contains("anothernotch") || bundle.hasPrefix("com.apple.webkit")) {
+            return true
+        }
+        if let title = payload.title?.lowercased(),
+           (title.contains("messenger") || title.contains("telegram") || title.contains("whatsapp") || title.contains("discord") || title.contains("slack")) {
+            return true
+        }
+        let currentBundle = playbackState.bundleIdentifier.lowercased()
+        if diff, (currentBundle == ownBundle || currentBundle.contains("anothernotch") || currentBundle.hasPrefix("com.apple.webkit")) {
+            return true
+        }
+        return false
+    }
+
     private func handleAdapterUpdate(_ update: NowPlayingUpdate) async {
         let payload = update.payload
         let diff = update.diff ?? false
+
+        if isSelfMediaUpdate(payload, diff: diff) {
+            return
+        }
 
         var newPlaybackState = PlaybackState(bundleIdentifier: playbackState.bundleIdentifier)
         

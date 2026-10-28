@@ -247,6 +247,20 @@ class MusicManager: ObservableObject {
     // MARK: - Update Methods
     @MainActor
     private func updateFromPlaybackState(_ state: PlaybackState) {
+        let ownBundle = Bundle.main.bundleIdentifier ?? "anothernotch"
+        let lowerBundle = state.bundleIdentifier.lowercased()
+        let lowerTitle = state.title.lowercased()
+        if lowerBundle == ownBundle.lowercased()
+            || lowerBundle.contains("anothernotch")
+            || lowerBundle.hasPrefix("com.apple.webkit")
+            || lowerTitle.contains("messenger")
+            || lowerTitle.contains("telegram")
+            || lowerTitle.contains("whatsapp")
+            || lowerTitle.contains("discord")
+            || lowerTitle.contains("slack") {
+            return
+        }
+
         let playbackStarted = state.isPlaying && !self.isPlaying
         let playbackMetadataChanged = state.title != self.songTitle
             || state.artist != self.artistName

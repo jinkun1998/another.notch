@@ -85,9 +85,11 @@ final class XPCHelperClient: NSObject {
         monitoringTask = Task.detached {
             while !Task.isCancelled {
                 // Call the helper method periodically which will notify on change
-                _ = await Self.shared.isAccessibilityAuthorized()
+                let authorized = await Self.shared.isAccessibilityAuthorized()
+                // ponytail: 30s slow poll when authorized, 3s fast poll during onboarding/denied.
+                let nextSleep: TimeInterval = authorized ? 30.0 : interval
                 do {
-                    try await Task.sleep(for: .seconds(interval))
+                    try await Task.sleep(for: .seconds(nextSleep))
                 } catch { break }
             }
         }

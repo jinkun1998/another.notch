@@ -352,6 +352,9 @@ extension Defaults.Keys {
         ChatInstance(id: UUID(uuidString: "7BDE24F5-58CC-4E07-8457-4362E1FD45D4")!, serviceType: .slack, name: "Slack")
     ])
     static let chatActiveInstanceID = Key<String>("chatActiveInstanceID", default: "967D8441-F236-48FC-99F2-3AF317CAD73A")
+    static let chatHibernateInactiveTabs = Key<Bool>("chatHibernateInactiveTabs", default: true)
+    static let chatHibernateTimeoutMinutes = Key<Int>("chatHibernateTimeoutMinutes", default: 15)
+    static let chatPageZoom = Key<Double>("chatPageZoom", default: 0.9)
 
     static let didClearLegacyURLCacheV1 = Key<Bool>("didClearLegacyURLCache_v1", default: false)
 }

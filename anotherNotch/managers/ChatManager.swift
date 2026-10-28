@@ -80,17 +80,19 @@ struct ChatInstance: Identifiable, Codable, Equatable, Hashable, Defaults.Serial
     var serviceType: ChatServiceType
     var name: String
     var customURLString: String?
+    var isMuted: Bool = false
 
     enum CodingKeys: String, CodingKey {
-        case id, serviceType, name, customURLString
+        case id, serviceType, name, customURLString, isMuted
     }
 
-    init(id: UUID = UUID(), serviceType: ChatServiceType, name: String? = nil, customURLString: String? = nil) {
+    init(id: UUID = UUID(), serviceType: ChatServiceType, name: String? = nil, customURLString: String? = nil, isMuted: Bool = false) {
         self.id = id
         self.serviceType = serviceType
         let trimmedName = name?.trimmingCharacters(in: .whitespacesAndNewlines)
         self.name = (trimmedName?.isEmpty == false) ? trimmedName! : serviceType.rawValue
         self.customURLString = customURLString?.trimmingCharacters(in: .whitespacesAndNewlines)
+        self.isMuted = isMuted
     }
 
     init(from decoder: Decoder) throws {
@@ -100,6 +102,7 @@ struct ChatInstance: Identifiable, Codable, Equatable, Hashable, Defaults.Serial
         let decodedName = try container.decodeIfPresent(String.self, forKey: .name) ?? ""
         self.name = decodedName.isEmpty ? self.serviceType.rawValue : decodedName
         self.customURLString = try container.decodeIfPresent(String.self, forKey: .customURLString)
+        self.isMuted = try container.decodeIfPresent(Bool.self, forKey: .isMuted) ?? false
     }
 
     func encode(to encoder: Encoder) throws {
@@ -108,6 +111,7 @@ struct ChatInstance: Identifiable, Codable, Equatable, Hashable, Defaults.Serial
         try container.encode(serviceType, forKey: .serviceType)
         try container.encode(name, forKey: .name)
         try container.encodeIfPresent(customURLString, forKey: .customURLString)
+        try container.encode(isMuted, forKey: .isMuted)
     }
 
     var displayName: String {
@@ -144,6 +148,23 @@ struct ChatNotificationItem: Identifiable, Equatable {
     }
 }
 
+final class ChatWebView: WKWebView {
+    @objc func _setHasActiveNowPlayingSession(_ val: Bool) {}
+    @objc func _hasActiveNowPlayingSession() -> Bool { false }
+    @objc func _nowPlayingMediaTitleAndArtist(_ completion: ((String?, String?) -> Void)?) {
+        completion?(nil, nil)
+    }
+    @objc func _requestActiveNowPlayingSessionInfo(_ completion: ((Any?) -> Void)?) {
+        completion?(nil)
+    }
+    @objc func _setNowPlayingMetadataObserver(_ block: Any?) {}
+    @objc func _updateMediaPlaybackControlsManager() {}
+    @objc func _wantsMediaPlaybackControlsView() -> Bool { false }
+    @objc func _setWantsMediaPlaybackControlsView(_ val: Bool) {}
+
+    override var acceptsFirstResponder: Bool { true }
+}
+
 final class ChatManager: NSObject, ObservableObject, WKScriptMessageHandler, WKNavigationDelegate, WKUIDelegate {
     static let shared = ChatManager()
 
@@ -155,11 +176,16 @@ final class ChatManager: NSObject, ObservableObject, WKScriptMessageHandler, WKN
 
     @Published var activeInstanceId: UUID {
         willSet {
-            webViews[activeInstanceId]?.pauseAllMediaPlayback(completionHandler: nil)
+            if newValue != activeInstanceId {
+                webViews[activeInstanceId]?.pauseAllMediaPlayback(completionHandler: nil)
+            }
         }
         didSet {
             Defaults[.chatActiveInstanceID] = activeInstanceId.uuidString
-            unreadCounts[activeInstanceId] = 0
+            if unreadCounts[activeInstanceId] != 0 {
+                unreadCounts[activeInstanceId] = 0
+            }
+            lastActiveTime[activeInstanceId] = Date()
         }
     }
 
@@ -184,7 +210,18 @@ final class ChatManager: NSObject, ObservableObject, WKScriptMessageHandler, WKN
     }
 
     private var webViews: [UUID: WKWebView] = [:]
-    private let defaultUserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Safari/605.1.15"
+    private let sharedProcessPool = WKProcessPool()
+    private let defaultUserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+    private var lastActiveTime: [UUID: Date] = [:]
+
+    @MainActor
+    lazy var containerView: ChatTabsContainerView = {
+        let v = ChatTabsContainerView(frame: NSRect(x: 0, y: 0, width: 1024, height: 550))
+        v.wantsLayer = true
+        v.layer?.cornerRadius = 12
+        v.layer?.masksToBounds = true
+        return v
+    }()
 
     override private init() {
         var loaded = Defaults[.chatInstances]
@@ -214,6 +251,10 @@ final class ChatManager: NSObject, ObservableObject, WKScriptMessageHandler, WKN
         }
 
         self.instances = loaded
+        let now = Date()
+        for inst in loaded {
+            self.lastActiveTime[inst.id] = now
+        }
 
         let savedActive = Defaults[.chatActiveInstanceID]
         if let savedUUID = UUID(uuidString: savedActive), loaded.contains(where: { $0.id == savedUUID }) {
@@ -226,9 +267,20 @@ final class ChatManager: NSObject, ObservableObject, WKScriptMessageHandler, WKN
     }
 
     func preloadActiveService() {
+        guard Defaults[.chatEnabled], let active = activeInstance else { return }
         DispatchQueue.main.async { [weak self] in
-            guard let self = self, let active = self.activeInstance else { return }
+            guard let self = self else { return }
             _ = self.getOrCreateWebView(for: active)
+            self.containerView.update(instances: self.instances, activeId: self.activeInstanceId, manager: self)
+        }
+    }
+
+    func preloadAllServices() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            for instance in self.instances {
+                _ = self.getOrCreateWebView(for: instance)
+            }
         }
     }
 
@@ -251,6 +303,27 @@ final class ChatManager: NSObject, ObservableObject, WKScriptMessageHandler, WKN
     func pauseAll() {
         for (_, wv) in webViews {
             wv.pauseAllMediaPlayback(completionHandler: nil)
+        }
+        if Defaults[.chatHibernateInactiveTabs] {
+            let timeout = Double(Defaults[.chatHibernateTimeoutMinutes] * 60)
+            let now = Date()
+            let idleIds = webViews.keys.filter { id in
+                id != activeInstanceId && now.timeIntervalSince(lastActiveTime[id] ?? now) > timeout
+            }
+            for id in idleIds {
+                unloadWebView(for: id)
+            }
+        }
+    }
+
+    func toggleMute(id: UUID) {
+        guard let index = instances.firstIndex(where: { $0.id == id }) else { return }
+        instances[index].isMuted.toggle()
+    }
+
+    func updateZoom(_ zoom: Double) {
+        for (_, wv) in webViews {
+            wv.pageZoom = zoom
         }
     }
 
@@ -331,6 +404,10 @@ final class ChatManager: NSObject, ObservableObject, WKScriptMessageHandler, WKN
         webViews[id]?.stopLoading()
         webViews.removeValue(forKey: id)
         unreadCounts.removeValue(forKey: id)
+        previousCounts.removeValue(forKey: id)
+        lastNotificationTime.removeValue(forKey: id)
+        lastDirectNotificationTime.removeValue(forKey: id)
+        lastNotificationSignature.removeValue(forKey: id)
 
         // Delete isolated persistent web data store from disk
         WKWebsiteDataStore.remove(forIdentifier: id) { _ in }
@@ -352,7 +429,11 @@ final class ChatManager: NSObject, ObservableObject, WKScriptMessageHandler, WKN
         // Isolated persistent website data store per instance
         config.websiteDataStore = WKWebsiteDataStore(forIdentifier: instance.id)
         config.defaultWebpagePreferences.allowsContentJavaScript = true
-        config.mediaTypesRequiringUserActionForPlayback = []
+        config.allowsAirPlayForMediaPlayback = false
+        config.mediaTypesRequiringUserActionForPlayback = .all
+        config.preferences.setValue(false, forKey: "mediaSessionEnabled")
+        config.preferences.setValue(false, forKey: "remotePlaybackEnabled")
+        config.preferences.setValue(false, forKey: "allowsPictureInPictureMediaPlayback")
 
         let escapedName = instance.displayName
             .replacingOccurrences(of: "\\", with: "\\\\")
@@ -362,8 +443,66 @@ final class ChatManager: NSObject, ObservableObject, WKScriptMessageHandler, WKN
         (function() {
             if (window.__notchChatInjected) return;
             window.__notchChatInjected = true;
+
+            try {
+                if (window.navigator && window.navigator.mediaSession) {
+                    window.navigator.mediaSession.metadata = null;
+                    window.navigator.mediaSession.playbackState = "none";
+                    window.navigator.mediaSession.setActionHandler = function() {};
+                    window.navigator.mediaSession.setPositionState = function() {};
+                }
+                delete window.navigator.mediaSession;
+                Object.defineProperty(window.navigator, "mediaSession", {
+                    get: function() { return undefined; },
+                    set: function() {},
+                    configurable: true
+                });
+            } catch(e) {}
+            try {
+                if (window.HTMLMediaElement) {
+                    window.HTMLMediaElement.prototype.disableRemotePlayback = true;
+                }
+            } catch(e) {}
             window.__notchInstanceId = "\(instance.id.uuidString)";
             window.__notchServiceName = "\(escapedName)";
+
+            function cleanPromoBanners() {
+                try {
+                    const style = document.createElement('style');
+                    style.id = '__notchChatCleaner';
+                    style.textContent = `
+                        .download-banner, .download-apps-banner, .DownloadBanner,
+                        [data-testid="download-desktop-banner"],
+                        ._2XH9R, ._1ENAC, .landing-wrapper .version-title,
+                        .app-download-banner, [aria-label*="Download desktop app"]
+                        { display: none !important; }
+                    `;
+                    (document.head || document.documentElement).appendChild(style);
+                } catch(e) {}
+            }
+            cleanPromoBanners();
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', cleanPromoBanners);
+            }
+
+            function disablePred(el) {
+                if (!el || !el.setAttribute || el.__notchPredDisabled) return;
+                el.__notchPredDisabled = true;
+                try {
+                    el.setAttribute('autocomplete', 'off');
+                    el.setAttribute('autocorrect', 'off');
+                    el.setAttribute('autocapitalize', 'off');
+                    el.setAttribute('spellcheck', 'false');
+                    el.setAttribute('data-gramm', 'false');
+                    el.setAttribute('data-enable-grammarly', 'false');
+                } catch(e) {}
+            }
+            document.addEventListener('focusin', function(e) {
+                var el = e.target;
+                if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable || (el.getAttribute && el.getAttribute('role') === 'textbox'))) {
+                    disablePred(el);
+                }
+            }, true);
 
             function MockNotification(title, options) {
                 try {
@@ -419,13 +558,12 @@ final class ChatManager: NSObject, ObservableObject, WKScriptMessageHandler, WKN
                 }
             } catch(e) {}
 
-            let lastCount = -1;
-            let lastTitle = '';
+            let lastRawTitle = '';
             function checkTitleBadge() {
                 try {
-                    const rawTitle = document.title || '';
-                    if (rawTitle === lastTitle) return;
-                    lastTitle = rawTitle;
+                    const rawTitle = (document.title || '').trim();
+                    if (!rawTitle || rawTitle === lastRawTitle) return;
+                    lastRawTitle = rawTitle;
 
                     let count = 0;
                     const match = rawTitle.match(/\\((\\d+)\\)/);
@@ -435,24 +573,21 @@ final class ChatManager: NSObject, ObservableObject, WKScriptMessageHandler, WKN
                         count = 1;
                     }
 
-                    if (count !== lastCount) {
-                        const isNew = (count > lastCount && lastCount >= 0);
-                        lastCount = count;
-                        window.webkit.messageHandlers.notchBadge.postMessage({
-                            instanceId: window.__notchInstanceId || '',
-                            count: count,
-                            rawTitle: rawTitle,
-                            isNew: isNew
-                        });
-                    }
+                    window.webkit.messageHandlers.notchBadge.postMessage({
+                        instanceId: window.__notchInstanceId || '',
+                        count: count,
+                        rawTitle: rawTitle
+                    });
                 } catch(e) {}
             }
 
             function initTitleObserver() {
+                checkTitleBadge();
                 const titleElem = document.querySelector('title');
                 if (titleElem) {
                     new MutationObserver(checkTitleBadge).observe(titleElem, { subtree: true, characterData: true, childList: true });
-                } else if (document.head) {
+                }
+                if (document.head) {
                     new MutationObserver(checkTitleBadge).observe(document.head, { subtree: true, characterData: true, childList: true });
                 }
             }
@@ -462,8 +597,8 @@ final class ChatManager: NSObject, ObservableObject, WKScriptMessageHandler, WKN
             } else {
                 initTitleObserver();
             }
-            setInterval(checkTitleBadge, 20000);
-        })();
+            setInterval(checkTitleBadge, 2500);
+            })();
         """
 
         let userScript = WKUserScript(
@@ -475,11 +610,24 @@ final class ChatManager: NSObject, ObservableObject, WKScriptMessageHandler, WKN
         config.userContentController.add(self, name: "notchNotification")
         config.userContentController.add(self, name: "notchBadge")
 
-        let webView = WKWebView(frame: .zero, configuration: config)
+        let initialRect = NSRect(x: 0, y: 0, width: 1024, height: 550)
+        let webView = ChatWebView(frame: initialRect, configuration: config)
+        let selMute = NSSelectorFromString("_setPageMuted:")
+        if webView.responds(to: selMute) {
+            typealias SetMutedFn = @convention(c) (AnyObject, Selector, UInt64) -> Void
+            let imp = class_getMethodImplementation(type(of: webView), selMute)
+            let fn = unsafeBitCast(imp, to: SetMutedFn.self)
+            fn(webView, selMute, 1)
+        }
         webView.customUserAgent = defaultUserAgent
+        webView.pageZoom = Defaults[.chatPageZoom]
         webView.navigationDelegate = self
         webView.uiDelegate = self
-        webView.setValue(false, forKey: "drawsBackground")
+        webView.underPageBackgroundColor = NSColor(red: 0.11, green: 0.11, blue: 0.13, alpha: 1.0)
+        webView.wantsLayer = true
+        webView.canDrawConcurrently = true
+        webView.layerContentsRedrawPolicy = .onSetNeedsDisplay
+        webView.alphaValue = (instance.id == activeInstanceId) ? 1.0 : 0.0
 
         webView.load(URLRequest(url: instance.url))
         webViews[instance.id] = webView
@@ -551,40 +699,79 @@ final class ChatManager: NSObject, ObservableObject, WKScriptMessageHandler, WKN
             let title = (dict["title"] as? String) ?? ""
             let body = (dict["body"] as? String) ?? ""
             DispatchQueue.main.async { [weak self] in
-                self?.handleNotification(instanceId: instanceId, title: title, body: body)
+                self?.handleNotification(instanceId: instanceId, title: title, body: body, isDirect: true)
             }
         } else if message.name == "notchBadge" {
             let count = (dict["count"] as? Int) ?? 0
             let rawTitle = (dict["rawTitle"] as? String) ?? ""
-            let isNew = (dict["isNew"] as? Bool) ?? false
             DispatchQueue.main.async { [weak self] in
-                self?.handleBadge(instanceId: instanceId, count: count, rawTitle: rawTitle, isNew: isNew)
+                self?.handleBadge(instanceId: instanceId, count: count, rawTitle: rawTitle)
             }
         }
     }
 
+    private var lastGlobalNotificationTime: Date = .distantPast
     private var lastNotificationTime: [UUID: Date] = [:]
+    private var lastDirectNotificationTime: [UUID: Date] = [:]
+    private var lastNotificationSignature: [UUID: String] = [:]
+    private var previousCounts: [UUID: Int] = [:]
 
     @MainActor
-    func handleNotification(instanceId: UUID, title: String, body: String) {
+    func handleNotification(instanceId: UUID, title: String, body: String, isDirect: Bool = false, isTest: Bool = false) {
         guard let instance = instances.first(where: { $0.id == instanceId }) else { return }
+        guard !instance.isMuted else { return }
         guard !title.isEmpty || !body.isEmpty else { return }
 
-        // Throttle notifications per instance within 1.2s to prevent duplicates
-        if let last = lastNotificationTime[instanceId], Date().timeIntervalSince(last) < 1.2 {
+        let now = Date()
+
+        if isDirect {
+            lastDirectNotificationTime[instanceId] = now
+        }
+
+        // Suppress popups ONLY when notch is open and user is actively viewing this exact chat tab
+        let isViewingThisChat = AnotherNotchViewCoordinator.shared.isNotchOpen
+            && AnotherNotchViewCoordinator.shared.currentView == .chat
+            && activeInstanceId == instanceId
+        if isViewingThisChat && !isTest {
+            unreadCounts[instanceId] = 0
             return
         }
-        lastNotificationTime[instanceId] = Date()
+
+        if !isTest {
+            // Deduplicate identical message text within 15s
+            let signature = "\(title)|||\(body)"
+            if lastNotificationSignature[instanceId] == signature,
+               let lastTime = lastNotificationTime[instanceId],
+               now.timeIntervalSince(lastTime) < 15.0 {
+                return
+            }
+
+            // Per-instance throttle: minimum 1.2s
+            if let last = lastNotificationTime[instanceId], now.timeIntervalSince(last) < 1.2 {
+                return
+            }
+
+            // Global throttle across tabs: minimum 0.8s
+            if now.timeIntervalSince(lastGlobalNotificationTime) < 0.8 {
+                return
+            }
+
+            lastNotificationTime[instanceId] = now
+            lastGlobalNotificationTime = now
+            lastNotificationSignature[instanceId] = signature
+        }
 
         let cleanTitle = title.isEmpty ? instance.displayName : title
-        unreadCounts[instanceId, default: 0] += 1
+        if isDirect {
+            unreadCounts[instanceId, default: 0] += 1
+        }
         latestNotification = ChatNotificationItem(
             instanceId: instanceId,
             serviceType: instance.serviceType,
             instanceName: instance.displayName,
             title: cleanTitle,
             body: body,
-            timestamp: Date()
+            timestamp: now
         )
 
         guard Defaults[.chatShowNotificationsInNotch] else { return }
@@ -605,33 +792,62 @@ final class ChatManager: NSObject, ObservableObject, WKScriptMessageHandler, WKN
     }
 
     @MainActor
-    private func handleBadge(instanceId: UUID, count: Int, rawTitle: String, isNew: Bool) {
+    private func handleBadge(instanceId: UUID, count: Int, rawTitle: String) {
         unreadCounts[instanceId] = count
-        if isNew && count > 0 {
-            guard let instance = instances.first(where: { $0.id == instanceId }) else { return }
-            var clean = rawTitle
-            if let match = clean.range(of: #"^\\((\\d+)\\)\\s*"#, options: .regularExpression) {
-                clean = String(clean[match.upperBound...])
-            } else if clean.hasPrefix("*") || clean.hasPrefix("•") {
-                clean = String(clean.dropFirst()).trimmingCharacters(in: .whitespacesAndNewlines)
-            }
-            clean = clean.trimmingCharacters(in: .whitespacesAndNewlines)
 
+        guard count > 0 else {
+            previousCounts[instanceId] = 0
+            return
+        }
+
+        // Ignore title updates if a direct Web Notification already dispatched within 2.5s
+        if let lastDirect = lastDirectNotificationTime[instanceId],
+           Date().timeIntervalSince(lastDirect) < 2.5 {
+            previousCounts[instanceId] = count
+            return
+        }
+
+        guard let instance = instances.first(where: { $0.id == instanceId }) else { return }
+
+        // Clean rawTitle of "(1) " or "* " or "• "
+        var clean = rawTitle
+        if let match = clean.range(of: #"^\((\d+)\)\s*"#, options: .regularExpression) {
+            clean = String(clean[match.upperBound...])
+        } else if clean.hasPrefix("*") || clean.hasPrefix("•") {
+            clean = String(clean.dropFirst()).trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+        clean = clean.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        let genericNames: Set<String> = [
+            "",
+            instance.displayName.lowercased(),
+            instance.serviceType.rawValue.lowercased(),
+            "messenger", "facebook", "whatsapp", "telegram", "instagram", "discord", "slack"
+        ]
+        let isGeneric = genericNames.contains(clean.lowercased())
+
+        let oldCount = previousCounts[instanceId] ?? 0
+        previousCounts[instanceId] = count
+
+        if isGeneric {
+            // Flashing generic title (e.g. "(1) Messenger") only notifies when count actually increments
+            guard count > oldCount else { return }
+            let sender = instance.displayName
+            let snippet = count == 1 ? "New message" : "\(count) new messages"
+            handleNotification(instanceId: instanceId, title: sender, body: snippet, isDirect: false)
+        } else {
+            // Specific title containing sender and/or message snippet
             let sender: String
             let snippet: String
             if clean.contains(":") {
                 let parts = clean.split(separator: ":", maxSplits: 1).map(String.init)
                 sender = parts[0].trimmingCharacters(in: .whitespaces)
                 snippet = parts[1].trimmingCharacters(in: .whitespaces)
-            } else if !clean.isEmpty && clean.lowercased() != instance.displayName.lowercased() && clean.lowercased() != instance.serviceType.rawValue.lowercased() {
+            } else {
                 sender = clean
                 snippet = "New message"
-            } else {
-                sender = instance.displayName
-                snippet = "New message"
             }
-
-            handleNotification(instanceId: instanceId, title: sender, body: snippet)
+            handleNotification(instanceId: instanceId, title: sender, body: snippet, isDirect: false)
         }
     }
 
@@ -641,11 +857,23 @@ final class ChatManager: NSObject, ObservableObject, WKScriptMessageHandler, WKN
         handleNotification(
             instanceId: instance.id,
             title: instance.displayName,
-            body: "Hello! This is a test notch notification."
+            body: "Hello! This is a test notch notification.",
+            isDirect: false,
+            isTest: true
         )
     }
 
     // MARK: - WKNavigationDelegate
+
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        let selMute = NSSelectorFromString("_setPageMuted:")
+        if webView.responds(to: selMute) {
+            typealias SetMutedFn = @convention(c) (AnyObject, Selector, UInt64) -> Void
+            let imp = class_getMethodImplementation(type(of: webView), selMute)
+            let fn = unsafeBitCast(imp, to: SetMutedFn.self)
+            fn(webView, selMute, 1)
+        }
+    }
 
     func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
         if navigationAction.navigationType == .linkActivated, let url = navigationAction.request.url {

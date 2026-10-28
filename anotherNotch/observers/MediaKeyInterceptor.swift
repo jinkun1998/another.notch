@@ -209,7 +209,8 @@ final class MediaKeyInterceptor {
         guard watchdogTask == nil else { return }
         watchdogTask = Task { [weak self] in
             while !Task.isCancelled {
-                try? await Task.sleep(for: .seconds(4))
+                // ponytail: 30s watchdog check; event tap timeout callback already handles fast recovery.
+                try? await Task.sleep(for: .seconds(30))
                 guard let self, !Task.isCancelled else { break }
                 await self.checkHealthAndRecoverIfNeeded()
             }

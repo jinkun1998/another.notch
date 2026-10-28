@@ -641,8 +641,10 @@ struct ContentView: View {
             withAnimation(motion.openShellAnimation) {
                 shellExpansion = 1
             }
+            let isChatModule = (displayedExpandedModule ?? coordinator.currentView) == .chat
+            let revealDelay = isChatModule ? 0.30 : motion.expandedContentRevealDelay
             expandedContentTask = Task { @MainActor in
-                try? await Task.sleep(for: .seconds(motion.expandedContentRevealDelay))
+                try? await Task.sleep(for: .seconds(revealDelay))
                 guard !Task.isCancelled, vm.notchState == .open else { return }
 
                 withAnimation(motion.expandedContentRevealAnimation) {
@@ -766,7 +768,7 @@ struct ContentView: View {
                     alignment: .top
                 )
                 .opacity(shellExpansion)
-                .transition(.opacity.combined(with: .scale(scale: 0.96, anchor: .top)))
+                .transition((displayedExpandedModule ?? coordinator.currentView) == .chat ? .opacity : .opacity.combined(with: .scale(scale: 0.96, anchor: .top)))
                 .zIndex(1)
                 .allowsHitTesting(vm.notchState == .open)
                 .opacity(

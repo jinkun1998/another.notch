@@ -407,8 +407,16 @@ final class SMCHelperProvider: SMCProvider, @unchecked Sendable {
         return nil
     }
 
+    private static let fanRegex = try? NSRegularExpression(
+        pattern: #"Fan #(\d+):\s+Current speed: ([\d.]+) RPM\s+Min speed: ([\d.]+) RPM\s*\([^)]*\)\s+Max speed: ([\d.]+) RPM\s+Target speed: ([\d.]+) RPM"#,
+        options: []
+    )
+
     private var readHelperPath: String {
-        bundledHelperPath ?? helperPath
+        if FileManager.default.isExecutableFile(atPath: helperPath) {
+            return helperPath
+        }
+        return bundledHelperPath ?? helperPath
     }
 
     var isConnected: Bool {
@@ -425,14 +433,8 @@ final class SMCHelperProvider: SMCProvider, @unchecked Sendable {
 
     func readCurrentTemperature() -> Double? {
         let now = Date()
-        if now.timeIntervalSince(lastFetchTime) >= 0.8 || cachedFans.isEmpty || cachedTemperature == nil {
+        if now.timeIntervalSince(lastFetchTime) >= 0.8 || cachedTemperature == nil {
             _ = populateTelemetry()
-        }
-        if cachedTemperature == nil, let bundled = bundledHelperPath {
-            let bundledOut = runHelper(path: bundled, args: ["info"])
-            if let tempMatch = bundledOut.firstMatch(of: /Current temperature: ([\d.]+) C/) {
-                cachedTemperature = Double(tempMatch.output.1)
-            }
         }
         return cachedTemperature
     }
@@ -456,6 +458,8 @@ final class SMCHelperProvider: SMCProvider, @unchecked Sendable {
         if output.contains("Error") && readHelperPath != helperPath {
             output = runHelper(path: helperPath, args: ["info"])
         }
+        lastFetchTime = Date()
+
         if let match = output.firstMatch(of: /Total fans: (\d+)/) {
             let count = Int(match.output.1) ?? 0
             fanCountCache = count
@@ -463,19 +467,11 @@ final class SMCHelperProvider: SMCProvider, @unchecked Sendable {
         }
         if let tempMatch = output.firstMatch(of: /Current temperature: ([\d.]+) C/) {
             cachedTemperature = Double(tempMatch.output.1)
-        } else if let bundled = bundledHelperPath {
-            let bundledOut = runHelper(path: bundled, args: ["info"])
-            if let tempMatch = bundledOut.firstMatch(of: /Current temperature: ([\d.]+) C/) {
-                cachedTemperature = Double(tempMatch.output.1)
-            }
         }
 
-        let pattern = #"Fan #(\d+):\s+Current speed: ([\d.]+) RPM\s+Min speed: ([\d.]+) RPM\s*\([^)]*\)\s+Max speed: ([\d.]+) RPM\s+Target speed: ([\d.]+) RPM"#
-        let regex = try? NSRegularExpression(pattern: pattern, options: [])
         let range = NSRange(location: 0, length: output.utf16.count)
-        
         var fans: [FanTelemetry] = []
-        regex?.enumerateMatches(in: output, options: [], range: range) { match, _, _ in
+        Self.fanRegex?.enumerateMatches(in: output, options: [], range: range) { match, _, _ in
             guard let match = match,
                   match.numberOfRanges == 6,
                   let idxRange = Range(match.range(at: 1), in: output),
@@ -502,7 +498,6 @@ final class SMCHelperProvider: SMCProvider, @unchecked Sendable {
         
         if !fans.isEmpty {
             cachedFans = fans
-            lastFetchTime = Date()
             fanCountCache = fans.count
             fanCountCached = true
         }
@@ -579,6 +574,29 @@ final class FanControlManager: ObservableObject {
     private var isAutoRamped: Bool = false
     private var isInitializing: Bool = false
     private var lastRampedRPM: [Int: Double] = [:]
+    private var isNotchOpen: Bool = false
+
+    // ponytail: 2s update when notch open, 8s at idle when notch closed.
+    private var monitoringInterval: TimeInterval {
+        isNotchOpen ? 2.0 : 8.0
+    }
+
+    func setNotchOpen(_ isOpen: Bool) {
+        guard isNotchOpen != isOpen else { return }
+        isNotchOpen = isOpen
+        if Defaults[.fanControlEnabled] && isHardwareSupported {
+            if !isOpen && isManualMode {
+                stopMonitoring()
+            } else {
+                startMonitoring()
+                if isOpen {
+                    DispatchQueue.global(qos: .utility).async { [weak self] in
+                        self?.refresh()
+                    }
+                }
+            }
+        }
+    }
 
     static var isHelperInstalled: Bool {
         #if arch(arm64)
@@ -669,11 +687,15 @@ final class FanControlManager: ObservableObject {
     }
 
     func startMonitoring() {
-        guard isHardwareSupported else { return }
-        refresh()
-        guard timer == nil else { return }
-        timer = Timer.scheduledTimer(withTimeInterval: 1.5, repeats: true) { [weak self] _ in
-            Task { @MainActor [weak self] in
+        guard isHardwareSupported, Defaults[.fanControlEnabled] else { return }
+        if !isNotchOpen && isManualMode {
+            stopMonitoring()
+            return
+        }
+        timer?.invalidate()
+        let interval = monitoringInterval
+        timer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { [weak self] _ in
+            MainActor.assumeIsolated {
                 self?.refresh()
             }
         }
@@ -713,7 +735,15 @@ final class FanControlManager: ObservableObject {
             }
         }
 
-        fans = updatedFans
+        if Thread.isMainThread {
+            self.currentTemperature = temp
+            self.fans = updatedFans
+        } else {
+            DispatchQueue.main.async { [weak self] in
+                self?.currentTemperature = temp
+                self?.fans = updatedFans
+            }
+        }
 
         // Smooth dynamic auto-ramp curve
         // ponytail: Dynamic 30°C–90°C response curve with 50 RPM deadband; idles smoothly at minRPM below threshold.
@@ -799,12 +829,20 @@ final class FanControlManager: ObservableObject {
                 if opSuccess {
                     self.hasWritePermission = true
                     self.permissionNotice = nil
+                    if manual && !self.isNotchOpen {
+                        self.stopMonitoring()
+                    } else if !manual && Defaults[.fanControlEnabled] {
+                        self.startMonitoring()
+                    }
                 } else {
                     self.restoreAuto()
                     self.hasWritePermission = false
                     self.permissionNotice = "Elevated privileges required for manual fan control. Running in safe Auto mode."
                     self.isManualMode = false
                     Defaults[.fanControlManualMode] = false
+                    if Defaults[.fanControlEnabled] {
+                        self.startMonitoring()
+                    }
                 }
                 self.refresh()
             }

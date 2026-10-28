@@ -29,7 +29,10 @@ struct FanControlView: View {
         .onAppear {
             manager.checkHardware()
             manager.refresh()
-            manager.startMonitoring()
+            manager.setNotchOpen(true)
+        }
+        .onDisappear {
+            manager.setNotchOpen(false)
         }
     }
 

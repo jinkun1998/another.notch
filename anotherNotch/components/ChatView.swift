@@ -1,14 +1,106 @@
 import SwiftUI
 import WebKit
 
-struct ChatWebViewRepresentable: NSViewRepresentable {
-    let webView: WKWebView
+final class ChatTabsContainerView: NSView {
+    private(set) var subWebViews: [UUID: WKWebView] = [:]
+    private var currentActiveId: UUID?
+    private let defaultContentSize = CGSize(width: 1024, height: 550)
 
-    func makeNSView(context: Context) -> WKWebView {
-        webView
+    override var isFlipped: Bool { true }
+
+    override init(frame frameRect: NSRect) {
+        super.init(frame: frameRect)
+        wantsLayer = true
+        layer?.cornerRadius = 12
+        layer?.masksToBounds = true
     }
 
-    func updateNSView(_ nsView: WKWebView, context: Context) {}
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        wantsLayer = true
+        layer?.cornerRadius = 12
+        layer?.masksToBounds = true
+    }
+
+    func update(instances: [ChatInstance], activeId: UUID, manager: ChatManager) {
+        let validIds = Set(instances.map { $0.id })
+        for (id, wv) in subWebViews where !validIds.contains(id) {
+            wv.removeFromSuperview()
+            subWebViews.removeValue(forKey: id)
+        }
+
+        let targetFrame = (bounds.width > 200 && bounds.height > 200) ? bounds : NSRect(origin: .zero, size: defaultContentSize)
+
+        // Lazy-load ONLY the active instance on demand
+        if subWebViews[activeId] == nil, let activeInstance = instances.first(where: { $0.id == activeId }) {
+            let wv = manager.getOrCreateWebView(for: activeInstance)
+            wv.wantsLayer = true
+            wv.layer?.cornerRadius = 12
+            wv.layer?.masksToBounds = true
+            wv.autoresizingMask = []
+            wv.frame = targetFrame
+            addSubview(wv)
+            subWebViews[activeId] = wv
+        }
+
+        let isTabSwitch = (currentActiveId != activeId)
+        currentActiveId = activeId
+
+        for (id, wv) in subWebViews {
+            let isCurrent = (id == activeId)
+            if isCurrent {
+                if wv.frame != targetFrame {
+                    wv.frame = targetFrame
+                }
+                wv.alphaValue = 1.0
+                addSubview(wv, positioned: .above, relativeTo: nil)
+                if isTabSwitch {
+                    DispatchQueue.main.async {
+                        wv.window?.makeFirstResponder(wv)
+                    }
+                }
+            } else {
+                let offscreen = NSRect(x: -20000, y: -20000, width: targetFrame.width, height: targetFrame.height)
+                if wv.frame != offscreen {
+                    wv.frame = offscreen
+                }
+                wv.alphaValue = 0.0
+            }
+        }
+    }
+
+    override func layout() {
+        super.layout()
+        guard bounds.width > 200 && bounds.height > 200 else { return }
+        if let activeId = currentActiveId, let activeWV = subWebViews[activeId], activeWV.frame != bounds {
+            activeWV.frame = bounds
+        }
+    }
+
+    override func mouseDown(with event: NSEvent) {
+        if !NSApp.isActive {
+            NSApp.activate(ignoringOtherApps: true)
+        }
+        if let activeId = currentActiveId, let wv = subWebViews[activeId] {
+            window?.makeFirstResponder(wv)
+        }
+        super.mouseDown(with: event)
+    }
+}
+
+struct ChatTabsContainerRepresentable: NSViewRepresentable {
+    let instances: [ChatInstance]
+    let activeId: UUID
+    @ObservedObject var chatManager = ChatManager.shared
+
+    func makeNSView(context: Context) -> ChatTabsContainerView {
+        chatManager.containerView.update(instances: instances, activeId: activeId, manager: chatManager)
+        return chatManager.containerView
+    }
+
+    func updateNSView(_ nsView: ChatTabsContainerView, context: Context) {
+        nsView.update(instances: instances, activeId: activeId, manager: chatManager)
+    }
 }
 
 struct ChatView: View {
@@ -74,7 +166,8 @@ struct ChatView: View {
                             .clipShape(Circle())
                     }
                     .buttonStyle(.plain)
-                    .help("Back")
+                    .keyboardShortcut("[", modifiers: .command)
+                    .help("Back (⌘[)")
 
                     Button {
                         chatManager.goForward()
@@ -87,7 +180,8 @@ struct ChatView: View {
                             .clipShape(Circle())
                     }
                     .buttonStyle(.plain)
-                    .help("Forward")
+                    .keyboardShortcut("]", modifiers: .command)
+                    .help("Forward (⌘])")
 
                     Button {
                         chatManager.reloadCurrent()
@@ -100,7 +194,8 @@ struct ChatView: View {
                             .clipShape(Circle())
                     }
                     .buttonStyle(.plain)
-                    .help("Reload page")
+                    .keyboardShortcut("r", modifiers: .command)
+                    .help("Reload page (⌘R)")
 
                     if let active = chatManager.activeInstance {
                         Button {
@@ -122,16 +217,20 @@ struct ChatView: View {
             .padding(.top, 4)
 
             // Webview Container
-            if let active = chatManager.activeInstance {
-                ChatWebViewRepresentable(webView: chatManager.getOrCreateWebView(for: active))
-                    .id(active.id)
-                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12, style: .continuous)
-                            .stroke(Color.white.opacity(0.1), lineWidth: 1)
-                    )
-                    .padding(.horizontal, 8)
-                    .padding(.bottom, 8)
+            if !chatManager.instances.isEmpty {
+                ChatTabsContainerRepresentable(
+                    instances: chatManager.instances,
+                    activeId: chatManager.activeInstanceId,
+                    chatManager: chatManager
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                )
+                .clipped()
+                .padding(.horizontal, 8)
+                .padding(.bottom, 8)
             } else {
                 VStack(spacing: 12) {
                     Text("No chat services added.")
@@ -143,6 +242,9 @@ struct ChatView: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
+        }
+        .onAppear {
+            chatManager.preloadActiveService()
         }
         .alert("Rename Account", isPresented: Binding(
             get: { renamingInstance != nil },
@@ -180,9 +282,7 @@ struct ChatView: View {
         let unread = chatManager.unreadCounts[instance.id, default: 0]
 
         Button {
-            withAnimation(.easeInOut(duration: 0.16)) {
-                chatManager.activeInstanceId = instance.id
-            }
+            chatManager.activeInstanceId = instance.id
         } label: {
             HStack(spacing: 5) {
                 ChatServiceIconView(icon: instance.iconName, size: 12)
@@ -191,6 +291,12 @@ struct ChatView: View {
                 Text(instance.displayName)
                     .font(.system(size: 11, weight: isSelected ? .semibold : .medium))
                     .foregroundStyle(isSelected ? .white : .secondary)
+
+                if instance.isMuted {
+                    Image(systemName: "bell.slash.fill")
+                        .font(.system(size: 8))
+                        .foregroundStyle(.secondary)
+                }
 
                 if unread > 0 {
                     Text("\(unread)")
@@ -256,6 +362,9 @@ struct ChatView: View {
             }
             Button("Reload") {
                 chatManager.getOrCreateWebView(for: instance).reload()
+            }
+            Button(instance.isMuted ? "Unmute Notifications" : "Mute Notifications") {
+                chatManager.toggleMute(id: instance.id)
             }
             Button("Clear Session Data") {
                 chatManager.clearData(for: instance.id) {}

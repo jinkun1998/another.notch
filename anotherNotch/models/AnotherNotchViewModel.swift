@@ -161,10 +161,15 @@ class AnotherNotchViewModel: NSObject, ObservableObject {
         openingNotchSize = closedViewportSize
         isClosingTransition = false
         self.notchState = .open
+        coordinator.isNotchOpen = true
         self.notchSize = openNotchSize(for: coordinator.currentView, screenUUID: self.screenUUID)
         
         // Force music information update when notch is opened
         MusicManager.shared.forceUpdate()
+        FanControlManager.shared.setNotchOpen(true)
+        if let window = NSApp.windows.first(where: { $0 is AnotherNotchSkyLightWindow }) {
+            window.makeKeyAndOrderFront(nil)
+        }
     }
 
     func close() {
@@ -179,9 +184,11 @@ class AnotherNotchViewModel: NSObject, ObservableObject {
         isClosingTransition = true
         self.closedNotchSize = closedSize
         self.notchState = .closed
+        coordinator.isNotchOpen = false
         self.notchSize = closedSize
         self.isBatteryPopoverActive = false
         self.edgeAutoOpenActive = false
+        FanControlManager.shared.setNotchOpen(false)
         ChatManager.shared.pauseAll()
     }
 
@@ -196,6 +203,7 @@ class AnotherNotchViewModel: NSObject, ObservableObject {
         {
             coordinator.currentView = .shelf
         }
+        NSApp.deactivate()
     }
 
     func closeHello() {

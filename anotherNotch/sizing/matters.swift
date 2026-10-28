@@ -33,7 +33,7 @@ let calendarOpenNotchSize: CGSize = .init(
 let shelfOpenNotchSize: CGSize = .init(width: 640, height: 160)
 let clipboardOpenNotchWidth: CGFloat = calendarOpenNotchSize.width
 let musicOpenNotchSize: CGSize = calendarOpenNotchSize
-let chatContentSize: CGSize = .init(width: 820, height: 520)
+let chatContentSize: CGSize = .init(width: 1040, height: 600)
 let baseMaximumOpenNotchSize: CGSize = .init(
     width: max(shelfOpenNotchSize.width, musicOpenNotchSize.width, calendarOpenNotchSize.width, chatContentSize.width),
     height: max(shelfOpenNotchSize.height, musicOpenNotchSize.height, calendarOpenNotchSize.height, chatContentSize.height)
@@ -139,8 +139,8 @@ func maximumOpenNotchSize(screenUUID: String? = nil) -> CGSize {
 func notchWindowSize(screenUUID: String? = nil) -> CGSize {
     let screen = screenUUID.flatMap { NSScreen.screen(withUUID: $0) } ?? NSScreen.main
     let screenWidth = screen?.frame.width ?? 1440
-    let maxAllowedHeight = ((screen?.frame.height ?? 900) * 0.75).rounded()
-    return .init(width: min(screenWidth, 960), height: max(650, maxAllowedHeight))
+    let maxAllowedHeight = ((screen?.frame.height ?? 900) * 0.82).rounded()
+    return .init(width: min(screenWidth - 40, 1160), height: max(720, maxAllowedHeight))
 }
 
 @MainActor
