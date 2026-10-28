@@ -19,6 +19,7 @@ enum SneakContentType {
     case battery
     case download
     case bluetoothDevice
+    case chatNotification
 
     var isSystemHUDReplacementEnabled: Bool {
         switch self {
@@ -78,9 +79,18 @@ class AnotherNotchViewCoordinator: ObservableObject {
             if oldValue == .camera, currentView != .camera {
                 modules.deactivate(.camera)
             }
+            if oldValue == .chat, currentView != .chat {
+                ChatManager.shared.pauseAll()
+            }
+            if currentView == .fanControl {
+                FanControlManager.shared.setNotchOpen(true)
+            } else if oldValue == .fanControl {
+                FanControlManager.shared.setNotchOpen(false)
+            }
             modules.activate(currentView)
         }
     }
+    @Published var isNotchOpen: Bool = false
     @Published var helloAnimationRunning: Bool = false
     private var sneakPeekDispatch: DispatchWorkItem?
     private var expandingViewDispatch: DispatchWorkItem?
@@ -170,6 +180,15 @@ class AnotherNotchViewCoordinator: ObservableObject {
             }
         }
         XPCHelperClient.shared.startMonitoringAccessibilityAuthorization()
+        NotificationCenter.default.addObserver(
+            forName: NSApplication.didBecomeActiveNotification,
+            object: nil,
+            queue: .main
+        ) { _ in
+            Task {
+                _ = await XPCHelperClient.shared.isAccessibilityAuthorized()
+            }
+        }
         wakeObserver = NSWorkspace.shared.notificationCenter.addObserver(
             forName: NSWorkspace.didWakeNotification,
             object: nil,
@@ -305,13 +324,15 @@ class AnotherNotchViewCoordinator: ObservableObject {
     ) {
         Task { @MainActor in
             withAnimation(.smooth) {
-                self.expandingView.show = status
-                self.expandingView.type = type
-                self.expandingView.value = value
-                self.expandingView.browser = browser
-                self.expandingView.title = title
-                self.expandingView.subtitle = subtitle
-                self.expandingView.icon = icon
+                self.expandingView = ExpandedItem(
+                    show: status,
+                    type: type,
+                    value: value,
+                    browser: browser,
+                    title: title,
+                    subtitle: subtitle,
+                    icon: icon
+                )
             }
         }
     }
@@ -322,7 +343,7 @@ class AnotherNotchViewCoordinator: ObservableObject {
         didSet {
             if expandingView.show {
                 expandingViewTask?.cancel()
-                let duration: TimeInterval = (expandingView.type == .download ? 2 : 3)
+                let duration: TimeInterval = (expandingView.type == .chatNotification ? 4.0 : (expandingView.type == .download ? 2 : 3))
                 let currentType = expandingView.type
                 expandingViewTask = Task { [weak self] in
                     try? await Task.sleep(for: .seconds(duration))

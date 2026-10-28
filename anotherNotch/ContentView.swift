@@ -301,7 +301,7 @@ struct ContentView: View {
 
     private var closedNotchContentSize: CGSize {
         let baseSize = CGSize(width: vm.closedNotchSize.width, height: vm.effectiveClosedNotchHeight)
-        guard baseSize.height > 0 else { return baseSize }
+        guard baseSize.height > 0 || coordinator.expandingView.show || coordinator.sneakPeek.show else { return baseSize }
 
         if coordinator.helloAnimationRunning {
             return .init(width: baseSize.width * 1.26, height: 120)
@@ -324,6 +324,16 @@ struct ContentView: View {
             return .init(
                 width: physicalNotchWidth + powerNotificationTextWidth + powerNotificationIconWidth,
                 height: baseSize.height
+            )
+        }
+
+        if coordinator.expandingView.type == .chatNotification && coordinator.expandingView.show
+            && vm.notchState == .closed
+        {
+            let topHeight = max(baseSize.height, 32)
+            return .init(
+                width: max(baseSize.width + 200, 380),
+                height: topHeight + 24
             )
         }
 
@@ -631,8 +641,10 @@ struct ContentView: View {
             withAnimation(motion.openShellAnimation) {
                 shellExpansion = 1
             }
+            let isChatModule = (displayedExpandedModule ?? coordinator.currentView) == .chat
+            let revealDelay = isChatModule ? 0.30 : motion.expandedContentRevealDelay
             expandedContentTask = Task { @MainActor in
-                try? await Task.sleep(for: .seconds(motion.expandedContentRevealDelay))
+                try? await Task.sleep(for: .seconds(revealDelay))
                 guard !Task.isCancelled, vm.notchState == .open else { return }
 
                 withAnimation(motion.expandedContentRevealAnimation) {
@@ -756,7 +768,7 @@ struct ContentView: View {
                     alignment: .top
                 )
                 .opacity(shellExpansion)
-                .transition(.opacity.combined(with: .scale(scale: 0.96, anchor: .top)))
+                .transition((displayedExpandedModule ?? coordinator.currentView) == .chat ? .opacity : .opacity.combined(with: .scale(scale: 0.96, anchor: .top)))
                 .zIndex(1)
                 .allowsHitTesting(vm.notchState == .open)
                 .opacity(
@@ -799,6 +811,25 @@ struct ContentView: View {
                             .frame(width: powerNotificationIconWidth, alignment: .leading)
                         }
                         .frame(height: vm.effectiveClosedNotchHeight, alignment: .center)
+                    } else if (!showsMusicSneakPeek || coordinator.expandingView.type == .chatNotification)
+                        && coordinator.expandingView.type == .chatNotification && coordinator.expandingView.show
+                        && vm.notchState == .closed
+                    {
+                        ChatNotificationIndicator(
+                            item: coordinator.expandingView,
+                            physicalNotchWidth: max(0, vm.closedNotchSize.width - cornerRadiusInsets.closed.top),
+                            topRowHeight: max(vm.effectiveClosedNotchHeight, 32)
+                        )
+                        .frame(height: closedNotchContentSize.height, alignment: .top)
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            coordinator.toggleExpandingView(status: false, type: .chatNotification)
+                            coordinator.currentView = .chat
+                            if let notif = ChatManager.shared.latestNotification {
+                                ChatManager.shared.activeInstanceId = notif.instanceId
+                            }
+                            doOpen()
+                        }
                     } else if !showsMusicSneakPeek
                         && coordinator.expandingView.type == .bluetoothDevice && coordinator.expandingView.show
                         && vm.notchState == .closed
@@ -887,6 +918,11 @@ struct ContentView: View {
         case .fanControl:
             FanControlView()
                 .frame(width: fanControlContentSize.width, height: fanControlContentSize.height)
+                .clipped()
+        case .chat:
+            ChatView()
+                .frame(maxWidth: .infinity)
+                .frame(height: chatContentSize.height)
                 .clipped()
         }
     }
@@ -1143,7 +1179,7 @@ struct ContentView: View {
     }
 
     private func handleUpGesture(translation: CGFloat, phase: NSEvent.Phase) {
-        guard !isScrollableTab, vm.notchState == .open && !vm.isHoveringCalendar else { return }
+        guard !isScrollableTab, coordinator.currentView != .chat, vm.notchState == .open && !vm.isHoveringCalendar else { return }
 
         withAnimation(interactionAnimation) {
             gestureProgress = (translation / Defaults[.gestureSensitivity]) * -20

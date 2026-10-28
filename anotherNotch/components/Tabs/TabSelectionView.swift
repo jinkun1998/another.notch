@@ -12,6 +12,7 @@ struct TabSelectionView: View {
     let installedModules: [FeatureModule]
     @ObservedObject private var coordinator = AnotherNotchViewCoordinator.shared
     @ObservedObject private var modules = FeatureModuleRegistry.shared
+    @ObservedObject private var chatManager = ChatManager.shared
 
     init(installedModules: [FeatureModule], tabWidth: CGFloat = moduleTabWidth) {
         self.installedModules = installedModules
@@ -28,13 +29,15 @@ struct TabSelectionView: View {
                 .fill(Color(nsColor: .secondarySystemFill))
                 .frame(width: tabWidth, height: 26)
                 .offset(x: CGFloat(selectedIndex) * tabWidth)
+                .clipShape(Capsule())
 
             HStack(spacing: 0) {
                 ForEach(installedModules) { module in
                     TabButton(
                         label: module.title,
                         icon: module.icon,
-                        selected: coordinator.currentView == module.tabDestination
+                        selected: coordinator.currentView == module.tabDestination,
+                        badgeCount: module.id == .chat ? chatManager.unreadCount : 0
                     ) {
                         coordinator.currentView = module.tabDestination
                     }
@@ -44,7 +47,6 @@ struct TabSelectionView: View {
             }
         }
         .frame(width: CGFloat(installedModules.count) * tabWidth, height: 26, alignment: .leading)
-        .clipShape(Capsule())
         .animation(.smooth, value: coordinator.currentView)
         .onAppear(perform: ensureSelectionIsAvailable)
         .onChange(of: modules.installedIDs) { _, _ in ensureSelectionIsAvailable() }

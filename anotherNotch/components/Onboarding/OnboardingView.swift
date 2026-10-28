@@ -325,6 +325,8 @@ struct OnboardingView: View {
                 Defaults[.showCalendar] = true
             case .camera:
                 Defaults[.showMirror] = true
+            case .chat:
+                Defaults[.chatEnabled] = true
             }
         }
     }

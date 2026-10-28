@@ -113,6 +113,16 @@ final class FeatureModuleRegistry: ObservableObject {
             installedByDefault: true,
             isAvailable: true,
             supportsScrolling: false
+        ),
+        FeatureModule(
+            id: .chat,
+            title: "Chat",
+            icon: "message.fill",
+            tabDestination: .chat,
+            settingsDestination: .chat,
+            installedByDefault: true,
+            isAvailable: true,
+            supportsScrolling: true
         )
     ]
 
@@ -198,7 +208,8 @@ final class FeatureModuleRegistry: ObservableObject {
                 shelfEnabled: Defaults[.boringShelf],
                 calendarEnabled: Defaults[.showCalendar],
                 cameraEnabled: Defaults[.showMirror],
-                fanControlEnabled: Defaults[.fanControlEnabled]
+                fanControlEnabled: Defaults[.fanControlEnabled],
+                chatEnabled: Defaults[.chatEnabled]
             )
         )
     }
@@ -252,6 +263,9 @@ final class FeatureModuleRegistry: ObservableObject {
         if isInstalled(.fanControl) && Defaults[.fanControlEnabled] {
             FanControlManager.shared.startMonitoring()
         }
+        if isInstalled(.chat) && Defaults[.chatEnabled] {
+            ChatManager.shared.preloadActiveService()
+        }
     }
 
     func activate(_ id: FeatureModuleID) {
@@ -268,6 +282,8 @@ final class FeatureModuleRegistry: ObservableObject {
             WebcamManager.shared.checkAndRequestVideoAuthorization()
         case .fanControl:
             FanControlManager.shared.startMonitoring()
+        case .chat:
+            ChatManager.shared.preloadActiveService()
         }
     }
 
@@ -279,7 +295,7 @@ final class FeatureModuleRegistry: ObservableObject {
             WebcamManager.shared.stopSession()
         case .fanControl:
             FanControlManager.shared.stopMonitoring()
-        case .home, .quickNotes, .shelf, .calendar:
+        case .home, .quickNotes, .shelf, .calendar, .chat:
             break
         }
     }

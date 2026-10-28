@@ -155,6 +155,7 @@ private enum SettingsPage: String, CaseIterable, Identifiable {
     case shelf = "Shelf"
     case camera = "Camera"
     case fanControl = "Fan Control"
+    case chat = "Chat"
     case shortcuts = "Shortcuts"
     case advanced = "Advanced"
     case about = "About"
@@ -175,6 +176,7 @@ private enum SettingsPage: String, CaseIterable, Identifiable {
         case .shelf: "books.vertical"
         case .camera: "web.camera"
         case .fanControl: "fan.fill"
+        case .chat: "message.fill"
         case .shortcuts: "command"
         case .advanced: "gearshape.2"
         case .about: "info.circle"
@@ -195,6 +197,7 @@ private enum SettingsPage: String, CaseIterable, Identifiable {
         case .shelf: "Drag, drop, and saved Shelf items."
         case .camera: "Camera mirror appearance and access."
         case .fanControl: "Monitor fan speeds and adjust cooling modes."
+        case .chat: "All-in-one messaging apps inside the notch with notifications."
         case .shortcuts: "Global keyboard shortcuts for opening the notch and installed tabs."
         case .advanced: "Accent color, window behavior, and privacy."
         case .about: "Version, updates, and project information."
@@ -266,6 +269,9 @@ struct SettingsView: View {
                     if modules.isInstalled(.fanControl) {
                         sidebarRow(.fanControl)
                     }
+                    if modules.isInstalled(.chat) {
+                        sidebarRow(.chat)
+                    }
                 }
 
                 Section("System") {
@@ -333,6 +339,10 @@ struct SettingsView: View {
                     case .fanControl:
                     ModuleSettings(moduleID: .fanControl) {
                         FanControlSettings()
+                    }
+                    case .chat:
+                    ModuleSettings(moduleID: .chat) {
+                        ChatSettings()
                     }
                     case .shortcuts:
                     ShortcutSettings()
@@ -622,6 +632,9 @@ private struct ModuleInstallButton: View {
             modules.install(moduleID)
             if moduleID == .fanControl {
                 Defaults[.fanControlEnabled] = true
+            }
+            if moduleID == .chat {
+                Defaults[.chatEnabled] = true
             }
         }
     }

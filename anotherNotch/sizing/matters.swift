@@ -33,9 +33,10 @@ let calendarOpenNotchSize: CGSize = .init(
 let shelfOpenNotchSize: CGSize = .init(width: 640, height: 160)
 let clipboardOpenNotchWidth: CGFloat = calendarOpenNotchSize.width
 let musicOpenNotchSize: CGSize = calendarOpenNotchSize
+let chatContentSize: CGSize = .init(width: 1040, height: 600)
 let baseMaximumOpenNotchSize: CGSize = .init(
-    width: max(shelfOpenNotchSize.width, musicOpenNotchSize.width, calendarOpenNotchSize.width),
-    height: max(shelfOpenNotchSize.height, musicOpenNotchSize.height, calendarOpenNotchSize.height)
+    width: max(shelfOpenNotchSize.width, musicOpenNotchSize.width, calendarOpenNotchSize.width, chatContentSize.width),
+    height: max(shelfOpenNotchSize.height, musicOpenNotchSize.height, calendarOpenNotchSize.height, chatContentSize.height)
 )
 
 @MainActor
@@ -73,14 +74,15 @@ let cornerRadiusInsets: (opened: (top: CGFloat, bottom: CGFloat), closed: (top: 
 
 @MainActor
 func tabHeaderMinimumOpenWidth(screenUUID: String? = nil) -> CGFloat {
-    let tabCount = CGFloat(max(
-        FeatureModuleRegistry.shared.leftInstalledModules.count,
-        FeatureModuleRegistry.shared.rightInstalledModules.count
-    ))
-    let tabStripWidth = tabCount * moduleTabWidth
-    let requiredInnerWingWidth = moduleTabLeadingPadding + tabStripWidth + moduleTabNotchGap
+    let leftCount = CGFloat(FeatureModuleRegistry.shared.leftInstalledModules.count)
+    let rightCount = CGFloat(FeatureModuleRegistry.shared.rightInstalledModules.count)
+    let leftWingWidth = leftCount * moduleTabWidth + moduleTabLeadingPadding + moduleTabNotchGap
+    let rightExtraControls: CGFloat = (Defaults[.settingsIconInNotch] ? 28 : 0)
+        + (Defaults[.batteryFeatureEnabled] && Defaults[.showBatteryIndicator] ? 95 : 0)
+    let rightWingWidth = rightCount * moduleTabWidth + rightExtraControls + moduleTabLeadingPadding + moduleTabNotchGap
+    let wingWidth = max(leftWingWidth, rightWingWidth)
     let physicalWidth = getClosedNotchSize(screenUUID: screenUUID).width
-    let dynamicWidth = physicalWidth + (requiredInnerWingWidth * 2) + (notchOuterHorizontalPadding * 2)
+    let dynamicWidth = physicalWidth + (wingWidth * 2) + (notchOuterHorizontalPadding * 2)
     return max(tabBarMinimumOpenWidth, dynamicWidth)
 }
 
@@ -137,8 +139,8 @@ func maximumOpenNotchSize(screenUUID: String? = nil) -> CGSize {
 func notchWindowSize(screenUUID: String? = nil) -> CGSize {
     let screen = screenUUID.flatMap { NSScreen.screen(withUUID: $0) } ?? NSScreen.main
     let screenWidth = screen?.frame.width ?? 1440
-    let maxAllowedHeight = ((screen?.frame.height ?? 900) * 0.75).rounded()
-    return .init(width: min(screenWidth, 960), height: max(650, maxAllowedHeight))
+    let maxAllowedHeight = ((screen?.frame.height ?? 900) * 0.82).rounded()
+    return .init(width: min(screenWidth - 40, 1160), height: max(720, maxAllowedHeight))
 }
 
 @MainActor
@@ -171,6 +173,9 @@ func openNotchSize(for view: NotchViews, screenUUID: String? = nil) -> CGSize {
     case .fanControl:
         contentWidth = fanControlContentSize.width
         contentHeight = fanControlContentSize.height
+    case .chat:
+        contentWidth = chatContentSize.width
+        contentHeight = chatContentSize.height
     }
 
     return pixelAlignedNotchSize(

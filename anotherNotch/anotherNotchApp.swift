@@ -275,7 +275,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private func createAnotherNotchWindow(for screen: NSScreen, with viewModel: AnotherNotchViewModel) -> NSWindow {
         let size = notchWindowSize(screenUUID: viewModel.screenUUID)
         let rect = NSRect(x: 0, y: 0, width: size.width, height: size.height)
-        let styleMask: NSWindow.StyleMask = [.borderless, .nonactivatingPanel, .utilityWindow, .hudWindow]
+        let styleMask: NSWindow.StyleMask = [.borderless, .utilityWindow, .hudWindow]
         
         let window = AnotherNotchSkyLightWindow(contentRect: rect, styleMask: styleMask, backing: .buffered, defer: false)
         let containerView = AnotherNotchFileDropContainerView(frame: rect)
@@ -371,9 +371,28 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        UserDefaults.standard.register(defaults: [
+            "NSAutomaticSpellingCorrectionEnabled": false,
+            "NSAutomaticTextCompletionEnabled": false,
+            "NSAutomaticInlinePredictionEnabled": false,
+            "NSAutomaticCapitalizationEnabled": false,
+            "NSAutomaticPeriodSubstitutionEnabled": false,
+            "NSAutomaticDashSubstitutionEnabled": false,
+            "NSAutomaticQuoteSubstitutionEnabled": false,
+            "WebContinuousSpellCheckingEnabled": false,
+            "WebGrammarCheckingEnabled": false,
+            "WebAutomaticSpellingCorrectionEnabled": false
+        ])
         _ = VolumeManager.shared
         _ = LockscreenMusicWidgetController.shared
         FeatureModuleRegistry.shared.startInstalledServices()
+
+        // Disallow anotherNotch and its sub-processes from being a system NowPlaying media application
+        if let bundle = CFBundleCreate(kCFAllocatorDefault, NSURL(fileURLWithPath: "/System/Library/PrivateFrameworks/MediaRemote.framework")),
+           let ptr = CFBundleGetFunctionPointerForName(bundle, "MRMediaRemoteSetCanBeNowPlayingApplication" as CFString) {
+            let fn = unsafeBitCast(ptr, to: (@convention(c) (Bool) -> Void).self)
+            fn(false)
+        }
 
         let normalizedMusicControls = MusicControlButton.normalizedLayout(Defaults[.musicControlSlots])
         if Defaults[.musicControlSlots] != normalizedMusicControls {
@@ -535,6 +554,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
         KeyboardShortcuts.onKeyDown(for: .openFanControl) { [weak self] in
             self?.openNotch(.fanControl)
+        }
+        KeyboardShortcuts.onKeyDown(for: .openChat) { [weak self] in
+            self?.openNotch(.chat)
         }
 
         if !Defaults[.showOnAllDisplays] {

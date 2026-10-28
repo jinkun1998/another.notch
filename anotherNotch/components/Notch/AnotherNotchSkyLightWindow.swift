@@ -53,6 +53,7 @@ class AnotherNotchSkyLightWindow: NSPanel {
     
     private func configureWindow() {
         isFloatingPanel = true
+        hidesOnDeactivate = false
         isOpaque = false
         titleVisibility = .hidden
         titlebarAppearsTransparent = true
@@ -113,7 +114,27 @@ class AnotherNotchSkyLightWindow: NSPanel {
     private var observers: Set<AnyCancellable> = []
 
     override var canBecomeKey: Bool { true }
-    override var canBecomeMain: Bool { false }
+    override var canBecomeMain: Bool { true }
+    override var acceptsFirstResponder: Bool { true }
+
+    override func becomeKey() {
+        super.becomeKey()
+        if !NSApp.isActive {
+            NSApp.activate(ignoringOtherApps: true)
+        }
+    }
+
+    override func sendEvent(_ event: NSEvent) {
+        if event.type == .leftMouseDown || event.type == .rightMouseDown {
+            if !NSApp.isActive {
+                NSApp.activate(ignoringOtherApps: true)
+            }
+            if !isKeyWindow {
+                makeKeyAndOrderFront(nil)
+            }
+        }
+        super.sendEvent(event)
+    }
 }
 
 final class AnotherNotchFileDropContainerView: NSView {

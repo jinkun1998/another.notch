@@ -141,6 +141,7 @@ final class ClipboardHistoryStore: ObservableObject {
     private var hudTask: Task<Void, Never>?
     private var selfWriteSuppressionDeadline = Date.distantPast
     private var lastExternalApplication: NSRunningApplication?
+    private var clipboardSettingCancellable: AnyCancellable?
 
     private var directory: URL {
         let appSupport = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
@@ -167,13 +168,25 @@ final class ClipboardHistoryStore: ObservableObject {
                 self.lastExternalApplication = application
             }
         }
+
+        clipboardSettingCancellable = Defaults.publisher(.clipboardHistoryEnabled)
+            .sink { [weak self] change in
+                if change.newValue {
+                    self?.startMonitoring()
+                } else {
+                    self?.stopMonitoring()
+                }
+            }
     }
 
     func startMonitoring() {
-        guard timer == nil else { return }
+        guard Defaults[.clipboardHistoryEnabled], timer == nil else { return }
         lastChangeCount = pasteboard.changeCount
-        timer = Timer.scheduledTimer(withTimeInterval: 0.75, repeats: true) { [weak self] _ in
-            Task { @MainActor in self?.captureIfNeeded() }
+        // ponytail: 1.5s interval directly on main thread; avoids Task allocations at idle.
+        timer = Timer.scheduledTimer(withTimeInterval: 1.5, repeats: true) { [weak self] _ in
+            MainActor.assumeIsolated {
+                self?.captureIfNeeded()
+            }
         }
     }
 
