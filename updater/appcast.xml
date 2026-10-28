@@ -5,6 +5,25 @@
         <link>https://github.com/jinkun1998/another.notch/releases</link>
         <description>anotherNotch updates</description>
         <item>
+            <title>1.5.0-beta1</title>
+            <pubDate>Wed, 28 Oct 2026 02:49:56 +0000</pubDate>
+            <link>https://github.com/jinkun1998/another.notch/releases</link>
+            <sparkle:channel>beta</sparkle:channel>
+            <sparkle:version>43</sparkle:version>
+            <sparkle:shortVersionString>1.5.0-beta1</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <description><![CDATA[<div class="markdown-heading"><h2 class="heading-element">What's Changed</h2><a id="user-content-whats-changed" class="anchor" aria-label="Permalink: What's Changed" href="#whats-changed"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
+<ul>
+<li>build(deps): bump github.com/swiftlang/swift-syntax from 602.0.0 to 604.0.0 by @dependabot[bot] in <a href="https://github.com/jinkun1998/another.notch/pull/108">https://github.com/jinkun1998/another.notch/pull/108</a>
+</li>
+<li>build(deps): bump github/codeql-action/analyze from 4.39.0 to 4.39.1 by @dependabot[bot] in <a href="https://github.com/jinkun1998/another.notch/pull/109">https://github.com/jinkun1998/another.notch/pull/109</a>
+</li>
+</ul>
+<p><strong>Full Changelog</strong>: <a href="https://github.com/jinkun1998/another.notch/compare/v1.4.1...v1.5.0-beta1">https://github.com/jinkun1998/another.notch/compare/v1.4.1...v1.5.0-beta1</a></p>
+]]></description>
+            <enclosure url="https://github.com/jinkun1998/another.notch/releases/download/v1.5.0-beta1/anotherNotch.dmg" length="9779855" type="application/octet-stream" sparkle:edSignature="m57JE3dbFK83TqAaZRTal9JOplWKATYyePpP5Wa+64s9fuBpRpUnijzihNpGk2iu4mzxoqCV4ghVpfrbz2NeCw=="/>
+        </item>
+        <item>
             <title>1.4.1</title>
             <pubDate>Sun, 25 Oct 2026 08:05:40 +0000</pubDate>
             <link>https://github.com/jinkun1998/another.notch/releases</link>
