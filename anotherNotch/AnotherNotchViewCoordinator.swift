@@ -82,6 +82,15 @@ class AnotherNotchViewCoordinator: ObservableObject {
             if oldValue == .chat, currentView != .chat {
                 ChatManager.shared.pauseAll()
             }
+            if currentView == .chat {
+                if !NSApp.isActive {
+                    NSApp.activate(ignoringOtherApps: true)
+                }
+                if let window = NSApp.windows.first(where: { $0 is AnotherNotchSkyLightWindow }) {
+                    window.makeKeyAndOrderFront(nil)
+                }
+                ChatManager.shared.focusActiveWebView()
+            }
             if currentView == .fanControl {
                 FanControlManager.shared.setNotchOpen(true)
             } else if oldValue == .fanControl {

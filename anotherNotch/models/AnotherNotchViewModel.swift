@@ -170,6 +170,9 @@ class AnotherNotchViewModel: NSObject, ObservableObject {
         if let window = NSApp.windows.first(where: { $0 is AnotherNotchSkyLightWindow }) {
             window.makeKeyAndOrderFront(nil)
         }
+        if !NSApp.isActive {
+            NSApp.activate(ignoringOtherApps: true)
+        }
     }
 
     func close() {

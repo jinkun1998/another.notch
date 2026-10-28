@@ -242,6 +242,14 @@ final class FeatureModuleAvailabilityTests: XCTestCase {
         XCTAssertEqual(FeatureModuleID.chat.rawValue, "chat")
     }
 
+    func testMKeyCompatibilityPreferenceValues() {
+        let key = "axIncludeApps" as CFString
+        let domain = "vn.mkey.app" as CFString
+        let list = CFPreferencesCopyAppValue(key, domain) as? [String] ?? []
+        XCTAssertTrue(list.contains("com.jinkun1998.anothernotch"))
+        XCTAssertTrue(list.contains("com.apple.WebKit.WebContent"))
+    }
+
     func testEachModuleUsesItsOwnMainFeatureToggle() {
         XCTAssertTrue(mainFeatureEnabled(.clipboard, enabledModule: .clipboard))
         XCTAssertTrue(mainFeatureEnabled(.shelf, enabledModule: .shelf))

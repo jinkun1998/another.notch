@@ -165,6 +165,23 @@ final class ChatWebView: WKWebView {
     @objc func _mediaMutedState() -> UInt64 { 1 }
 
     override var acceptsFirstResponder: Bool { true }
+
+    override func mouseDown(with event: NSEvent) {
+        if !NSApp.isActive {
+            NSApp.activate(ignoringOtherApps: true)
+        }
+        window?.makeKeyAndOrderFront(nil)
+        super.mouseDown(with: event)
+    }
+
+    override func becomeFirstResponder() -> Bool {
+        let res = super.becomeFirstResponder()
+        if !NSApp.isActive {
+            NSApp.activate(ignoringOtherApps: true)
+        }
+        window?.makeKeyAndOrderFront(nil)
+        return res
+    }
 }
 
 final class ChatManager: NSObject, ObservableObject, WKScriptMessageHandler, WKNavigationDelegate, WKUIDelegate {
@@ -266,6 +283,36 @@ final class ChatManager: NSObject, ObservableObject, WKScriptMessageHandler, WKN
         }
 
         super.init()
+        configureMKeyCompatibility()
+    }
+
+    @MainActor
+    func focusActiveWebView() {
+        guard let active = activeInstance, let wv = webViews[active.id] else { return }
+        wv.window?.makeFirstResponder(wv)
+    }
+
+    private func configureMKeyCompatibility() {
+        // ponytail: auto-whitelist mkey AX direct replacement. Upgrade path: dynamic IME helper.
+        let mkeyDomain = "vn.mkey.app" as CFString
+        let key = "axIncludeApps" as CFString
+        let current = CFPreferencesCopyAppValue(key, mkeyDomain) as? [String] ?? []
+        let needed = ["com.jinkun1998.anothernotch", "com.apple.WebKit.WebContent"]
+        var updated = current
+        var changed = false
+        for item in needed where !updated.contains(item) {
+            updated.append(item)
+            changed = true
+        }
+        if changed {
+            CFPreferencesSetAppValue(key, updated as CFPropertyList, mkeyDomain)
+            CFPreferencesAppSynchronize(mkeyDomain)
+        }
+        let axKey = "vUseAXReplacement" as CFString
+        if (CFPreferencesCopyAppValue(axKey, mkeyDomain) as? Int) != 1 {
+            CFPreferencesSetAppValue(axKey, 1 as CFPropertyList, mkeyDomain)
+            CFPreferencesAppSynchronize(mkeyDomain)
+        }
     }
 
     func preloadActiveService() {

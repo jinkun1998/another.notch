@@ -54,10 +54,8 @@ final class ChatTabsContainerView: NSView {
                 }
                 wv.alphaValue = 1.0
                 addSubview(wv, positioned: .above, relativeTo: nil)
-                if isTabSwitch {
-                    DispatchQueue.main.async {
-                        wv.window?.makeFirstResponder(wv)
-                    }
+                DispatchQueue.main.async { [weak wv] in
+                    wv?.window?.makeFirstResponder(wv)
                 }
             } else {
                 let offscreen = NSRect(x: -20000, y: -20000, width: targetFrame.width, height: targetFrame.height)
