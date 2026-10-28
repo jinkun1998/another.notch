@@ -64,6 +64,7 @@ final class NowPlayingController: ObservableObject, MediaControllerProtocol {
     private let MRMediaRemoteSetElapsedTimeFunction: @convention(c) (Double) -> Void
     private let MRMediaRemoteSetShuffleModeFunction: @convention(c) (Int) -> Void
     private let MRMediaRemoteSetRepeatModeFunction: @convention(c) (Int) -> Void
+    private let MRMediaRemoteSetCanBeNowPlayingApplicationFunction: (@convention(c) (Bool) -> Void)?
 
     private var process: Process?
     private var pipeHandler: JSONLinesPipeHandler?
@@ -97,6 +98,16 @@ final class NowPlayingController: ObservableObject, MediaControllerProtocol {
         MRMediaRemoteSetRepeatModeFunction = unsafeBitCast(
             MRMediaRemoteSetRepeatModePointer, to: (@convention(c) (Int) -> Void).self)
 
+        if let MRMediaRemoteSetCanBeNowPlayingApplicationPointer = CFBundleGetFunctionPointerForName(
+            bundle, "MRMediaRemoteSetCanBeNowPlayingApplication" as CFString) {
+            MRMediaRemoteSetCanBeNowPlayingApplicationFunction = unsafeBitCast(
+                MRMediaRemoteSetCanBeNowPlayingApplicationPointer,
+                to: (@convention(c) (Bool) -> Void).self
+            )
+        } else {
+            MRMediaRemoteSetCanBeNowPlayingApplicationFunction = nil
+        }
+
         Task { await setupNowPlayingObserver() }
     }
 
@@ -120,24 +131,33 @@ final class NowPlayingController: ObservableObject, MediaControllerProtocol {
         self.pipeHandler = nil
     }
 
+    private func ensureSelfCannotBeNowPlaying() {
+        MRMediaRemoteSetCanBeNowPlayingApplicationFunction?(false)
+    }
+
     // MARK: - Protocol Implementation
     func play() async {
+        ensureSelfCannotBeNowPlaying()
         MRMediaRemoteSendCommandFunction(0, nil)
     }
 
     func pause() async {
+        ensureSelfCannotBeNowPlaying()
         MRMediaRemoteSendCommandFunction(1, nil)
     }
 
     func togglePlay() async {
+        ensureSelfCannotBeNowPlaying()
         MRMediaRemoteSendCommandFunction(2, nil)
     }
 
     func nextTrack() async {
+        ensureSelfCannotBeNowPlaying()
         MRMediaRemoteSendCommandFunction(4, nil)
     }
 
     func previousTrack() async {
+        ensureSelfCannotBeNowPlaying()
         MRMediaRemoteSendCommandFunction(5, nil)
     }
 
@@ -246,18 +266,22 @@ final class NowPlayingController: ObservableObject, MediaControllerProtocol {
         let ownBundle = (Bundle.main.bundleIdentifier ?? "com.jinkun1998.anothernotch").lowercased()
         if let parent = payload.parentApplicationBundleIdentifier?.lowercased(),
            (parent == ownBundle || parent.contains("anothernotch")) {
+            ensureSelfCannotBeNowPlaying()
             return true
         }
         if let bundle = payload.bundleIdentifier?.lowercased(),
            (bundle == ownBundle || bundle.contains("anothernotch") || bundle.hasPrefix("com.apple.webkit")) {
+            ensureSelfCannotBeNowPlaying()
             return true
         }
         if let title = payload.title?.lowercased(),
-           (title.contains("messenger") || title.contains("telegram") || title.contains("whatsapp") || title.contains("discord") || title.contains("slack")) {
+           (title.contains("messenger") || title.contains("telegram") || title.contains("whatsapp") || title.contains("discord") || title.contains("slack") || title.contains("instagram")) {
+            ensureSelfCannotBeNowPlaying()
             return true
         }
         let currentBundle = playbackState.bundleIdentifier.lowercased()
         if diff, (currentBundle == ownBundle || currentBundle.contains("anothernotch") || currentBundle.hasPrefix("com.apple.webkit")) {
+            ensureSelfCannotBeNowPlaying()
             return true
         }
         return false

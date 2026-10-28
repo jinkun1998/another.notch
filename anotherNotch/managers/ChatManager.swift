@@ -161,6 +161,8 @@ final class ChatWebView: WKWebView {
     @objc func _updateMediaPlaybackControlsManager() {}
     @objc func _wantsMediaPlaybackControlsView() -> Bool { false }
     @objc func _setWantsMediaPlaybackControlsView(_ val: Bool) {}
+    @objc func _isPlayingAudio() -> Bool { false }
+    @objc func _mediaMutedState() -> UInt64 { 1 }
 
     override var acceptsFirstResponder: Bool { true }
 }
@@ -431,9 +433,20 @@ final class ChatManager: NSObject, ObservableObject, WKScriptMessageHandler, WKN
         config.defaultWebpagePreferences.allowsContentJavaScript = true
         config.allowsAirPlayForMediaPlayback = false
         config.mediaTypesRequiringUserActionForPlayback = .all
-        config.preferences.setValue(false, forKey: "mediaSessionEnabled")
-        config.preferences.setValue(false, forKey: "remotePlaybackEnabled")
-        config.preferences.setValue(false, forKey: "allowsPictureInPictureMediaPlayback")
+        let prefs = config.preferences
+        for (key, val) in [
+            ("mediaSessionEnabled", false),
+            ("remotePlaybackEnabled", false),
+            ("allowsPictureInPictureMediaPlayback", false),
+            ("webAudioEnabled", false),
+            ("requiresUserGestureForAudioPlayback", true),
+            ("invisibleMediaAutoplayNotPermitted", true),
+            ("requiresPageVisibilityToPlayAudio", true)
+        ] as [(String, Any)] {
+            prefs.setValue(val, forKey: key)
+        }
+        config.setValue(true, forKey: "requiresUserActionForAudioPlayback")
+        config.setValue(false, forKey: "mediaDataLoadsAutomatically")
 
         let escapedName = instance.displayName
             .replacingOccurrences(of: "\\", with: "\\\\")
@@ -445,23 +458,77 @@ final class ChatManager: NSObject, ObservableObject, WKScriptMessageHandler, WKN
             window.__notchChatInjected = true;
 
             try {
-                if (window.navigator && window.navigator.mediaSession) {
-                    window.navigator.mediaSession.metadata = null;
-                    window.navigator.mediaSession.playbackState = "none";
-                    window.navigator.mediaSession.setActionHandler = function() {};
-                    window.navigator.mediaSession.setPositionState = function() {};
+                if (window.navigator) {
+                    delete window.navigator.mediaSession;
+                    const dummyMS = {
+                        metadata: null,
+                        playbackState: "none",
+                        setActionHandler: function() {},
+                        setPositionState: function() {}
+                    };
+                    Object.defineProperty(window.navigator, "mediaSession", {
+                        get: function() { return dummyMS; },
+                        set: function() {},
+                        configurable: false
+                    });
                 }
-                delete window.navigator.mediaSession;
-                Object.defineProperty(window.navigator, "mediaSession", {
-                    get: function() { return undefined; },
-                    set: function() {},
-                    configurable: true
-                });
             } catch(e) {}
             try {
                 if (window.HTMLMediaElement) {
                     window.HTMLMediaElement.prototype.disableRemotePlayback = true;
+                    window.HTMLMediaElement.prototype.play = function() {
+                        try {
+                            this.muted = true;
+                            this.volume = 0;
+                            this.disableRemotePlayback = true;
+                            this.pause();
+                        } catch(_) {}
+                        return Promise.resolve();
+                    };
+                    Object.defineProperty(window.HTMLMediaElement.prototype, "muted", {
+                        get: function() { return true; },
+                        set: function() {},
+                        configurable: true
+                    });
+                    Object.defineProperty(window.HTMLMediaElement.prototype, "volume", {
+                        get: function() { return 0; },
+                        set: function() {},
+                        configurable: true
+                    });
                 }
+            } catch(e) {}
+            try {
+                const AC = window.AudioContext || window.webkitAudioContext;
+                if (AC) {
+                    if (window.AudioNode && window.AudioNode.prototype) {
+                        const origConnect = window.AudioNode.prototype.connect;
+                        window.AudioNode.prototype.connect = function(dest) {
+                            if (this.context && dest === this.context.destination) {
+                                return dest;
+                            }
+                            return origConnect.apply(this, arguments);
+                        };
+                    }
+                    if (AC.prototype && AC.prototype.createGain) {
+                        const origGain = AC.prototype.createGain;
+                        AC.prototype.createGain = function() {
+                            const g = origGain.apply(this, arguments);
+                            try { g.gain.setValueAtTime(0, 0); g.gain.value = 0; } catch(_) {}
+                            return g;
+                        };
+                    }
+                }
+            } catch(e) {}
+            try {
+                document.addEventListener('play', function(e) {
+                    if (e.target && e.target.pause) {
+                        try {
+                            e.target.pause();
+                            e.target.muted = true;
+                            e.target.volume = 0;
+                        } catch(_) {}
+                    }
+                }, true);
             } catch(e) {}
             window.__notchInstanceId = "\(instance.id.uuidString)";
             window.__notchServiceName = "\(escapedName)";
