@@ -5,6 +5,18 @@
         <link>https://github.com/jinkun1998/another.notch/releases</link>
         <description>anotherNotch updates</description>
         <item>
+            <title>1.5.0-beta3</title>
+            <pubDate>Wed, 28 Oct 2026 07:34:18 +0000</pubDate>
+            <link>https://github.com/jinkun1998/another.notch/releases</link>
+            <sparkle:channel>beta</sparkle:channel>
+            <sparkle:version>46</sparkle:version>
+            <sparkle:shortVersionString>1.5.0-beta3</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <description><![CDATA[<p><strong>Full Changelog</strong>: <a href="https://github.com/jinkun1998/another.notch/compare/v1.5.0-beta2...v1.5.0-beta3">https://github.com/jinkun1998/another.notch/compare/v1.5.0-beta2...v1.5.0-beta3</a></p>
+]]></description>
+            <enclosure url="https://github.com/jinkun1998/another.notch/releases/download/v1.5.0-beta3/anotherNotch.dmg" length="9780952" type="application/octet-stream" sparkle:edSignature="tCIe8xmmJK+atnAKCBKSTWCF21RZuvokZ/mzo2iVb1dzUlNuf8Na67s4JwbAnWPtdEvRGGlO9jhoBOblIqzMCQ=="/>
+        </item>
+        <item>
             <title>1.5.0-beta2</title>
             <pubDate>Wed, 28 Oct 2026 04:01:19 +0000</pubDate>
             <link>https://github.com/jinkun1998/another.notch/releases</link>
@@ -108,25 +120,6 @@
 <p><strong>Full Changelog</strong>: <a href="https://github.com/jinkun1998/another.notch/compare/v1.3.1...v1.3.2">https://github.com/jinkun1998/another.notch/compare/v1.3.1...v1.3.2</a></p>
 ]]></description>
             <enclosure url="https://github.com/jinkun1998/another.notch/releases/download/v1.3.2/anotherNotch.dmg" length="9472139" type="application/octet-stream" sparkle:edSignature="kTnvqgz6Flu9ULM19NKQ8h2+HfO0LKDTj1qCoG1KLHwMDRMAHRc659cjWkd2pB2Fq7wpZiJJ7BAw0o93tM6OBg=="/>
-        </item>
-        <item>
-            <title>1.3.0-beta4</title>
-            <pubDate>Wed, 30 Sep 2026 04:24:36 +0000</pubDate>
-            <link>https://github.com/jinkun1998/another.notch/releases</link>
-            <sparkle:channel>beta</sparkle:channel>
-            <sparkle:version>36</sparkle:version>
-            <sparkle:shortVersionString>1.3.0-beta4</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-            <description><![CDATA[<div class="markdown-heading"><h2 class="heading-element">What's Changed</h2><a id="user-content-whats-changed" class="anchor" aria-label="Permalink: What's Changed" href="#whats-changed"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
-<ul>
-<li>chore(i18n): update translations from Crowdin by @jinkun1998 in <a href="https://github.com/jinkun1998/another.notch/pull/92">https://github.com/jinkun1998/another.notch/pull/92</a>
-</li>
-<li>feat(clipboard): relocate clear button with confirmation and localization by @jinkun1998 in <a href="https://github.com/jinkun1998/another.notch/pull/93">https://github.com/jinkun1998/another.notch/pull/93</a>
-</li>
-</ul>
-<p><strong>Full Changelog</strong>: <a href="https://github.com/jinkun1998/another.notch/compare/v1.3.0-beta3...v1.3.0-beta4">https://github.com/jinkun1998/another.notch/compare/v1.3.0-beta3...v1.3.0-beta4</a></p>
-]]></description>
-            <enclosure url="https://github.com/jinkun1998/another.notch/releases/download/v1.3.0-beta4/anotherNotch.dmg" length="9455180" type="application/octet-stream" sparkle:edSignature="gD0+r3iqXnVb9zillv0nvY53xt0/+pPeoMssSs2yswOdL93VPHaabTuNf5mq0uFITU7eXWuyhmfEZwg3OYI8DA=="/>
         </item>
     </channel>
 </rss>
