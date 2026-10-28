@@ -120,6 +120,7 @@ brew upgrade --cask another-notch
 - [x] Multi-language support
 - [x] Fans control with smooth ramp control, telemetry, and threshold-based color
 - [x] Lock screen music widget with Liquid Glass, audio output switcher, and customizable position/size
+- [x] Multi-chat messaging in notch (Messenger, WhatsApp, Telegram, Instagram, Discord, Slack) with isolated accounts and sneak peek notifications
 - [ ] Extension system
 
 ## Building from Source
