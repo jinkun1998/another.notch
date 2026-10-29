@@ -5,6 +5,18 @@
         <link>https://github.com/jinkun1998/another.notch/releases</link>
         <description>anotherNotch updates</description>
         <item>
+            <title>1.5.0-beta4</title>
+            <pubDate>Thu, 29 Oct 2026 03:20:22 +0000</pubDate>
+            <link>https://github.com/jinkun1998/another.notch/releases</link>
+            <sparkle:channel>beta</sparkle:channel>
+            <sparkle:version>49</sparkle:version>
+            <sparkle:shortVersionString>1.5.0-beta4</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <description><![CDATA[<p><strong>Full Changelog</strong>: <a href="https://github.com/jinkun1998/another.notch/compare/v1.5.0-beta3...v1.5.0-beta4">https://github.com/jinkun1998/another.notch/compare/v1.5.0-beta3...v1.5.0-beta4</a></p>
+]]></description>
+            <enclosure url="https://github.com/jinkun1998/another.notch/releases/download/v1.5.0-beta4/anotherNotch.dmg" length="9787481" type="application/octet-stream" sparkle:edSignature="J5cOT1zk4y2s35m1gcgK+ko7ERu8pBEob0Nh15FTNTjKmM+AduVXJBCtbHgtVlpDFoJYp11XmxbMaABz0wc9BQ=="/>
+        </item>
+        <item>
             <title>1.5.0-beta3</title>
             <pubDate>Wed, 28 Oct 2026 08:56:30 +0000</pubDate>
             <link>https://github.com/jinkun1998/another.notch/releases</link>
@@ -27,18 +39,6 @@
             <description><![CDATA[<p><strong>Full Changelog</strong>: <a href="https://github.com/jinkun1998/another.notch/compare/v1.5.0-beta2...v1.5.0-beta3">https://github.com/jinkun1998/another.notch/compare/v1.5.0-beta2...v1.5.0-beta3</a></p>
 ]]></description>
             <enclosure url="https://github.com/jinkun1998/another.notch/releases/download/v1.5.0-beta3/anotherNotch.dmg" length="9780952" type="application/octet-stream" sparkle:edSignature="tCIe8xmmJK+atnAKCBKSTWCF21RZuvokZ/mzo2iVb1dzUlNuf8Na67s4JwbAnWPtdEvRGGlO9jhoBOblIqzMCQ=="/>
-        </item>
-        <item>
-            <title>1.5.0-beta2</title>
-            <pubDate>Wed, 28 Oct 2026 04:01:19 +0000</pubDate>
-            <link>https://github.com/jinkun1998/another.notch/releases</link>
-            <sparkle:channel>beta</sparkle:channel>
-            <sparkle:version>44</sparkle:version>
-            <sparkle:shortVersionString>1.5.0-beta2</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-            <description><![CDATA[<p><strong>Full Changelog</strong>: <a href="https://github.com/jinkun1998/another.notch/compare/v1.5.0-beta1...v1.5.0-beta2">https://github.com/jinkun1998/another.notch/compare/v1.5.0-beta1...v1.5.0-beta2</a></p>
-]]></description>
-            <enclosure url="https://github.com/jinkun1998/another.notch/releases/download/v1.5.0-beta2/anotherNotch.dmg" length="9783082" type="application/octet-stream" sparkle:edSignature="yIg2n46N2WgPSYKNT9xIXnyAArSKXfhFPaPgirYMbwMtPv4XaENFDaXYRUlGG1kZ5+mrv2rYZVf5MrIpIMMOBg=="/>
         </item>
         <item>
             <title>1.4.1</title>
