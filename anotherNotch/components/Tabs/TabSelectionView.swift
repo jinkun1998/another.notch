@@ -37,7 +37,8 @@ struct TabSelectionView: View {
                         label: module.title,
                         icon: module.icon,
                         selected: coordinator.currentView == module.tabDestination,
-                        badgeCount: module.id == .chat ? chatManager.unreadCount : 0
+                        badgeCount: module.id == .chat ? chatManager.unreadCount : 0,
+                        badgeText: module.id == .chat ? "Beta" : nil
                     ) {
                         coordinator.currentView = module.tabDestination
                     }

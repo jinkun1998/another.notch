@@ -166,20 +166,6 @@ final class ChatWebView: WKWebView {
 
     override var acceptsFirstResponder: Bool { true }
 
-    override var inputContext: NSTextInputContext? {
-        return super.inputContext
-    }
-
-    // Ensure proper text input for IME
-    override func doCommand(by selector: Selector) {
-        if selector == #selector(insertText(_:)) || selector == #selector(deleteBackward) {
-            // Forward to web view
-            super.doCommand(by: selector)
-        } else {
-            super.doCommand(by: selector)
-        }
-    }
-
     override func mouseDown(with event: NSEvent) {
         if NSApp.activationPolicy() != .regular {
             NSApp.setActivationPolicy(.regular)
@@ -864,6 +850,8 @@ final class ChatManager: NSObject, ObservableObject, WKScriptMessageHandler, WKN
 
     @MainActor
     func handleNotification(instanceId: UUID, title: String, body: String, isDirect: Bool = false, isTest: Bool = false) {
+        // Skip if chat module not installed or disabled
+        guard FeatureModuleRegistry.shared.isAvailable(.chat) else { return }
         guard let instance = instances.first(where: { $0.id == instanceId }) else { return }
         guard !instance.isMuted else { return }
         guard !title.isEmpty || !body.isEmpty else { return }
@@ -942,6 +930,8 @@ final class ChatManager: NSObject, ObservableObject, WKScriptMessageHandler, WKN
 
     @MainActor
     private func handleBadge(instanceId: UUID, count: Int, rawTitle: String) {
+        // Skip if chat module not installed or disabled
+        guard FeatureModuleRegistry.shared.isAvailable(.chat) else { return }
         let oldCount = previousCounts[instanceId] ?? 0
         if count != oldCount {
             previousCounts[instanceId] = count

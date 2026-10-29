@@ -12,6 +12,7 @@ struct TabButton: View {
     let icon: String
     let selected: Bool
     var badgeCount: Int = 0
+    var badgeText: String? = nil
     let onClick: () -> Void
     
     var body: some View {
@@ -24,6 +25,16 @@ struct TabButton: View {
                         .fill(Color.red)
                         .frame(width: 5, height: 5)
                         .offset(x: -2, y: 3)
+                }
+                if let badgeText = badgeText {
+                    Text(badgeText)
+                        .font(.system(size: 7, weight: .bold))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 3)
+                        .padding(.vertical, 1)
+                        .background(Color.orange)
+                        .clipShape(Capsule())
+                        .offset(x: -2, y: -10)
                 }
             }
             .contentShape(Rectangle())
