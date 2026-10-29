@@ -166,20 +166,44 @@ final class ChatWebView: WKWebView {
 
     override var acceptsFirstResponder: Bool { true }
 
+    override var inputContext: NSTextInputContext? {
+        return super.inputContext
+    }
+
+    // Ensure proper text input for IME
+    override func doCommand(by selector: Selector) {
+        if selector == #selector(insertText(_:)) || selector == #selector(deleteBackward) {
+            // Forward to web view
+            super.doCommand(by: selector)
+        } else {
+            super.doCommand(by: selector)
+        }
+    }
+
     override func mouseDown(with event: NSEvent) {
+        if NSApp.activationPolicy() != .regular {
+            NSApp.setActivationPolicy(.regular)
+        }
         if !NSApp.isActive {
             NSApp.activate(ignoringOtherApps: true)
         }
-        window?.makeKeyAndOrderFront(nil)
+        if window?.isKeyWindow != true {
+            window?.makeKeyAndOrderFront(nil)
+        }
         super.mouseDown(with: event)
     }
 
     override func becomeFirstResponder() -> Bool {
         let res = super.becomeFirstResponder()
+        if NSApp.activationPolicy() != .regular {
+            NSApp.setActivationPolicy(.regular)
+        }
         if !NSApp.isActive {
             NSApp.activate(ignoringOtherApps: true)
         }
-        window?.makeKeyAndOrderFront(nil)
+        if window?.isKeyWindow != true {
+            window?.makeKeyAndOrderFront(nil)
+        }
         return res
     }
 }
@@ -297,7 +321,11 @@ final class ChatManager: NSObject, ObservableObject, WKScriptMessageHandler, WKN
         let mkeyDomain = "vn.mkey.app" as CFString
         let key = "axIncludeApps" as CFString
         let current = CFPreferencesCopyAppValue(key, mkeyDomain) as? [String] ?? []
-        let needed = ["com.jinkun1998.anothernotch", "com.apple.WebKit.WebContent"]
+        let needed = [
+            "com.jinkun1998.anothernotch",
+            "com.jinkun1998.anothernotch.debug",
+            "com.apple.WebKit.WebContent"
+        ]
         var updated = current
         var changed = false
         for item in needed where !updated.contains(item) {
@@ -488,7 +516,9 @@ final class ChatManager: NSObject, ObservableObject, WKScriptMessageHandler, WKN
             ("webAudioEnabled", false),
             ("requiresUserGestureForAudioPlayback", true),
             ("invisibleMediaAutoplayNotPermitted", true),
-            ("requiresPageVisibilityToPlayAudio", true)
+            ("requiresPageVisibilityToPlayAudio", true),
+            ("hiddenPageDOMTimerThrottlingEnabled", false),
+            ("pageVisibilityBasedProcessSuppressionEnabled", false)
         ] as [(String, Any)] {
             prefs.setValue(val, forKey: key)
         }
@@ -913,8 +943,10 @@ final class ChatManager: NSObject, ObservableObject, WKScriptMessageHandler, WKN
     @MainActor
     private func handleBadge(instanceId: UUID, count: Int, rawTitle: String) {
         let oldCount = previousCounts[instanceId] ?? 0
-        previousCounts[instanceId] = count
-        unreadCounts[instanceId] = count
+        if count != oldCount {
+            previousCounts[instanceId] = count
+            unreadCounts[instanceId] = count
+        }
 
         guard count > oldCount else { return }
 

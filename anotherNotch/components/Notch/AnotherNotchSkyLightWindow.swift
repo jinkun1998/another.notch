@@ -119,6 +119,9 @@ class AnotherNotchSkyLightWindow: NSPanel {
 
     override func becomeKey() {
         super.becomeKey()
+        if NSApp.activationPolicy() != .regular {
+            NSApp.setActivationPolicy(.regular)
+        }
         if !NSApp.isActive {
             NSApp.activate(ignoringOtherApps: true)
         }

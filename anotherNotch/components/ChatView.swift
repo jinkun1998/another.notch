@@ -49,13 +49,23 @@ final class ChatTabsContainerView: NSView {
         for (id, wv) in subWebViews {
             let isCurrent = (id == activeId)
             if isCurrent {
+                if wv.superview !== self {
+                    addSubview(wv)
+                }
                 if wv.frame != targetFrame {
                     wv.frame = targetFrame
                 }
                 wv.alphaValue = 1.0
-                addSubview(wv, positioned: .above, relativeTo: nil)
-                DispatchQueue.main.async { [weak wv] in
-                    wv?.window?.makeFirstResponder(wv)
+                // ponytail: only promote and focus on tab switch to avoid interrupting active typing. Upgrade path: focus restoration token.
+                if isTabSwitch {
+                    addSubview(wv, positioned: .above, relativeTo: nil)
+                    DispatchQueue.main.async { [weak wv] in
+                        guard let wv = wv, let win = wv.window else { return }
+                        if let responder = win.firstResponder as? NSView, responder.isDescendant(of: wv) {
+                            return
+                        }
+                        win.makeFirstResponder(wv)
+                    }
                 }
             } else {
                 let offscreen = NSRect(x: -20000, y: -20000, width: targetFrame.width, height: targetFrame.height)
@@ -76,11 +86,19 @@ final class ChatTabsContainerView: NSView {
     }
 
     override func mouseDown(with event: NSEvent) {
+        if NSApp.activationPolicy() != .regular {
+            NSApp.setActivationPolicy(.regular)
+        }
         if !NSApp.isActive {
             NSApp.activate(ignoringOtherApps: true)
         }
+        if window?.isKeyWindow != true {
+            window?.makeKeyAndOrderFront(nil)
+        }
         if let activeId = currentActiveId, let wv = subWebViews[activeId] {
-            window?.makeFirstResponder(wv)
+            if let win = window, !(win.firstResponder is NSView && (win.firstResponder as? NSView)?.isDescendant(of: wv) == true) {
+                win.makeFirstResponder(wv)
+            }
         }
         super.mouseDown(with: event)
     }

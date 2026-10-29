@@ -167,11 +167,19 @@ class AnotherNotchViewModel: NSObject, ObservableObject {
         // Force music information update when notch is opened
         MusicManager.shared.forceUpdate()
         FanControlManager.shared.setNotchOpen(true)
+        if coordinator.currentView == .chat {
+            if NSApp.activationPolicy() != .regular {
+                NSApp.setActivationPolicy(.regular)
+            }
+        }
         if let window = NSApp.windows.first(where: { $0 is AnotherNotchSkyLightWindow }) {
             window.makeKeyAndOrderFront(nil)
         }
         if !NSApp.isActive {
             NSApp.activate(ignoringOtherApps: true)
+        }
+        if coordinator.currentView == .chat {
+            ChatManager.shared.focusActiveWebView()
         }
     }
 
@@ -193,11 +201,17 @@ class AnotherNotchViewModel: NSObject, ObservableObject {
         self.edgeAutoOpenActive = false
         FanControlManager.shared.setNotchOpen(false)
         ChatManager.shared.pauseAll()
+        if NSApp.activationPolicy() != .accessory, SettingsWindowController.shared.window?.isVisible != true {
+            NSApp.setActivationPolicy(.accessory)
+        }
     }
 
     func finishClose() {
         guard notchState == .closed else { return }
         isClosingTransition = false
+        if NSApp.activationPolicy() != .accessory, SettingsWindowController.shared.window?.isVisible != true {
+            NSApp.setActivationPolicy(.accessory)
+        }
         if !coordinator.openLastTabByDefault {
             coordinator.currentView = .home
         } else if FeatureModuleRegistry.shared.isAvailable(.shelf),
