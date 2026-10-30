@@ -5,6 +5,28 @@
         <link>https://github.com/jinkun1998/another.notch/releases</link>
         <description>anotherNotch updates</description>
         <item>
+            <title>1.5.0-beta5</title>
+            <pubDate>Fri, 30 Oct 2026 02:06:06 +0000</pubDate>
+            <link>https://github.com/jinkun1998/another.notch/releases</link>
+            <sparkle:channel>beta</sparkle:channel>
+            <sparkle:version>50</sparkle:version>
+            <sparkle:shortVersionString>1.5.0-beta5</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <description><![CDATA[<div class="markdown-heading"><h3 class="heading-element">What's Changed</h3><a id="user-content-whats-changed" class="anchor" aria-label="Permalink: What's Changed" href="#whats-changed"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
+<ul>
+<li>
+<strong>UI</strong>: Fix Chat 'Beta' badge clipping in notch tab header by fitting it within visible tab bounds.</li>
+<li>
+<strong>UI</strong>: Add 'Beta' badge to Chat across Settings sidebar, Bundled modules list, detail view title, and Onboarding.</li>
+<li>
+<strong>Performance</strong>: Fix Fan Control auto-ramp loop that repeatedly executed <code>smc-helper</code> forced mode writes below threshold, eliminating ~250ms main thread blocking spikes.</li>
+<li>
+<strong>Performance</strong>: Re-enable WebKit DOM timer throttling and process suppression for inactive chat tabs, reducing idle CPU from 30–50% down to 0%.</li>
+</ul>
+]]></description>
+            <enclosure url="https://github.com/jinkun1998/another.notch/releases/download/v1.5.0-beta5/anotherNotch.dmg" length="9787933" type="application/octet-stream" sparkle:edSignature="qlaVL5Oz2EvQdoiGFgcXfNY/THrKZnOAYJkKBoZSItAU7KvPKEX0jkSqKOLEniWyuomPq6aLd1w0vNYkGfzcCg=="/>
+        </item>
+        <item>
             <title>1.5.0-beta4</title>
             <pubDate>Thu, 29 Oct 2026 03:20:22 +0000</pubDate>
             <link>https://github.com/jinkun1998/another.notch/releases</link>
@@ -27,18 +49,6 @@
             <description><![CDATA[<p><strong>Full Changelog</strong>: <a href="https://github.com/jinkun1998/another.notch/compare/v1.5.0-beta2...v1.5.0-beta3">https://github.com/jinkun1998/another.notch/compare/v1.5.0-beta2...v1.5.0-beta3</a></p>
 ]]></description>
             <enclosure url="https://github.com/jinkun1998/another.notch/releases/download/v1.5.0-beta3/anotherNotch.dmg" length="9778639" type="application/octet-stream" sparkle:edSignature="EdXycOKLkPFga+4vvmsXTx51LVFV8LDuCV04+WkhTHz+ejchY3eh+wnCEEz5k763LIG6enFPvcKpFf38tQ22DQ=="/>
-        </item>
-        <item>
-            <title>1.5.0-beta3</title>
-            <pubDate>Wed, 28 Oct 2026 07:34:18 +0000</pubDate>
-            <link>https://github.com/jinkun1998/another.notch/releases</link>
-            <sparkle:channel>beta</sparkle:channel>
-            <sparkle:version>46</sparkle:version>
-            <sparkle:shortVersionString>1.5.0-beta3</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-            <description><![CDATA[<p><strong>Full Changelog</strong>: <a href="https://github.com/jinkun1998/another.notch/compare/v1.5.0-beta2...v1.5.0-beta3">https://github.com/jinkun1998/another.notch/compare/v1.5.0-beta2...v1.5.0-beta3</a></p>
-]]></description>
-            <enclosure url="https://github.com/jinkun1998/another.notch/releases/download/v1.5.0-beta3/anotherNotch.dmg" length="9780952" type="application/octet-stream" sparkle:edSignature="tCIe8xmmJK+atnAKCBKSTWCF21RZuvokZ/mzo2iVb1dzUlNuf8Na67s4JwbAnWPtdEvRGGlO9jhoBOblIqzMCQ=="/>
         </item>
         <item>
             <title>1.4.1</title>
