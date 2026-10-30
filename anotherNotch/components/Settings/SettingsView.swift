@@ -291,8 +291,13 @@ struct SettingsView: View {
         } detail: {
             VStack(alignment: .leading, spacing: 0) {
                 VStack(alignment: .leading, spacing: 5) {
-                    Text(LocalizedStringKey(selectedTab.rawValue))
-                        .font(.system(size: 26, weight: .semibold))
+                    HStack(spacing: 8) {
+                        Text(LocalizedStringKey(selectedTab.rawValue))
+                            .font(.system(size: 26, weight: .semibold))
+                        if selectedTab == .chat {
+                            settingsBadge(text: "Beta")
+                        }
+                    }
                     Text(LocalizedStringKey(selectedTab.summary))
                         .font(.body)
                         .foregroundStyle(.secondary)
@@ -407,6 +412,9 @@ private struct SettingsSidebarRow: View {
                 Text(LocalizedStringKey(page.rawValue))
                     .font(.system(size: 13, weight: isSelected ? .semibold : .regular))
                 Spacer(minLength: 0)
+                if page == .chat {
+                    settingsBadge(text: "Beta")
+                }
             }
             .foregroundStyle(isSelected ? Color.primary : Color.primary.opacity(0.9))
             .frame(height: 34)
@@ -454,7 +462,12 @@ private struct ModulesSettings: View {
                         Image(systemName: module.icon)
                             .frame(width: 20)
                         VStack(alignment: .leading, spacing: 2) {
-                            Text(LocalizedStringKey(module.title))
+                            HStack(spacing: 6) {
+                                Text(LocalizedStringKey(module.title))
+                                if module.id == .chat {
+                                    settingsBadge(text: "Beta")
+                                }
+                            }
                             Text(modules.isInstalled(module.id) ? LocalizedStringKey("Installed") : LocalizedStringKey("Not installed"))
                                 .font(.caption)
                                 .foregroundStyle(.secondary)

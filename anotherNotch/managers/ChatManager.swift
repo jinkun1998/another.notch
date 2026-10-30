@@ -502,9 +502,7 @@ final class ChatManager: NSObject, ObservableObject, WKScriptMessageHandler, WKN
             ("webAudioEnabled", false),
             ("requiresUserGestureForAudioPlayback", true),
             ("invisibleMediaAutoplayNotPermitted", true),
-            ("requiresPageVisibilityToPlayAudio", true),
-            ("hiddenPageDOMTimerThrottlingEnabled", false),
-            ("pageVisibilityBasedProcessSuppressionEnabled", false)
+            ("requiresPageVisibilityToPlayAudio", true)
         ] as [(String, Any)] {
             prefs.setValue(val, forKey: key)
         }

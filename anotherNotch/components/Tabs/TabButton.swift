@@ -28,13 +28,13 @@ struct TabButton: View {
                 }
                 if let badgeText = badgeText {
                     Text(badgeText)
-                        .font(.system(size: 7, weight: .bold))
+                        .font(.system(size: 6, weight: .bold))
                         .foregroundStyle(.white)
-                        .padding(.horizontal, 3)
-                        .padding(.vertical, 1)
+                        .padding(.horizontal, 2.5)
+                        .padding(.vertical, 0.5)
                         .background(Color.orange)
                         .clipShape(Capsule())
-                        .offset(x: -2, y: -10)
+                        .offset(x: badgeCount > 0 ? -8 : -2, y: 2)
                 }
             }
             .contentShape(Rectangle())

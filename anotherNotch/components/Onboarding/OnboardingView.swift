@@ -101,6 +101,16 @@ private struct OnboardingModuleSelectionRow: View {
                 Text(LocalizedStringKey(module.title))
                     .fontWeight(.medium)
 
+                if module.id == .chat {
+                    Text("Beta")
+                        .foregroundStyle(.secondary)
+                        .font(.footnote.bold())
+                        .padding(.vertical, 3)
+                        .padding(.horizontal, 6)
+                        .background(Color(nsColor: .secondarySystemFill))
+                        .clipShape(Capsule())
+                }
+
                 Spacer()
 
                 Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")

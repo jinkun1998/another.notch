@@ -764,31 +764,35 @@ final class FanControlManager: ObservableObject {
 
             let isAboveThreshold = currentTemp >= threshold || (isAutoRamped && currentTemp >= (threshold - hysteresis))
 
-            for fan in updatedFans {
-                let minRPM = fan.minRPM > 0 ? fan.minRPM : 1200
-                let maxRPM = fan.maxRPM > minRPM ? fan.maxRPM : 5000
+            if isAboveThreshold {
+                for fan in updatedFans {
+                    let minRPM = fan.minRPM > 0 ? fan.minRPM : 1200
+                    let maxRPM = fan.maxRPM > minRPM ? fan.maxRPM : 5000
 
-                let target: Double
-                if isAboveThreshold {
-                    target = FanControlManager.calculateAutoTarget(
+                    let target = FanControlManager.calculateAutoTarget(
                         temp: currentTemp,
                         minRPM: minRPM,
                         maxRPM: maxRPM,
                         userMaxSpeed: maxSpeed,
                         aggressiveness: aggressiveness
                     )
-                } else {
-                    target = minRPM
-                }
 
-                let last = lastRampedRPM[fan.id] ?? 0
-                if !isAutoRamped || abs(target - last) >= 50 {
-                    _ = provider.writeFanMode(index: fan.id, manual: true)
-                    _ = provider.writeFanTargetRPM(index: fan.id, rpm: target)
-                    lastRampedRPM[fan.id] = target
+                    let last = lastRampedRPM[fan.id] ?? 0
+                    if !isAutoRamped || abs(target - last) >= 50 {
+                        _ = provider.writeFanMode(index: fan.id, manual: true)
+                        _ = provider.writeFanTargetRPM(index: fan.id, rpm: target)
+                        lastRampedRPM[fan.id] = target
+                    }
                 }
+                isAutoRamped = true
+            } else if isAutoRamped {
+                // Drop back below threshold: restore fans to system automatic mode
+                for fan in updatedFans {
+                    _ = provider.writeFanMode(index: fan.id, manual: false)
+                }
+                lastRampedRPM.removeAll()
+                isAutoRamped = false
             }
-            isAutoRamped = isAboveThreshold
         }
     }
 

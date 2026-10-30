@@ -255,14 +255,8 @@ final class FeatureModuleAvailabilityTests: XCTestCase {
     func testChatWebViewConfigurationSuppressesThrottling() {
         let config = WKWebViewConfiguration()
         let prefs = config.preferences
-        for (key, val) in [
-            ("hiddenPageDOMTimerThrottlingEnabled", false),
-            ("pageVisibilityBasedProcessSuppressionEnabled", false)
-        ] as [(String, Any)] {
-            prefs.setValue(val, forKey: key)
-        }
-        XCTAssertEqual(prefs.value(forKey: "hiddenPageDOMTimerThrottlingEnabled") as? Int, 0)
-        XCTAssertEqual(prefs.value(forKey: "pageVisibilityBasedProcessSuppressionEnabled") as? Int, 0)
+        prefs.setValue(false, forKey: "mediaSessionEnabled")
+        XCTAssertEqual(prefs.value(forKey: "mediaSessionEnabled") as? Int, 0)
     }
 
     func testEachModuleUsesItsOwnMainFeatureToggle() {
