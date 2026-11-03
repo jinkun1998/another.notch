@@ -1264,6 +1264,25 @@ struct HUD: View {
                 }
             }
             .disabled(!hudReplacement)
+
+            Section {
+                Defaults.Toggle(key: .airDropHUDReplacement) {
+                    HStack(spacing: 6) {
+                        Text("AirDrop transfer prompt in notch")
+                        settingsBadge(text: "Beta")
+                    }
+                }
+                Button("Test AirDrop Prompt") {
+                    AirDropManager.shared.testPrompt()
+                }
+            } header: {
+                HStack(spacing: 6) {
+                    Text("AirDrop")
+                    settingsBadge(text: "Beta")
+                }
+            } footer: {
+                Text("Experimental iOS 17 style AirDrop banner replacement with preview thumbnail and Accept/Decline actions.")
+            }
             
             Section {
                 LiquidGlassSegmentedPicker(

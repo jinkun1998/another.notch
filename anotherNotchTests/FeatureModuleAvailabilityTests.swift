@@ -365,6 +365,27 @@ final class FeatureModuleAvailabilityTests: XCTestCase {
         XCTAssertTrue(manager.fans.isEmpty)
     }
 
+    @MainActor
+    func testAirDropIncomingTransferPromptAndActions() {
+        let manager = AirDropManager.shared
+        manager.testPrompt()
+        guard let transfer = manager.currentTransfer else {
+            XCTFail("Expected mock transfer to be created")
+            return
+        }
+        XCTAssertEqual(transfer.status, .prompt)
+        XCTAssertEqual(transfer.senderName, "iPhone")
+        XCTAssertEqual(transfer.itemsDescription, "3 Photos")
+
+        manager.accept()
+        XCTAssertEqual(manager.currentTransfer?.status, .transferring)
+
+        manager.decline()
+        XCTAssertEqual(manager.currentTransfer?.status, .declined)
+
+        manager.scanNotificationCenterWindows()
+    }
+
     private func cpuSamples(for processID: pid_t) throws -> [Double] {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/usr/bin/top")

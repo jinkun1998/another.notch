@@ -384,6 +384,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             "WebAutomaticSpellingCorrectionEnabled": false
         ])
         _ = VolumeManager.shared
+        _ = AirDropManager.shared
         _ = LockscreenMusicWidgetController.shared
         FeatureModuleRegistry.shared.startInstalledServices()
 

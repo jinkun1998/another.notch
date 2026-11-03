@@ -29,6 +29,7 @@ struct ContentView: View {
     @ObservedObject var batteryModel = BatteryStatusViewModel.shared
     @ObservedObject var brightnessManager = BrightnessManager.shared
     @ObservedObject private var clipboardHistory = ClipboardHistoryStore.shared
+    @ObservedObject private var airDropManager = AirDropManager.shared
     @ObservedObject private var modules = FeatureModuleRegistry.shared
     @ObservedObject private var languageManager = AppLanguageManager.shared
     @State private var hoverTask: Task<Void, Never>?
@@ -133,6 +134,20 @@ struct ContentView: View {
         return interpolate(cornerRadiusInsets.closed.bottom, openedHorizontalPadding)
     }
 
+    private var closedNotchContentAnimation: Animation {
+        if airDropManager.isClosing {
+            return motion.closeShellAnimation
+        }
+        if isAirDropHUDActive {
+            return motion.openShellAnimation
+        }
+        return sneakPeekAnimation
+    }
+
+    private var isAirDropHUDActive: Bool {
+        airDropManager.currentTransfer != nil && Defaults[.airDropHUDReplacement] && vm.notchState == .closed
+    }
+
     private var topCornerRadius: CGFloat {
         interpolate(
             cornerRadiusInsets.closed.top,
@@ -141,12 +156,18 @@ struct ContentView: View {
     }
 
     private var currentNotchShape: NotchShape {
-        NotchShape(
-            topCornerRadius: topCornerRadius,
-            bottomCornerRadius: interpolate(
+        let bottomRadius: CGFloat = {
+            if isAirDropHUDActive || airDropManager.isClosing {
+                return bottomCornerRadius
+            }
+            return interpolate(
                 cornerRadiusInsets.closed.bottom,
                 bottomCornerRadius
             )
+        }()
+        return NotchShape(
+            topCornerRadius: topCornerRadius,
+            bottomCornerRadius: bottomRadius
         )
     }
 
@@ -186,11 +207,11 @@ struct ContentView: View {
                             Rectangle()
                                 .fill(.black)
                                 .frame(height: geometry.size.height)
-                                .offset(y: geometry.size.height * gradientBackgroundProgress)
+                                .offset(y: geometry.size.height * ((isAirDropHUDActive || airDropManager.isClosing) ? 1 : gradientBackgroundProgress))
                         }
                     }
 
-                if shellExpansion > 0 {
+                if shellExpansion > 0 || isAirDropHUDActive || airDropManager.isClosing {
                     LiquidGlassSurface(shape: currentNotchShape, opacity: 1)
                         .mask { notchTransparentEdgeMask }
                         .allowsHitTesting(false)
@@ -307,6 +328,14 @@ struct ContentView: View {
             return .init(width: baseSize.width * 1.26, height: 120)
         }
 
+        if airDropManager.currentTransfer != nil && Defaults[.airDropHUDReplacement] && vm.notchState == .closed {
+            let topHeight = max(baseSize.height, 32)
+            return .init(
+                width: max(baseSize.width + 190, 440),
+                height: topHeight + 148
+            )
+        }
+
         if showsMusicSneakPeek {
             return .init(width: max(baseSize.width, 260), height: baseSize.height + 40)
         }
@@ -405,7 +434,7 @@ struct ContentView: View {
             .compositingGroup()
             .offset(y: notchVisualTopOffset)
             .shadow(
-                color: ((shellExpansion > 0 || isHovering) && Defaults[.enableShadow])
+                color: ((shellExpansion > 0 || isAirDropHUDActive || airDropManager.isClosing || isHovering) && Defaults[.enableShadow])
                     ? .black.opacity(0.7) : .clear,
                 radius: Defaults[.cornerRadiusScaling] ? 6 : 4
             )
@@ -425,7 +454,7 @@ struct ContentView: View {
                 notchShell
                     .conditionalModifier(true) { view in
                         return view
-                            .animation(sneakPeekAnimation, value: closedNotchContentSize)
+                            .animation(closedNotchContentAnimation, value: closedNotchContentSize)
                             .animation(interactionAnimation, value: gestureProgress)
                     }
                     .contentShape(Rectangle())
@@ -781,7 +810,23 @@ struct ContentView: View {
 
     @ViewBuilder
     private func compactNotchContent() -> some View {
-        if let entry = clipboardHistory.hudEntry, vm.notchState == .closed {
+        if let transfer = airDropManager.currentTransfer, Defaults[.airDropHUDReplacement], vm.notchState == .closed {
+            AirDropHUD(
+                transfer: transfer,
+                isClosing: airDropManager.isClosing,
+                physicalNotchWidth: max(0, vm.closedNotchSize.width - cornerRadiusInsets.closed.top),
+                topRowHeight: max(vm.effectiveClosedNotchHeight, 32),
+                onAccept: { airDropManager.accept() },
+                onDecline: { airDropManager.decline() }
+            )
+            .frame(height: closedNotchContentSize.height, alignment: .top)
+            .transition(
+                .asymmetric(
+                    insertion: .opacity.combined(with: .scale(scale: 0.96, anchor: .top)),
+                    removal: .opacity.combined(with: .scale(scale: 0.98, anchor: .top))
+                )
+            )
+        } else if let entry = clipboardHistory.hudEntry, vm.notchState == .closed {
                         ClipboardHUD(entry: entry, physicalNotchMaskSize: clipboardNotchMaskSize)
                             .transition(.opacity)
                     } else if !showsMusicSneakPeek

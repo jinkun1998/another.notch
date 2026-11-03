@@ -7,6 +7,10 @@
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
 	</dict>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>AirDrop HUD replacement</string>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+	<string>AirDrop HUD replacement</string>
 	<key>SUFeedURL</key>
 	<string>https://raw.githubusercontent.com/jinkun1998/another.notch/main/updater/appcast.xml</string>
 	<key>SUPublicEDKey</key>

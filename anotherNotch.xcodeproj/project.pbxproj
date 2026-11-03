@@ -25,6 +25,9 @@
 		E18400040000000000000001 /* ChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E18400030000000000000001 /* ChatView.swift */; };
 		E18400060000000000000001 /* ChatSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = E18400050000000000000001 /* ChatSettings.swift */; };
 		E18400080000000000000001 /* ChatNotificationIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E18400070000000000000001 /* ChatNotificationIndicator.swift */; };
+		E18600020000000000000001 /* AirDropManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E18600010000000000000001 /* AirDropManager.swift */; };
+		E18600030000000000000001 /* AirDropManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E18600010000000000000001 /* AirDropManager.swift */; };
+		E18600050000000000000001 /* AirDropHUD.swift in Sources */ = {isa = PBXBuildFile; fileRef = E18600040000000000000001 /* AirDropHUD.swift */; };
 
 		E18100070000000000000001 /* FanControlManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E18100010000000000000001 /* FanControlManager.swift */; };
 		E18200020000000000000001 /* AppLanguageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E18200010000000000000001 /* AppLanguageManager.swift */; };
@@ -225,6 +228,8 @@
 		E18400030000000000000001 /* ChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatView.swift; sourceTree = "<group>"; };
 		E18400050000000000000001 /* ChatSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatSettings.swift; sourceTree = "<group>"; };
 		E18400070000000000000001 /* ChatNotificationIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatNotificationIndicator.swift; sourceTree = "<group>"; };
+		E18600010000000000000001 /* AirDropManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirDropManager.swift; sourceTree = "<group>"; };
+		E18600040000000000000001 /* AirDropHUD.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirDropHUD.swift; sourceTree = "<group>"; };
 
 		E18200010000000000000001 /* AppLanguageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLanguageManager.swift; sourceTree = "<group>"; };
 		A11E00080000000000000008 /* VietnameseLunarCalendar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VietnameseLunarCalendar.swift; sourceTree = "<group>"; };
@@ -578,6 +583,7 @@
 				14C08BB52C8DE42D000F8AA0 /* CalendarManager.swift */,
 				E18100010000000000000001 /* FanControlManager.swift */,
 				E18400010000000000000001 /* ChatManager.swift */,
+				E18600010000000000000001 /* AirDropManager.swift */,
 				E18200010000000000000001 /* AppLanguageManager.swift */,
 				B1F0A0012E60000100000001 /* BrightnessManager.swift */,
 				59D8C23B2E589FAA00147B33 /* VolumeManager.swift */,
@@ -793,6 +799,7 @@
 				14D570D12C5F6C6A0011E668 /* AnotherNotchExtrasMenu.swift */,
 				C1A0B1043B00000100000001 /* BluetoothConnectionIndicator.swift */,
 				E18400070000000000000001 /* ChatNotificationIndicator.swift */,
+				E18600040000000000000001 /* AirDropHUD.swift */,
 				1471A8582C6281BD0058408D /* AnotherNotchWindow.swift */,
 			);
 			path = Notch;
@@ -1031,6 +1038,7 @@
 			files = (
 				E17300060000000000000001 /* QuickNote.swift in Sources */,
 				E18100070000000000000001 /* FanControlManager.swift in Sources */,
+				E18600030000000000000001 /* AirDropManager.swift in Sources */,
 				E18200030000000000000001 /* AppLanguageManager.swift in Sources */,
 				A11E00130000000000000013 /* FeatureModuleAvailabilityTests.swift in Sources */,
 				A11E00140000000000000014 /* FeatureModuleID.swift in Sources */,
@@ -1184,6 +1192,8 @@
 				E18400040000000000000001 /* ChatView.swift in Sources */,
 				E18400060000000000000001 /* ChatSettings.swift in Sources */,
 				E18400080000000000000001 /* ChatNotificationIndicator.swift in Sources */,
+				E18600020000000000000001 /* AirDropManager.swift in Sources */,
+				E18600050000000000000001 /* AirDropHUD.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1232,14 +1242,14 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 49;
+				CURRENT_PROJECT_VERSION = 50;
 				DEVELOPMENT_TEAM = C366DWS54X;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = AnotherNotchXPCHelper/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = AnotherNotchXPCHelper;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 1.5.0-beta5;
+				MARKETING_VERSION = 1.5.0-beta6;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jinkun1998.anothernotch.debug.AnotherNotchXPCHelper;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -1257,14 +1267,14 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 49;
+				CURRENT_PROJECT_VERSION = 50;
 				DEVELOPMENT_TEAM = C366DWS54X;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = AnotherNotchXPCHelper/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = AnotherNotchXPCHelper;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 1.5.0-beta5;
+				MARKETING_VERSION = 1.5.0-beta6;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jinkun1998.anothernotch.AnotherNotchXPCHelper;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -1411,7 +1421,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 49;
+				CURRENT_PROJECT_VERSION = 50;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"anotherNotch/Preview Content\"";
 				DEVELOPMENT_TEAM = C366DWS54X;
@@ -1441,7 +1451,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 1.5.0-beta5;
+				MARKETING_VERSION = 1.5.0-beta6;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jinkun1998.anothernotch.debug;
 				PRODUCT_NAME = "$(TARGET_NAME) (Debug)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1468,7 +1478,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 49;
+				CURRENT_PROJECT_VERSION = 50;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"anotherNotch/Preview Content\"";
 				DEVELOPMENT_TEAM = C366DWS54X;
@@ -1497,7 +1507,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 1.5.0-beta5;
+				MARKETING_VERSION = 1.5.0-beta6;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jinkun1998.anothernotch;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
