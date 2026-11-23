@@ -317,7 +317,7 @@ struct ContentView: View {
     }
 
     private var isScrollableTab: Bool {
-        modules.supportsScrolling(coordinator.currentView)
+        coordinator.currentView == .quickNotes || modules.supportsScrolling(coordinator.currentView)
     }
 
     private var closedNotchContentSize: CGSize {
@@ -1201,7 +1201,7 @@ struct ContentView: View {
     // MARK: - Gesture Handling
 
     private func handleDownGesture(translation: CGFloat, phase: NSEvent.Phase) {
-        guard !isScrollableTab, vm.notchState == .closed else { return }
+        guard !isScrollableTab, coordinator.currentView != .quickNotes, vm.notchState == .closed else { return }
 
         if phase == .ended {
             withAnimation(interactionAnimation) { gestureProgress = .zero }
@@ -1224,7 +1224,7 @@ struct ContentView: View {
     }
 
     private func handleUpGesture(translation: CGFloat, phase: NSEvent.Phase) {
-        guard !isScrollableTab, coordinator.currentView != .chat, vm.notchState == .open && !vm.isHoveringCalendar else { return }
+        guard !isScrollableTab, coordinator.currentView != .chat, coordinator.currentView != .quickNotes, vm.notchState == .open && !vm.isHoveringCalendar else { return }
 
         withAnimation(interactionAnimation) {
             gestureProgress = (translation / Defaults[.gestureSensitivity]) * -20

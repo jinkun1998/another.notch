@@ -1431,7 +1431,19 @@ struct Media: View {
             } header: {
                 Text("Media Source")
             } footer: {
-                if MusicManager.shared.isNowPlayingDeprecated {
+                if mediaController == .anotherMusic && !AnotherMusicController.isInstalled {
+                    HStack {
+                        Text("anotherMusic is not installed. Download it here: ")
+                            .foregroundStyle(.secondary)
+                            .font(.caption)
+                        Link(
+                            "github.com/jinkun1998/another.Music",
+                            destination: AnotherMusicController.downloadURL
+                        )
+                        .font(.caption)
+                        .foregroundColor(Color(nsColor: .linkColor))
+                    }
+                } else if MusicManager.shared.isNowPlayingDeprecated {
                     HStack {
                         Text("YouTube Music requires this third-party app to be installed: ")
                             .foregroundStyle(.secondary)

@@ -15,6 +15,7 @@ enum OnboardingStep {
     case accessibilityPermission
     case bluetoothPermission
     case musicPermission
+    case anotherMusicInvite
     case moduleSelection
     case finished
 }
@@ -251,6 +252,20 @@ struct OnboardingView: View {
                 MusicControllerSelectionView(
                     onContinue: {
                         withAnimation(.easeInOut(duration: 0.6)) {
+                            if !AnotherMusicController.isInstalled {
+                                step = .anotherMusicInvite
+                            } else {
+                                step = .moduleSelection
+                            }
+                        }
+                    }
+                )
+                .transition(.opacity)
+
+            case .anotherMusicInvite:
+                AnotherMusicInviteView(
+                    onContinue: {
+                        withAnimation(.easeInOut(duration: 0.6)) {
                             step = .moduleSelection
                         }
                     }
@@ -386,5 +401,112 @@ private final class BluetoothPermissionRequester: NSObject, CBCentralManagerDele
         continuation = nil
         centralManager = nil
         cont.resume(returning: granted)
+    }
+}
+
+struct AnotherMusicInviteView: View {
+    let onContinue: () -> Void
+
+    var body: some View {
+        VStack(spacing: 20) {
+            Spacer()
+
+            ZStack {
+                Circle()
+                    .fill(Color.effectiveAccent.opacity(0.15))
+                    .frame(width: 88, height: 88)
+
+                Image(systemName: "music.note.house.fill")
+                    .font(.system(size: 42))
+                    .foregroundColor(.effectiveAccent)
+            }
+            .padding(.top, 12)
+
+            VStack(spacing: 6) {
+                Text("Get anotherMusic")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+
+                Text("The dedicated companion player for anotherNotch.")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+
+            VStack(alignment: .leading, spacing: 14) {
+                InviteFeatureRow(
+                    icon: "wand.and.stars",
+                    title: "Live Activity & AutoMix",
+                    subtitle: "Seamless Dynamic Island controls and smooth transitions."
+                )
+                InviteFeatureRow(
+                    icon: "quote.bubble.fill",
+                    title: "Synced Lyrics & Volume",
+                    subtitle: "View live lyrics in the notch and adjust sound output directly."
+                )
+                InviteFeatureRow(
+                    icon: "heart.fill",
+                    title: "Favorites & Quick Likes",
+                    subtitle: "Instant heart toggles with zero configuration."
+                )
+            }
+            .padding(16)
+            .background(.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .stroke(.white.opacity(0.10), lineWidth: 1)
+            )
+            .padding(.horizontal, 24)
+
+            Spacer()
+
+            VStack(spacing: 12) {
+                Button(action: {
+                    NSWorkspace.shared.open(AnotherMusicController.downloadURL)
+                }) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "arrow.down.circle.fill")
+                        Text("Download anotherMusic (Free)")
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+
+                Button("Continue", action: onContinue)
+                    .buttonStyle(.bordered)
+                    .controlSize(.large)
+                    .frame(maxWidth: .infinity)
+            }
+            .padding(.horizontal, 24)
+            .padding(.bottom, 24)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(OnboardingBackground())
+    }
+}
+
+private struct InviteFeatureRow: View {
+    let icon: String
+    let title: String
+    let subtitle: String
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: icon)
+                .font(.title3)
+                .foregroundColor(.effectiveAccent)
+                .frame(width: 24, alignment: .center)
+                .padding(.top, 2)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(LocalizedStringKey(title))
+                    .font(.subheadline.bold())
+                Text(LocalizedStringKey(subtitle))
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
     }
 }

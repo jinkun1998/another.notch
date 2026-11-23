@@ -72,7 +72,7 @@ final class FeatureModuleRegistry: ObservableObject {
             settingsDestination: .quickNotes,
             installedByDefault: false,
             isAvailable: true,
-            supportsScrolling: false
+            supportsScrolling: true
         ),
         FeatureModule(
             id: .shelf,
@@ -215,7 +215,7 @@ final class FeatureModuleRegistry: ObservableObject {
     }
 
     func supportsScrolling(_ id: FeatureModuleID) -> Bool {
-        Self.modules.first(where: { $0.id == id })?.supportsScrolling == true && isAvailable(id)
+        Self.modules.first(where: { $0.id == id })?.supportsScrolling == true
     }
 
     func install(_ id: FeatureModuleID) {

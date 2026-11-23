@@ -202,7 +202,7 @@ class MusicManager: ObservableObject {
         case .nowPlaying:
             newController = NowPlayingController()
         case .anotherMusic:
-            newController = AnotherMusicController()
+            newController = AnotherMusicController.shared
         case .appleMusic:
             newController = AppleMusicController()
         case .spotify:
@@ -389,19 +389,20 @@ class MusicManager: ObservableObject {
         if let another = activeController as? AnotherMusicController {
             Task { await another.cycleTransitionMode() }
         } else if isAnotherMusic {
-            DistributedNotificationCenter.default().postNotificationName(
-                NSNotification.Name("com.jinkun1998.anothermusic.command"),
-                object: nil,
-                userInfo: ["action": "cycleTransitionMode"],
-                deliverImmediately: true
-            )
+            Task { await AnotherMusicController.shared.cycleTransitionMode() }
         }
     }
 
     func toggleFavoriteTrack() {
         guard canFavoriteTrack else { return }
-        // Toggle based on current state
-        setFavorite(!isFavoriteTrack)
+        if let another = activeController as? AnotherMusicController {
+            Task { await another.toggleLike() }
+        } else if let nowPlaying = activeController as? NowPlayingController, nowPlaying.playbackState.bundleIdentifier == "com.jinkun1998.anothermusic" {
+            Task { await nowPlaying.toggleFavorite() }
+        } else {
+            // Toggle based on current state
+            setFavorite(!isFavoriteTrack)
+        }
     }
 
     @MainActor

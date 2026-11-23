@@ -39,6 +39,36 @@ struct MusicControllerSelectionView: View {
 
             ScrollView {
                 VStack(spacing: 12) {
+                    if !AnotherMusicController.isInstalled {
+                        HStack(spacing: 12) {
+                            Image(systemName: "sparkles")
+                                .font(.title2)
+                                .foregroundColor(.effectiveAccent)
+
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Recommended: anotherMusic")
+                                    .font(.subheadline.bold())
+                                Text("Dedicated player for notch Live Activity, synced lyrics, and AutoMix.")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+
+                            Spacer()
+
+                            Button("Get App") {
+                                NSWorkspace.shared.open(AnotherMusicController.downloadURL)
+                            }
+                            .buttonStyle(.borderedProminent)
+                            .controlSize(.small)
+                        }
+                        .padding(12)
+                        .background(Color.effectiveAccent.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(Color.effectiveAccent.opacity(0.25), lineWidth: 1)
+                        )
+                    }
+
                     ForEach(availableMediaControllers) { controller in
                         ControllerOptionView(
                             controller: controller,
@@ -98,6 +128,32 @@ struct ControllerOptionView: View {
                         .font(.subheadline)
                         .foregroundColor(Color(nsColor: .linkColor))
                         .padding(.top, 2)
+                }
+
+                if controller == .anotherMusic {
+                    if !AnotherMusicController.isInstalled {
+                        Button {
+                            NSWorkspace.shared.open(AnotherMusicController.downloadURL)
+                        } label: {
+                            HStack(spacing: 4) {
+                                Image(systemName: "arrow.down.circle")
+                                Text("Download on GitHub (Free)")
+                            }
+                            .font(.subheadline)
+                            .foregroundColor(Color.effectiveAccent)
+                            .padding(.top, 2)
+                        }
+                        .buttonStyle(.plain)
+                    } else {
+                        HStack(spacing: 4) {
+                            Image(systemName: "checkmark.seal.fill")
+                                .foregroundColor(.green)
+                            Text("Installed")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        .padding(.top, 2)
+                    }
                 }
             }
             

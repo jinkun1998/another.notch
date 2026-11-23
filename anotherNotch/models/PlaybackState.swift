@@ -29,6 +29,7 @@ struct PlaybackState {
     var volume: Double = 0.5
     var isFavorite: Bool = false
     var transitionMode: String = "Auto Mix"
+    var trackId: String? = nil
 }
 
 extension PlaybackState: Equatable {
@@ -45,5 +46,6 @@ extension PlaybackState: Equatable {
             && lhs.artwork == rhs.artwork
             && lhs.isFavorite == rhs.isFavorite
             && lhs.transitionMode == rhs.transitionMode
+            && lhs.trackId == rhs.trackId
     }
 }

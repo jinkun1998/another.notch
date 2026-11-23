@@ -11,6 +11,15 @@ import Foundation
 
 @MainActor
 final class AnotherMusicController: ObservableObject, MediaControllerProtocol {
+    static let shared = AnotherMusicController()
+
+    static let downloadURL = URL(string: "https://github.com/jinkun1998/another.Music/releases")!
+
+    static var isInstalled: Bool {
+        NSWorkspace.shared.urlForApplication(withBundleIdentifier: "com.jinkun1998.anothermusic") != nil
+            || FileManager.default.fileExists(atPath: "/Applications/anotherMusic.app")
+    }
+
     @Published private(set) var playbackState: PlaybackState = PlaybackState(
         bundleIdentifier: "com.jinkun1998.anothermusic"
     )
@@ -25,6 +34,9 @@ final class AnotherMusicController: ObservableObject, MediaControllerProtocol {
     private let commandNotification = NSNotification.Name("com.jinkun1998.anothermusic.command")
     private let stateNotification = NSNotification.Name("com.jinkun1998.anothermusic.playbackState")
     private var notificationObserver: AnyObject?
+    private var appActivateObserver: AnyObject?
+    private var appLaunchObserver: AnyObject?
+    private var ownAppActivateObserver: AnyObject?
     private var artworkTask: Task<Void, Never>?
     private var lastArtworkUrl: String?
 
@@ -39,13 +51,58 @@ final class AnotherMusicController: ObservableObject, MediaControllerProtocol {
             }
         }
 
-        // Request initial playback state from anotherMusic
+        appActivateObserver = NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.didActivateApplicationNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] note in
+            if let app = note.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication,
+               app.bundleIdentifier == "com.jinkun1998.anothermusic" {
+                Task { @MainActor [weak self] in
+                    self?.sendCommand("requestState")
+                }
+            }
+        }
+
+        appLaunchObserver = NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.didLaunchApplicationNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] note in
+            if let app = note.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication,
+               app.bundleIdentifier == "com.jinkun1998.anothermusic" {
+                Task { @MainActor [weak self] in
+                    self?.sendCommand("requestState")
+                }
+            }
+        }
+
+        ownAppActivateObserver = NotificationCenter.default.addObserver(
+            forName: NSApplication.didBecomeActiveNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor [weak self] in
+                self?.sendCommand("requestState")
+            }
+        }
+
+        // Request initial playback state from anotherMusic on startup
         sendCommand("requestState")
     }
 
     deinit {
         if let observer = notificationObserver {
             DistributedNotificationCenter.default().removeObserver(observer)
+        }
+        if let observer = appActivateObserver {
+            NSWorkspace.shared.notificationCenter.removeObserver(observer)
+        }
+        if let observer = appLaunchObserver {
+            NSWorkspace.shared.notificationCenter.removeObserver(observer)
+        }
+        if let observer = ownAppActivateObserver {
+            NotificationCenter.default.removeObserver(observer)
         }
         artworkTask?.cancel()
     }
@@ -70,8 +127,11 @@ final class AnotherMusicController: ObservableObject, MediaControllerProtocol {
         if let title = info["title"] as? String { state.title = title }
         if let artist = info["artist"] as? String { state.artist = artist }
         if let album = info["album"] as? String { state.album = album }
+        if let trackId = info["trackId"] as? String { state.trackId = trackId }
         if let duration = info["duration"] as? Double { state.duration = duration }
-        if let currentTime = info["currentTime"] as? Double { state.currentTime = currentTime }
+        if let pos = (info["position"] as? Double) ?? (info["currentTime"] as? Double) {
+            state.currentTime = pos
+        }
         if let playbackRate = info["playbackRate"] as? Double { state.playbackRate = playbackRate }
         if let volume = info["volume"] as? Double { state.volume = volume }
         if let isFav = info["isFavorite"] as? Bool { state.isFavorite = isFav }
@@ -136,9 +196,18 @@ final class AnotherMusicController: ObservableObject, MediaControllerProtocol {
         sendCommand("setVolume", extra: ["volume": level])
     }
 
+    func toggleLike() async {
+        playbackState.isFavorite.toggle()
+        sendCommand("toggleLike")
+    }
+
     func setFavorite(_ favorite: Bool) async {
         playbackState.isFavorite = favorite
         sendCommand("setFavorite", extra: ["favorite": favorite])
+    }
+
+    func toggleFavorite() async {
+        await toggleLike()
     }
 
     func toggleShuffle() async {

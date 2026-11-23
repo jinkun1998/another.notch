@@ -33,16 +33,22 @@ final class NowPlayingController: ObservableObject, MediaControllerProtocol {
         return bundleID == "com.apple.Music" || bundleID == "com.jinkun1998.anothermusic"
     }
 
+    func toggleFavorite() async {
+        if playbackState.bundleIdentifier == "com.jinkun1998.anothermusic" {
+            await AnotherMusicController.shared.toggleLike()
+            var updated = self.playbackState
+            updated.isFavorite = AnotherMusicController.shared.playbackState.isFavorite
+            self.playbackState = updated
+        } else {
+            await setFavorite(!playbackState.isFavorite)
+        }
+    }
+
     func setFavorite(_ favorite: Bool) async {
         let bundleID = playbackState.bundleIdentifier
 
         if bundleID == "com.jinkun1998.anothermusic" {
-            DistributedNotificationCenter.default().postNotificationName(
-                NSNotification.Name("com.jinkun1998.anothermusic.command"),
-                object: nil,
-                userInfo: ["action": "setFavorite", "favorite": favorite],
-                deliverImmediately: true
-            )
+            await AnotherMusicController.shared.setFavorite(favorite)
             var updated = self.playbackState
             updated.isFavorite = favorite
             self.playbackState = updated
@@ -174,30 +180,54 @@ final class NowPlayingController: ObservableObject, MediaControllerProtocol {
     // MARK: - Protocol Implementation
     func play() async {
         ensureSelfCannotBeNowPlaying()
+        if playbackState.bundleIdentifier == "com.jinkun1998.anothermusic" {
+            await AnotherMusicController.shared.play()
+            return
+        }
         MRMediaRemoteSendCommandFunction(0, nil)
     }
 
     func pause() async {
         ensureSelfCannotBeNowPlaying()
+        if playbackState.bundleIdentifier == "com.jinkun1998.anothermusic" {
+            await AnotherMusicController.shared.pause()
+            return
+        }
         MRMediaRemoteSendCommandFunction(1, nil)
     }
 
     func togglePlay() async {
         ensureSelfCannotBeNowPlaying()
+        if playbackState.bundleIdentifier == "com.jinkun1998.anothermusic" {
+            await AnotherMusicController.shared.togglePlay()
+            return
+        }
         MRMediaRemoteSendCommandFunction(2, nil)
     }
 
     func nextTrack() async {
         ensureSelfCannotBeNowPlaying()
+        if playbackState.bundleIdentifier == "com.jinkun1998.anothermusic" {
+            await AnotherMusicController.shared.nextTrack()
+            return
+        }
         MRMediaRemoteSendCommandFunction(4, nil)
     }
 
     func previousTrack() async {
         ensureSelfCannotBeNowPlaying()
+        if playbackState.bundleIdentifier == "com.jinkun1998.anothermusic" {
+            await AnotherMusicController.shared.previousTrack()
+            return
+        }
         MRMediaRemoteSendCommandFunction(5, nil)
     }
 
     func seek(to time: Double) async {
+        if playbackState.bundleIdentifier == "com.jinkun1998.anothermusic" {
+            await AnotherMusicController.shared.seek(to: time)
+            return
+        }
         MRMediaRemoteSetElapsedTimeFunction(time)
     }
 
@@ -239,12 +269,7 @@ final class NowPlayingController: ObservableObject, MediaControllerProtocol {
                     try? await AppleScriptHelper.executeVoid(script)
                 }
             } else if bundleID == "com.jinkun1998.anothermusic" {
-                DistributedNotificationCenter.default().postNotificationName(
-                    NSNotification.Name("com.jinkun1998.anothermusic.command"),
-                    object: nil,
-                    userInfo: ["action": "setVolume", "volume": clampedLevel],
-                    deliverImmediately: true
-                )
+                await AnotherMusicController.shared.setVolume(clampedLevel)
             }
         }
         
@@ -440,12 +465,7 @@ final class NowPlayingController: ObservableObject, MediaControllerProtocol {
                  self.playbackState = updated
              }
          } else if bundleID == "com.jinkun1998.anothermusic" {
-             DistributedNotificationCenter.default().postNotificationName(
-                 NSNotification.Name("com.jinkun1998.anothermusic.command"),
-                 object: nil,
-                 userInfo: ["action": "requestState"],
-                 deliverImmediately: true
-             )
+             await AnotherMusicController.shared.updatePlaybackInfo()
          }
      }
     
