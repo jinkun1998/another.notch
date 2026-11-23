@@ -16,6 +16,7 @@ enum MusicControlButton: String, CaseIterable, Identifiable, Codable, Defaults.S
     case volume
     case airPlay
     case favorite
+    case automix
     case goBackward
     case goForward
     case none
@@ -58,6 +59,7 @@ enum MusicControlButton: String, CaseIterable, Identifiable, Codable, Defaults.S
         .next,
         .repeatMode,
         .favorite,
+        .automix,
         .volume,
         .airPlay,
         .goBackward,
@@ -110,6 +112,8 @@ enum MusicControlButton: String, CaseIterable, Identifiable, Codable, Defaults.S
             return "Audio Source"
         case .favorite:
             return "Favorite"
+        case .automix:
+            return "AutoMix"
         case .goBackward:
             return "Backward 10s"
         case .goForward:
@@ -137,6 +141,8 @@ enum MusicControlButton: String, CaseIterable, Identifiable, Codable, Defaults.S
             return "airplayaudio"
         case .favorite:
             return "heart"
+        case .automix:
+            return "wand.and.stars"
         case .goBackward:
             return "gobackward.10"
         case .goForward:

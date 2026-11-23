@@ -322,6 +322,8 @@ struct MusicControlsView: View {
             AudioSourceButton()
         case .favorite:
             FavoriteControlButton()
+        case .automix:
+            AutomixControlButton()
         case .goBackward:
             DynamicIslandMusicButton(icon: "gobackward.10") {
                 MusicManager.shared.skip(seconds: -10)
@@ -573,6 +575,34 @@ struct FavoriteControlButton: View {
 
     private var iconColor: Color {
         musicManager.isFavoriteTrack ? .white : .gray
+    }
+}
+
+struct AutomixControlButton: View {
+    @ObservedObject var musicManager = MusicManager.shared
+
+    var body: some View {
+        DynamicIslandMusicButton(icon: iconName, tint: iconColor) {
+            MusicManager.shared.cycleTransitionMode()
+        }
+        .disabled(!musicManager.isAnotherMusic)
+        .opacity(musicManager.isAnotherMusic ? 1 : 0.35)
+        .help("Transition: \(musicManager.transitionMode)")
+    }
+
+    private var iconName: String {
+        switch musicManager.transitionMode.lowercased() {
+        case "automix", "auto mix":
+            return "wand.and.stars"
+        case "crossfade", "cross fade":
+            return "point.topleft.down.to.point.bottomright.filled.curvepath"
+        default:
+            return "wand.and.stars.inverse"
+        }
+    }
+
+    private var iconColor: Color {
+        musicManager.transitionMode.lowercased() == "off" ? .gray : .white
     }
 }
 

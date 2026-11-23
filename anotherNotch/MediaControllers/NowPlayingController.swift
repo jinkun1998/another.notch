@@ -25,16 +25,29 @@ final class NowPlayingController: ObservableObject, MediaControllerProtocol {
 
     var supportsVolumeControl: Bool {
         let bundleID = playbackState.bundleIdentifier
-        return bundleID == "com.apple.Music" || bundleID == "com.spotify.client"
+        return bundleID == "com.apple.Music" || bundleID == "com.spotify.client" || bundleID == "com.jinkun1998.anothermusic"
     }
 
     var supportsFavorite: Bool {
         let bundleID = playbackState.bundleIdentifier
-        return bundleID == "com.apple.Music"
+        return bundleID == "com.apple.Music" || bundleID == "com.jinkun1998.anothermusic"
     }
 
     func setFavorite(_ favorite: Bool) async {
         let bundleID = playbackState.bundleIdentifier
+
+        if bundleID == "com.jinkun1998.anothermusic" {
+            DistributedNotificationCenter.default().postNotificationName(
+                NSNotification.Name("com.jinkun1998.anothermusic.command"),
+                object: nil,
+                userInfo: ["action": "setFavorite", "favorite": favorite],
+                deliverImmediately: true
+            )
+            var updated = self.playbackState
+            updated.isFavorite = favorite
+            self.playbackState = updated
+            return
+        }
         
         if bundleID == "com.apple.Music" {
             let runningApps = NSRunningApplication.runningApplications(withBundleIdentifier: "com.apple.Music")
@@ -109,6 +122,29 @@ final class NowPlayingController: ObservableObject, MediaControllerProtocol {
         }
 
         Task { await setupNowPlayingObserver() }
+
+        DistributedNotificationCenter.default().addObserver(
+            forName: NSNotification.Name("com.jinkun1998.anothermusic.playbackState"),
+            object: nil,
+            queue: .main
+        ) { [weak self] note in
+            guard let self,
+                  let userInfo = note.userInfo as? [String: Any],
+                  self.playbackState.bundleIdentifier == "com.jinkun1998.anothermusic" else { return }
+            var updated = self.playbackState
+            if let fav = userInfo["isFavorite"] as? Bool {
+                updated.isFavorite = fav
+            }
+            if let vol = userInfo["volume"] as? Double {
+                updated.volume = vol
+            }
+            if let mode = userInfo["transitionMode"] as? String {
+                updated.transitionMode = mode
+            }
+            if self.playbackState != updated {
+                self.playbackState = updated
+            }
+        }
     }
 
     deinit {
@@ -202,6 +238,13 @@ final class NowPlayingController: ObservableObject, MediaControllerProtocol {
                     let script = "tell application \"Spotify\" to set sound volume to \(volumePercentage)"
                     try? await AppleScriptHelper.executeVoid(script)
                 }
+            } else if bundleID == "com.jinkun1998.anothermusic" {
+                DistributedNotificationCenter.default().postNotificationName(
+                    NSNotification.Name("com.jinkun1998.anothermusic.command"),
+                    object: nil,
+                    userInfo: ["action": "setVolume", "volume": clampedLevel],
+                    deliverImmediately: true
+                )
             }
         }
         
@@ -396,6 +439,13 @@ final class NowPlayingController: ObservableObject, MediaControllerProtocol {
                  updated.isFavorite = result.booleanValue
                  self.playbackState = updated
              }
+         } else if bundleID == "com.jinkun1998.anothermusic" {
+             DistributedNotificationCenter.default().postNotificationName(
+                 NSNotification.Name("com.jinkun1998.anothermusic.command"),
+                 object: nil,
+                 userInfo: ["action": "requestState"],
+                 deliverImmediately: true
+             )
          }
      }
     

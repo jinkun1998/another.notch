@@ -115,6 +115,11 @@ class MusicManager: ObservableObject {
     @Published var syncedLyrics: [(time: Double, text: String)] = []
     @Published var canFavoriteTrack: Bool = false
     @Published var isFavoriteTrack: Bool = false
+    @Published var transitionMode: String = "Auto Mix"
+
+    var isAnotherMusic: Bool {
+        bundleIdentifier == "com.jinkun1998.anothermusic"
+    }
 
     var hasLyrics: Bool {
         !currentLyrics.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !syncedLyrics.isEmpty
@@ -196,6 +201,8 @@ class MusicManager: ObservableObject {
         switch type {
         case .nowPlaying:
             newController = NowPlayingController()
+        case .anotherMusic:
+            newController = AnotherMusicController()
         case .appleMusic:
             newController = AppleMusicController()
         case .spotify:
@@ -363,6 +370,9 @@ class MusicManager: ObservableObject {
         if state.isFavorite != self.isFavoriteTrack {
             self.isFavoriteTrack = state.isFavorite
         }
+        if state.transitionMode != self.transitionMode {
+            self.transitionMode = state.transitionMode
+        }
         
         if volumeChanged {
             self.volume = state.volume
@@ -373,6 +383,19 @@ class MusicManager: ObservableObject {
         }
         
         self.timestampDate = state.lastUpdated
+    }
+
+    func cycleTransitionMode() {
+        if let another = activeController as? AnotherMusicController {
+            Task { await another.cycleTransitionMode() }
+        } else if isAnotherMusic {
+            DistributedNotificationCenter.default().postNotificationName(
+                NSNotification.Name("com.jinkun1998.anothermusic.command"),
+                object: nil,
+                userInfo: ["action": "cycleTransitionMode"],
+                deliverImmediately: true
+            )
+        }
     }
 
     func toggleFavoriteTrack() {
