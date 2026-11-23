@@ -5,6 +5,34 @@
         <link>https://github.com/jinkun1998/another.notch/releases</link>
         <description>anotherNotch updates</description>
         <item>
+            <title>1.5.1</title>
+            <pubDate>Mon, 23 Nov 2026 09:33:17 +0000</pubDate>
+            <link>https://github.com/jinkun1998/another.notch/releases</link>
+            <sparkle:version>53</sparkle:version>
+            <sparkle:shortVersionString>1.5.1</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <description><![CDATA[<div class="markdown-heading"><h2 class="heading-element">What's Changed</h2><a id="user-content-whats-changed" class="anchor" aria-label="Permalink: What's Changed" href="#whats-changed"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
+<ul>
+<li>build(deps): bump pyobjc-framework-cocoa from 12.2.1 to 13.0 in /Configuration/dmg by @dependabot[bot] in <a href="https://github.com/jinkun1998/another.notch/pull/118">https://github.com/jinkun1998/another.notch/pull/118</a>
+</li>
+<li>build(deps): bump pyobjc-framework-quartz from 12.2.1 to 13.0 in /Configuration/dmg by @dependabot[bot] in <a href="https://github.com/jinkun1998/another.notch/pull/117">https://github.com/jinkun1998/another.notch/pull/117</a>
+</li>
+<li>build(deps): bump pyobjc-core from 12.2.1 to 13.0 in /Configuration/dmg by @dependabot[bot] in <a href="https://github.com/jinkun1998/another.notch/pull/116">https://github.com/jinkun1998/another.notch/pull/116</a>
+</li>
+<li>build(deps): bump github.com/apple/swift-collections from 1.7.5 to 1.7.6 by @dependabot[bot] in <a href="https://github.com/jinkun1998/another.notch/pull/120">https://github.com/jinkun1998/another.notch/pull/120</a>
+</li>
+<li>build(deps): bump ds-store from 1.3.1 to 1.3.4 in /Configuration/dmg by @dependabot[bot] in <a href="https://github.com/jinkun1998/another.notch/pull/121">https://github.com/jinkun1998/another.notch/pull/121</a>
+</li>
+<li>build(deps): bump mac-alias from 2.2.2 to 2.2.4 in /Configuration/dmg by @dependabot[bot] in <a href="https://github.com/jinkun1998/another.notch/pull/122">https://github.com/jinkun1998/another.notch/pull/122</a>
+</li>
+<li>build(deps): bump dmgbuild from 1.6.7 to 2.0.0 in /Configuration/dmg by @dependabot[bot] in <a href="https://github.com/jinkun1998/another.notch/pull/123">https://github.com/jinkun1998/another.notch/pull/123</a>
+</li>
+</ul>
+<p><strong>Full Changelog</strong>: <a href="https://github.com/jinkun1998/another.notch/compare/v1.5.0...v1.5.1">https://github.com/jinkun1998/another.notch/compare/v1.5.0...v1.5.1</a></p>
+]]></description>
+            <enclosure url="https://github.com/jinkun1998/another.notch/releases/download/v1.5.1/anotherNotch.dmg" length="10075648" type="application/octet-stream" sparkle:edSignature="arqOIBzBbHPmpwF5ZYCvSibDz7da81+UxnL+tw8g5el67yO8LYZQVg5W1ADPnNasZ7gMjGMEdrvOeiqlGGzfDA=="/>
+        </item>
+        <item>
             <title>1.5.0</title>
             <pubDate>Thu, 05 Nov 2026 03:49:33 +0000</pubDate>
             <link>https://github.com/jinkun1998/another.notch/releases</link>
@@ -69,30 +97,6 @@
 <p><strong>Full Changelog</strong>: <a href="https://github.com/jinkun1998/another.notch/compare/v1.4.0...v1.4.1">https://github.com/jinkun1998/another.notch/compare/v1.4.0...v1.4.1</a></p>
 ]]></description>
             <enclosure url="https://github.com/jinkun1998/another.notch/releases/download/v1.4.1/anotherNotch.dmg" length="9517574" type="application/octet-stream" sparkle:edSignature="NS7xmgVe5cnIj3ZWVR/MwZunGCvg0c6WXj36g2hz/39A6W2cTQzSgCRMPlDHSINeAJi+ryjQCUQ5HbdMpjhVCw=="/>
-        </item>
-        <item>
-            <title>1.4.0</title>
-            <pubDate>Sun, 25 Oct 2026 05:00:26 +0000</pubDate>
-            <link>https://github.com/jinkun1998/another.notch/releases</link>
-            <sparkle:version>41</sparkle:version>
-            <sparkle:shortVersionString>1.4.0</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-            <description><![CDATA[<div class="markdown-heading"><h3 class="heading-element">Changes in v1.4.0</h3><a id="user-content-changes-in-v140" class="anchor" aria-label="Permalink: Changes in v1.4.0" href="#changes-in-v140"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
-<ul>
-<li>
-<strong>Lock Screen Music Widget</strong>: Apple Music styled widget with Liquid Glass on macOS lock screen (<code>SkyLightOperator</code>, <code>level = Int32.max - 2</code>, <code>canBecomeVisibleWithoutLogin</code>).</li>
-<li>
-<strong>Audio Output Route Switcher</strong>: Interactive audio device selector supporting MacBook speakers, AirPods, and Bluetooth/AirPlay devices directly on lock screen.</li>
-<li>
-<strong>Customizable Widget Sizing &amp; Alignment</strong>: Added Compact, Standard, and Large sizing tiers, vertical offset slider, and left/center/right alignments.</li>
-<li>
-<strong>Unified Settings UI</strong>: Standardized "Reset to Defaults" across fan control, appearance, and lock screen settings.</li>
-<li>
-<strong>Lock Screen Event Handling</strong>: Redundant screen lock detection via <code>DistributedNotificationCenter</code> and <code>NSWorkspace</code> session notifications.</li>
-</ul>
-<p><strong>Full Changelog</strong>: <a href="https://github.com/jinkun1998/another.notch/compare/v1.3.2...v1.4.0">https://github.com/jinkun1998/another.notch/compare/v1.3.2...v1.4.0</a></p>
-]]></description>
-            <enclosure url="https://github.com/jinkun1998/another.notch/releases/download/v1.4.0/anotherNotch.dmg" length="9508741" type="application/octet-stream" sparkle:edSignature="BoK1n1jJyitYb0rt0G5bUgkYaUJfb5zOcG5tN7DXw8uCb6SxqGTTw/rxrJMG7iGlZeh2K2zdbTPivsC1HfVRDA=="/>
         </item>
     </channel>
 </rss>
